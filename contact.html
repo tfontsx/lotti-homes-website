@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us | Lotti Homes — Free Quote, Adelaide</title>
+<meta name="description" content="Get in touch with Lotti Homes for a free, no-obligation quote on your new build, renovation or extension across Adelaide and South Australia.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- =========================================================
+     INTRO PRELOADER — identical to the other pages.
+     ========================================================= -->
+<div id="intro-preloader">
+  <svg width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <image id="logoSrc" href="images/mainlogo.png" x="883.56" y="503.17" width="152.88" height="73.66"/>
+      <mask id="revealMask" maskUnits="userSpaceOnUse">
+        <rect x="873.56" y="473.17" width="0" height="133.66" fill="white">
+          <animate attributeName="width" from="0" to="222.88" begin="0.12s" dur="1.3s" calcMode="spline" keySplines="0.22 1 0.36 1" fill="freeze"/>
+        </rect>
+      </mask>
+    </defs>
+    <rect id="bg" x="0" y="0" width="1920" height="1080" fill="#020C17">
+      <animate attributeName="opacity" from="1" to="0" begin="1.9s" dur="0.6s" calcMode="spline" keySplines="0.5 0 0.35 1" fill="freeze"/>
+    </rect>
+    <g id="logoWrap">
+      <animate attributeName="opacity" from="1" to="0" begin="1.75s" dur="0.3s" calcMode="spline" keySplines="0.4 0 0.6 1" fill="freeze"/>
+      <g mask="url(#revealMask)">
+        <use href="#logoSrc"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<!-- =========================================================
+     NAV — reused verbatim, Contact CTA marks itself active
+     ========================================================= -->
+<nav class="nav">
+  <a href="index.html" class="nav__logo"><img src="images/mainlogo.png" alt="Lotti Homes"></a>
+  <ul class="nav__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="nav__cta">Contact Us</a>
+</nav>
+
+<!-- =========================================================
+     HERO
+     ========================================================= -->
+<header class="hero hero--fullscreen">
+  <img class="hero__media" src="images/contact/contactushero.png" alt="Lotti Homes team discussing a build with clients">
+  <div class="hero__scrim"></div>
+  <div class="contact-hero__content">
+    <span class="eyebrow">Get In Touch</span>
+    <h1>Let's talk about<br>your <em>next project.</em></h1>
+    <p>Whether it's a new build, a renovation or an extension, we'd love to hear about it. Reach out for a free, no-obligation quote across Adelaide and South Australia.</p>
+  </div>
+  <div class="contact-hero__scroll-cue" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</header>
+
+<!-- =========================================================
+     CONTACT FORM + DETAILS
+     ========================================================= -->
+<section class="section container contact-section">
+  <div class="contact-grid">
+
+    <!-- ENQUIRY FORM -->
+    <div class="contact-form-card reveal">
+      <span class="eyebrow">Send An Enquiry</span>
+      <h2>Request your <em>free</em> quote.</h2>
+      <p>Fill in the form below and we'll get back to you as soon as possible.</p>
+
+      <form id="enquiryForm" class="enquiry-form" autocomplete="on">
+        <!-- Web3Forms config — replace YOUR_ACCESS_KEY_HERE with your key from web3forms.com -->
+        <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+        <input type="hidden" name="subject" value="New enquiry — lottihomes.com.au">
+        <input type="hidden" name="from_name" value="Lotti Homes Website">
+        <!-- honeypot spam trap: real users never see or fill this in -->
+        <input type="checkbox" name="botcheck" class="form-honeypot" tabindex="-1" autocomplete="off">
+
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="name" placeholder="Your Name" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="youremail@email.com" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Contact Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="04XX XXX XXX">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="projectType">Project Type</label>
+          <select id="projectType" name="project_type" required>
+            <option value="" disabled selected>Select a Project Type</option>
+            <option value="New Build">New Build</option>
+            <option value="Renovation">Renovation</option>
+            <option value="Extension">Extension</option>
+            <option value="Kitchen, Bathroom & Laundry">Kitchen, Bathroom &amp; Laundry</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" placeholder="Tell us a little about your project, timeline and budget.." required></textarea>
+        </div>
+
+        <div class="form-consent">
+          <input type="checkbox" id="privacyConsent" name="privacy_consent" required>
+          <label for="privacyConsent">I agree to Lotti Homes collecting and using my information to respond to this enquiry.</label>
+        </div>
+
+        <button type="button" class="privacy-toggle" id="privacyToggle" aria-expanded="false" aria-controls="privacyPanel">
+          View Privacy Policy
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="privacy-panel" id="privacyPanel">
+          <p>We only use the information you provide here to respond to your enquiry and prepare a quote. We don't sell or share your details with third parties, and you can ask us to access, correct or delete your information at any time by emailing <a href="mailto:info@lottihomes.com.au">info@lottihomes.com.au</a>.</p>
+        </div>
+
+        <button type="submit" class="btn btn--filled form-submit-btn">
+          <span>Send Enquiry</span>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <p class="form-note" id="formNote">We typically respond within one business day.</p>
+      </form>
+    </div>
+
+    <!-- DIRECT CONTACT DETAILS -->
+    <div class="contact-info-col reveal">
+      <span class="eyebrow">Get In Touch</span>
+      <h2>Prefer to reach us <em>directly?</em></h2>
+      <p>Our friendly team is here to answer your questions and help you take your first step toward bringing your vision to reality.</p>
+
+      <ul class="contact-info-list">
+        <li class="contact-info-item">
+          <span class="contact-info-icon"><img src="images/contact/phone.png" alt=""></span>
+          <span class="contact-info-body">
+            <span class="contact-info-label">Call Us</span>
+            <a href="tel:" class="contact-info-value">04XX XXX XXX</a>
+          </span>
+        </li>
+        <li class="contact-info-item">
+          <span class="contact-info-icon"><img src="images/mail.png" alt=""></span>
+          <span class="contact-info-body">
+            <span class="contact-info-label">Email</span>
+            <a href="mailto:info@lottihomes.com.au" class="contact-info-value">info@lottihomes.com.au</a>
+          </span>
+        </li>
+        <li class="contact-info-item">
+          <span class="contact-info-icon"><img src="images/instagram.png" alt=""></span>
+          <span class="contact-info-body">
+            <span class="contact-info-label">Instagram</span>
+            <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener" class="contact-info-value">@lotti_homes</a>
+          </span>
+        </li>
+        <li class="contact-info-item">
+          <span class="contact-info-icon"><img src="images/contact/location.png" alt=""></span>
+          <span class="contact-info-body">
+            <span class="contact-info-label">Servicing Areas</span>
+            <span class="contact-info-value contact-info-static">Adelaide and surrounding regions across South Australia.</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- =========================================================
+     FOOTER — reused verbatim from the other pages
+     ========================================================= -->
+<footer class="footer has-overlay">
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <img src="images/minilogo.png" alt="Lotti Homes">
+      <div>
+        <p class="footer__contact">Custom builds,<br>Proudly South Australian.</p>
+        <p class="footer__contact">© 2026 Lotti Homes | All Rights Reserved</p>
+      </div>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__cta">
+      <p>Let's build something<br><em style="font-family:var(--font-display); font-style:italic; color:var(--color-brown);">extraordinary</em> together.</p>
+      <a href="contact.html" class="btn btn--outline">Get In Touch Now</a>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__icons">
+      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
+      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

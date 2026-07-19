@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects | Lotti Homes — Portfolio of Adelaide Builds &amp; Renovations</title>
+<meta name="description" content="A hand-picked selection of Lotti Homes projects — from bespoke new builds to interior renovations, extensions and outdoor living upgrades across Adelaide, South Australia.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- =========================================================
+     INTRO PRELOADER — identical to the other pages.
+     ========================================================= -->
+<div id="intro-preloader">
+  <svg width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <image id="logoSrc" href="images/mainlogo.png" x="883.56" y="503.17" width="152.88" height="73.66"/>
+      <mask id="revealMask" maskUnits="userSpaceOnUse">
+        <rect x="873.56" y="473.17" width="0" height="133.66" fill="white">
+          <animate attributeName="width" from="0" to="222.88" begin="0.12s" dur="1.3s" calcMode="spline" keySplines="0.22 1 0.36 1" fill="freeze"/>
+        </rect>
+      </mask>
+    </defs>
+    <rect id="bg" x="0" y="0" width="1920" height="1080" fill="#020C17">
+      <animate attributeName="opacity" from="1" to="0" begin="1.9s" dur="0.6s" calcMode="spline" keySplines="0.5 0 0.35 1" fill="freeze"/>
+    </rect>
+    <g id="logoWrap">
+      <animate attributeName="opacity" from="1" to="0" begin="1.75s" dur="0.3s" calcMode="spline" keySplines="0.4 0 0.6 1" fill="freeze"/>
+      <g mask="url(#revealMask)">
+        <use href="#logoSrc"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<!-- =========================================================
+     NAV — reused verbatim, Projects marked active
+     ========================================================= -->
+<nav class="nav">
+  <a href="index.html" class="nav__logo"><img src="images/mainlogo.png" alt="Lotti Homes"></a>
+  <ul class="nav__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html" class="is-active">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="nav__cta">Contact Us</a>
+</nav>
+
+<!-- =========================================================
+     HERO
+     ========================================================= -->
+<header class="hero hero--fullscreen">
+  <img class="hero__media" src="images/projects/projecthero.png" alt="Living room styled by Lotti Homes">
+  <div class="hero__scrim"></div>
+  <div class="portfolio-hero__content">
+    <span class="eyebrow">Our Portfolio</span>
+    <h1>A <em>closer</em> look at our<br>recent projects.</h1>
+    <p>A hand-picked selection of Lotti Homes projects — from bespoke new builds to interior renovations, extensions and outdoor living upgrades across Adelaide, South Australia.</p>
+  </div>
+  <div class="portfolio-hero__scroll-cue" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9 L12 15 L18 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</header>
+
+<!-- =========================================================
+     PORTFOLIO LIST
+
+     NOTE ON THE SLIDER: each card is built to support multiple photos —
+     just add more <img class="portfolio-card__img"> tags inside a card's
+     .portfolio-card__slider, and add a matching .portfolio-dot button for
+     each one. js/main.js handles the cycling/crossfade automatically and
+     will auto-hide the dots/arrows on any card that only has one photo
+     (which is the case for all 4 right now, since only one image per
+     project was supplied).
+     ========================================================= -->
+<section class="section container">
+  <div class="portfolio-list">
+
+    <div class="portfolio-card reveal" data-reveal-delay="0">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/galleryimage1.png" alt="Kitchen renovation in Underdale, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">01</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>Kitchen Renovation</h2>
+        <p>A full kitchen transformation in Underdale, Adelaide, balancing premium joinery and a natural, classic finish with everyday family functionality.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="portfolio-card reveal" data-reveal-delay="90">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/galleryimage2.png" alt="New build in Fulham Gardens, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">02</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>New Build</h2>
+        <p>A modern &amp; classic new build in the heart of Fulham Gardens, Adelaide.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="portfolio-card reveal" data-reveal-delay="180">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/bathroomrenovation2.png" alt="New build in Fulham Gardens, Adelaide">
+        <img class="portfolio-card__img" src="images/projects/bathroomrenovation2.1.png" alt="Bathroom renovation in West Beach, Adelaide">
+        <img class="portfolio-card__img" src="images/projects/bathroomrenovation2.2.png" alt="Bathroom renovation in West Beach, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">03</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+          <button class="portfolio-dot" aria-label="Image 2"></button>
+          <button class="portfolio-dot" aria-label="Image 3"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>Bathroom Renovation</h2>
+        <p>A traditional &amp; classic bathroom renovation focusing on the small details and an exquisite finish.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="portfolio-card reveal" data-reveal-delay="0">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/galleryimage3.png" alt="New build in West Beach, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">04</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>New Build</h2>
+        <p>A coastal new build in the Adelaide suburb of West Beach.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="portfolio-card reveal" data-reveal-delay="90">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/galleryimage4.png" alt="Bathroom renovation in West Beach, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">05</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>Bathroom Renovation</h2>
+        <p>A premium, luxurious bathroom renovation in West Beach with a focus on modern finishes.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="portfolio-card reveal" data-reveal-delay="180">
+      <div class="portfolio-card__slider">
+        <img class="portfolio-card__img is-active" src="images/projects/kitchenrenovation2.png" alt="New build in Fulham Gardens, Adelaide">
+      </div>
+      <div class="portfolio-card__scrim"></div>
+      <span class="portfolio-card__number">06</span>
+      <div class="portfolio-card__bottom">
+      <div class="portfolio-card__controls">
+        <div class="portfolio-dots">
+          <button class="portfolio-dot is-active" aria-label="Image 1"></button>
+        </div>
+      </div>
+            <div class="portfolio-card__content">
+        <h2>Kitchen Renovation</h2>
+        <p>A modern &amp; minimal kitchen renovation focusing on a classic, timeless finish.</p>
+      </div>
+    </div>
+      <button type="button" class="portfolio-card__view" aria-label="Next image">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+
+  </div>
+</section>
+
+<!-- =========================================================
+     FOOTER — reused verbatim from the other pages
+     ========================================================= -->
+<footer class="footer has-overlay">
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <img src="images/minilogo.png" alt="Lotti Homes">
+      <div>
+        <p class="footer__contact">Custom builds,<br>Proudly South Australian.</p>
+        <p class="footer__contact">© 2026 Lotti Homes | All Rights Reserved</p>
+      </div>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__cta">
+      <p>Let's build something<br><em style="font-family:var(--font-display); font-style:italic; color:var(--color-brown);">extraordinary</em> together.</p>
+      <a href="contact.html" class="btn btn--outline">Get In Touch Now</a>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__icons">
+      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
+      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

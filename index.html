@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotti Homes | New Builds, Renovations & Extensions — Adelaide (Animated Hero)</title>
+<meta name="description" content="Lotti Homes is a family-owned custom home builder specialising in new builds, renovations and extensions across Adelaide, South Australia.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- =========================================================
+     INTRO PRELOADER — plays on every load/refresh, then removes itself.
+     Animation is the site logo forming with a hard-edged sweep reveal,
+     then fading to transparent. No filter/blur (removed for crispness).
+     Total runtime: 2.5s (see js/main.js for the matching removal timer
+     — CHANGE HERE if you edit the SVG timing).
+     References images/mainlogo.png directly (no embedded base64).
+     ========================================================= -->
+<div id="intro-preloader">
+  <svg width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <image id="logoSrc" href="images/mainlogo.png" x="883.56" y="503.17" width="152.88" height="73.66"/>
+      <mask id="revealMask" maskUnits="userSpaceOnUse">
+        <rect x="873.56" y="473.17" width="0" height="133.66" fill="white">
+          <animate attributeName="width" from="0" to="222.88" begin="0.12s" dur="1.3s" calcMode="spline" keySplines="0.22 1 0.36 1" fill="freeze"/>
+        </rect>
+      </mask>
+    </defs>
+    <rect id="bg" x="0" y="0" width="1920" height="1080" fill="#020C17">
+      <animate attributeName="opacity" from="1" to="0" begin="1.9s" dur="0.6s" calcMode="spline" keySplines="0.5 0 0.35 1" fill="freeze"/>
+    </rect>
+    <g id="logoWrap">
+      <animate attributeName="opacity" from="1" to="0" begin="1.75s" dur="0.3s" calcMode="spline" keySplines="0.4 0 0.6 1" fill="freeze"/>
+      <g mask="url(#revealMask)">
+        <use href="#logoSrc"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<!-- =========================================================
+     NAV — reused verbatim across all pages, mark HOME as active
+     ========================================================= -->
+<nav class="nav">
+  <a href="index.html" class="nav__logo"><img src="images/mainlogo.png" alt="Lotti Homes"></a>
+  <ul class="nav__links">
+    <li><a href="index.html" class="is-active">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="nav__cta">Contact Us</a>
+</nav>
+
+<!-- =========================================================
+     HERO — ANIMATED VIDEO VARIANT
+     Compare against index.html (static image hero).
+     The video stays hidden against the navy hero background until its first
+     real frame is ready, preventing a poster/previous-page image flash.
+     Video renders at native aspect ratio (no crop/zoom) — same fix as
+     the static hero.
+     ========================================================= -->
+<header class="hero hero--fullscreen">
+  <video
+    class="hero__media"
+    src="images/home/lottihomesanimatedhero.mp4"
+    preload="auto"
+    autoplay
+    muted
+    loop
+    playsinline
+    aria-label="Animated flythrough of a Lotti Homes build at dusk">
+  </video>
+  <div class="hero__scrim"></div>
+  <div class="hero__content">
+    <span class="hero__eyebrow">From Vision to Reality</span>
+    <h1 class="hero__title">New builds,<br>renovations &amp; extensions made <em>seamless.</em></h1>
+    <p>Custom builds, extensions and renovations crafted with precision and uncompromising quality.</p>
+    <a href="projects.html" class="btn btn--outline">View Our Portfolio</a>
+  </div>
+</header>
+
+<!-- =========================================================
+     OUR STORY
+     ========================================================= -->
+<section class="section container story reveal">
+  <div class="story__map">
+    <svg viewBox="0 0 333.86 391.83" xmlns="http://www.w3.org/2000/svg">
+      <path id="sa-outline-path" d="M 0.7217027988454987,0.5254833995938952 C 0.021702798845495863,1.125483399593918 -0.2782972011545013,190.8254833995939 0.321702798845493,190.8254833995939 C 0.5217027988454959,190.8254833995939 5.721702798845499,188.5254833995939 12.021702798845496,185.72548339959394 L 23.521702798845496,180.62548339959392 L 48.021702798845496,178.3254833995939 C 61.521702798845496,177.0254833995939 73.7217027988455,175.5254833995939 75.1217027988455,174.8254833995939 C 77.6217027988455,173.72548339959394 78.6217027988455,174.22548339959394 91.52170279884551,182.8254833995939 L 105.3217027988455,192.12548339959392 L 111.6217027988455,191.5254833995939 C 116.52170279884551,191.0254833995939 119.2217027988455,191.3254833995939 123.7217027988455,192.92548339959393 C 126.92170279884552,194.0254833995939 132.4217027988455,195.42548339959393 136.02170279884552,195.8254833995939 C 141.9217027988455,196.62548339959392 152.02170279884552,200.92548339959393 152.02170279884552,202.62548339959392 C 152.02170279884552,203.02548339959395 150.6217027988455,204.62548339959392 148.82170279884548,206.12548339959392 L 145.52170279884552,208.92548339959393 L 149.02170279884552,208.3254833995939 C 150.9217027988455,207.92548339959393 153.4217027988455,207.42548339959393 154.6217027988455,207.12548339959392 C 155.7217027988455,206.92548339959393 157.7217027988455,207.52548339959395 159.02170279884552,208.62548339959392 L 161.4217027988455,210.52548339959395 L 159.4217027988455,213.3254833995939 C 157.6217027988455,215.72548339959394 157.52170279884552,216.72548339959394 158.32170279884548,221.3254833995939 C 159.32170279884548,226.62548339959392 159.4217027988455,226.72548339959394 164.32170279884548,228.52548339959395 C 169.2217027988455,230.22548339959394 169.52170279884552,230.62548339959392 172.2217027988455,237.3254833995939 C 174.52170279884552,242.92548339959393 176.2217027988455,245.42548339959393 181.1217027988455,249.8254833995939 C 186.82170279884548,254.92548339959393 187.2217027988455,255.72548339959394 187.9217027988455,260.82548339959396 C 188.52170279884552,265.32548339959396 188.32170279884548,266.82548339959396 186.7217027988455,269.1254833995939 C 184.9217027988455,271.72548339959394 184.9217027988455,271.92548339959393 186.7217027988455,274.1254833995939 C 191.52170279884552,280.22548339959394 198.6217027988455,287.82548339959396 199.52170279884547,287.82548339959396 C 200.1217027988455,287.82548339959396 202.2217027988455,287.32548339959396 204.32170279884548,286.72548339959394 L 208.2217027988455,285.72548339959394 L 207.52170279884547,277.92548339959393 L 206.82170279884548,270.22548339959394 L 210.82170279884548,268.42548339959393 C 213.52170279884547,267.22548339959394 217.1217027988455,263.72548339959394 222.02170279884547,257.82548339959396 C 227.6217027988455,251.02548339959392 230.02170279884547,248.8254833995939 233.02170279884547,247.92548339959393 C 238.32170279884548,246.3254833995939 244.52170279884547,239.22548339959394 246.1217027988455,232.8254833995939 C 246.9217027988455,229.62548339959392 248.9217027988455,226.12548339959392 251.7217027988455,222.92548339959393 C 254.52170279884552,219.72548339959394 256.0217027988455,217.02548339959395 256.1217027988455,215.12548339959392 C 256.2217027988455,212.72548339959394 256.5217027988455,213.02548339959395 258.6217027988455,217.72548339959394 C 260.0217027988455,220.62548339959392 260.9217027988455,223.12548339959392 260.8217027988455,223.3254833995939 C 253.1217027988455,228.52548339959395 252.9217027988455,229.12548339959392 255.6217027988455,237.3254833995939 L 257.3217027988455,242.12548339959392 L 252.02170279884552,246.72548339959394 L 246.82170279884548,251.32548339959394 L 245.7217027988455,266.5254833995939 L 244.6217027988455,281.72548339959394 L 238.32170279884548,283.5254833995939 L 232.02170279884547,285.32548339959396 L 229.52170279884547,292.72548339959394 C 228.1217027988455,296.82548339959396 227.2217027988455,300.32548339959396 227.4217027988455,300.5254833995939 C 228.02170279884547,301.22548339959394 253.52170279884552,293.72548339959394 254.7217027988455,292.5254833995939 C 255.32170279884548,291.82548339959396 257.2217027988455,287.82548339959396 258.9217027988455,283.5254833995939 C 261.3217027988455,277.22548339959394 261.8217027988455,274.72548339959394 261.3217027988455,270.82548339959396 C 260.7217027988455,265.82548339959396 261.6217027988455,258.82548339959396 262.8217027988455,258.82548339959396 C 264.2217027988455,258.82548339959396 268.0217027988455,266.82548339959396 268.0217027988455,269.82548339959396 C 268.0217027988455,271.92548339959393 269.1217027988455,274.1254833995939 271.9217027988455,277.1254833995939 L 275.7217027988455,281.32548339959396 L 272.8217027988455,290.32548339959396 C 270.3217027988455,297.72548339959394 269.1217027988455,299.92548339959393 265.7217027988455,302.92548339959393 L 261.6217027988455,306.5254833995939 L 268.4217027988455,307.5254833995939 C 273.4217027988455,308.22548339959394 276.9217027988455,308.22548339959394 281.2217027988455,307.32548339959396 L 287.1217027988455,306.0254833995939 L 293.9217027988455,314.22548339959394 C 297.7217027988455,318.6254833995939 301.1217027988455,323.42548339959393 301.5217027988455,324.82548339959396 C 301.9217027988455,326.22548339959394 304.0217027988455,331.42548339959393 306.2217027988455,336.5254833995939 L 310.2217027988455,345.72548339959394 L 307.9217027988455,349.72548339959394 C 305.8217027988455,353.5254833995939 305.8217027988455,354.0254833995939 307.0217027988455,359.82548339959396 C 308.2217027988455,365.42548339959393 308.8217027988455,366.42548339959393 314.1217027988455,370.92548339959393 C 318.5217027988455,374.82548339959396 320.3217027988455,377.22548339959394 322.0217027988455,381.72548339959394 C 323.8217027988455,386.72548339959394 324.7217027988455,387.72548339959394 328.6217027988455,389.6254833995939 C 331.0217027988455,390.82548339959396 333.3217027988455,391.82548339959396 333.5217027988455,391.82548339959396 C 333.8217027988455,391.82548339959396 333.9217027988455,303.72548339959394 333.8217027988455,196.0254833995939 L 333.5217027988455,0.3254833995939066 L 167.4217027988455,0.02548339959389523 C 76.1217027988455,-0.07451660040607067 1.0217027988454959,0.12548339959391797 0.7217027988454987,0.5254833995938952"
+            fill="none"
+            stroke="#8F7058"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            opacity="0.5"
+            pathLength="1"
+            stroke-dasharray="1"
+            stroke-dashoffset="1">
+        <animate id="sa-outline-draw" attributeName="stroke-dashoffset" from="1" to="0" begin="indefinite" dur="4.0s" calcMode="spline" keySplines="0.4 0 0.2 1" fill="freeze"/>
+      </path>
+    </svg>
+  </div>
+  <div class="story__heading">
+    <span class="eyebrow">Our Story</span>
+    <h2>Proudly South<br>Australian <em>owned.</em></h2>
+  </div>
+  <div class="story__divider" aria-hidden="true"></div>
+  <div class="story__body">
+    <p>Lotti Homes is a local family-owned business dedicated to building and renovating homes of exceptional quality across Adelaide and surrounding regions.</p>
+    <p>We specialise in renovations, new builds and extensions — delivering personalised service and craftsmanship you can trust.</p>
+    <a href="about.html" class="story__link">
+      Learn More About Us
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- =========================================================
+     VALUE ICON ROW
+     ========================================================= -->
+<section class="values-section has-overlay">
+<div class="values-bleed">
+  <div class="values reveal">
+    <div class="value-card">
+      <img src="images/handshake.png" alt="">
+      <div>
+        <h3>Clear Communication</h3>
+        <p>You'll always know where your project stands with honest, open communication.</p>
+      </div>
+    </div>
+    <div class="values__divider" aria-hidden="true"></div>
+    <div class="value-card">
+      <img src="images/award.png" alt="">
+      <div>
+        <h3>Expert Craftsmanship</h3>
+        <p>We deliver exceptional results with meticulous attention to detail.</p>
+      </div>
+    </div>
+    <div class="values__divider" aria-hidden="true"></div>
+    <div class="value-card">
+      <img src="images/shield.png" alt="">
+      <div>
+        <h3>Built to Endure</h3>
+        <p>Quality homes &amp; projects, built to stand the test of time.</p>
+      </div>
+    </div>
+    <div class="values__divider" aria-hidden="true"></div>
+    <div class="value-card">
+      <img src="images/family.png" alt="">
+      <div>
+        <h3>Family-Owned</h3>
+        <p>Built on trust, integrity and lasting relationships.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- =========================================================
+     FEATURED PROJECTS
+     ========================================================= -->
+<section class="section edge-line-bottom projects-section">
+<div class="projects-bleed">
+  <div class="projects-layout">
+    <div class="projects-intro reveal">
+      <div>
+        <span class="eyebrow">Curated Projects</span>
+        <h2>Our Featured<br>Projects &amp; Builds.</h2>
+      </div>
+      <a href="projects.html" class="projects-intro__link">
+        View Projects
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <a href="projects.html" class="gallery-card reveal" data-reveal-delay="0">
+      <img src="images/home/homepagegallery4.png" alt="New build exterior, West Beach">
+      <div class="gallery-card__scrim"></div>
+      <div class="gallery-card__label">
+        <div>
+          <span>West Beach</span>
+          <h3>New Build</h3>
+        </div>
+        <span class="gallery-card__arrow">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+    <a href="projects.html" class="gallery-card reveal" data-reveal-delay="100">
+      <img src="images/home/homepagegallery3.png" alt="Kitchen renovation, Underdale">
+      <div class="gallery-card__scrim"></div>
+      <div class="gallery-card__label">
+        <div>
+          <span>Underdale</span>
+          <h3>Kitchen Renovation</h3>
+        </div>
+        <span class="gallery-card__arrow">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+    <a href="projects.html" class="gallery-card reveal" data-reveal-delay="200">
+      <img src="images/home/homepagegallery2.png" alt="New build exterior, Fulham Gardens">
+      <div class="gallery-card__scrim"></div>
+      <div class="gallery-card__label">
+        <div>
+          <span>Fulham Gardens</span>
+          <h3>New Build</h3>
+        </div>
+        <span class="gallery-card__arrow">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+    <a href="projects.html" class="gallery-card reveal" data-reveal-delay="300">
+      <img src="images/home/homepagegallery1.png" alt="Bathroom renovation, West Beach">
+      <div class="gallery-card__scrim"></div>
+      <div class="gallery-card__label">
+        <div>
+          <span>West Beach</span>
+          <h3>Bathroom Renovation</h3>
+        </div>
+        <span class="gallery-card__arrow">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12 H19 M13 6 L19 12 L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+  </div>
+</div>
+</section>
+
+<!-- =========================================================
+     SERVICES ROW
+     ========================================================= -->
+<section class="section edge-line-bottom has-overlay services-section">
+<div class="container">
+  <div class="services-heading reveal">
+    <span class="eyebrow">Our Services</span>
+    <h2>Timeless spaces, <em>thoughtfully</em> built.</h2>
+  </div>
+</div>
+
+<div class="services-bleed">
+  <div class="services-row">
+    <div class="service-item reveal" data-reveal-delay="0">
+      <img src="images/newbuilds.png" alt="">
+      <div>
+        <h3>New builds</h3>
+        <p>Bespoke, classic homes designed thoughtfully and constructed exceptionally.</p>
+        <a href="services.html" class="service-item__link">Learn More →</a>
+      </div>
+    </div>
+    <div class="services__divider" aria-hidden="true"></div>
+    <div class="service-item reveal" data-reveal-delay="100">
+      <img src="images/renovations.png" alt="">
+      <div>
+        <h3>Renovations</h3>
+        <p>Renovations of your space designed and built to your taste that elevate comfort, liveability and value.</p>
+        <a href="services.html" class="service-item__link">Learn More →</a>
+      </div>
+    </div>
+    <div class="services__divider" aria-hidden="true"></div>
+    <div class="service-item reveal" data-reveal-delay="200">
+      <img src="images/extensions.png" alt="">
+      <div>
+        <h3>Extensions</h3>
+        <p>Seamless additions that blend beautifully with your existing home and enhance long-term value.</p>
+        <a href="services.html" class="service-item__link">Learn More →</a>
+      </div>
+    </div>
+    <div class="services__divider" aria-hidden="true"></div>
+    <div class="service-item reveal" data-reveal-delay="300">
+      <img src="images/custombuilds.png" alt="">
+      <div>
+        <h3>Custom builds</h3>
+        <p>Seamless additions that blend beautifully with your existing home and enhance long-term value.</p>
+        <a href="services.html" class="service-item__link">Learn More →</a>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- =========================================================
+     COMMITMENT BAND
+     ========================================================= -->
+<section class="commitment reveal">
+  <img class="commitment__photo" src="images/home/footerphoto.png" alt="Warm interior living room">
+  <div class="commitment__scrim"></div>
+  <div class="commitment__content">
+    <span class="eyebrow">Our Commitment</span>
+    <h2>We bring your vision<br>to <em>life.</em></h2>
+    <p>From first ideas to the final handover, we're with you every step of the way — delivering builds you'll be proud to live in for years to come.</p>
+    <a href="process.html" class="btn btn--outline">Our Process →</a>
+  </div>
+</section>
+
+<!-- =========================================================
+     FOOTER — reused verbatim across all pages
+     ========================================================= -->
+<footer class="footer has-overlay">
+  <div class="footer__grid">
+    <div class="footer__brand">
+      <img src="images/minilogo.png" alt="Lotti Homes">
+      <div>
+        <p class="footer__contact">Custom builds,<br>Proudly South Australian.</p>
+        <p class="footer__contact">© 2026 Lotti Homes | All Rights Reserved</p>
+      </div>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__cta">
+      <p>Let's build something<br><em style="font-family:var(--font-display); font-style:italic; color:var(--color-brown);">extraordinary</em> together.</p>
+      <a href="contact.html" class="btn btn--outline">Get In Touch Now</a>
+    </div>
+
+    <div class="footer__divider" aria-hidden="true"></div>
+
+    <div class="footer__icons">
+      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
+      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
