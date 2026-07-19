@@ -31,17 +31,10 @@
   --font-display: 'Cormorant Garamond', serif;
   --font-nav:     'Space Grotesk', sans-serif;
   --font-body:    'Inter', sans-serif;
-
-  /* CHANGE HERE: heading letter-spacing — you said ~-5%, applied via the
-     .heading-tracking utility and h1–h3 defaults below. Adjust the single
-     variable and it updates everywhere. */
   --tracking-heading: -0.05em;
-
-  /* CHANGE HERE: eyebrow / nav label letter-spacing — small caps labels
-     usually want the opposite treatment (wide, not tight) */
   --tracking-label: 0.12em;
 
-  /* Spacing scale — CHANGE HERE to adjust rhythm site-wide */
+  /* Spacing scale */
   --space-xs:  0.5rem;
   --space-sm:  1rem;
   --space-md:  1.5rem;
@@ -52,9 +45,9 @@
 
   /* Layout */
   --container-max: 1440px;
-  --container-pad: 5vw; /* CHANGE HERE for tighter/looser page margins */
+  --container-pad: clamp(20px, 5vw, 72px);
 
-  /* Motion — CHANGE HERE to speed up/slow down site-wide transitions */
+  /* Motion */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-fast: 200ms;
   --duration-base: 500ms;
@@ -74,6 +67,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -82,7 +76,7 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.6;
-  font-size: 16px; /* CHANGE HERE for base body text size */
+  font-size: 16px; 
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   animation: page-fade-in 0.1s var(--ease-standard) forwards; 
@@ -139,15 +133,15 @@ ul, ol {
    -------------------------------------------------------------------------- */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 500; /* CHANGE HERE if you want headings lighter/heavier */
+  font-weight: 500; 
   color: var(--color-title);
   letter-spacing: var(--tracking-heading);
   line-height: 1.1;
 }
 
-h1 { font-size: clamp(2.75rem, 5vw, 5rem); }       /* CHANGE HERE: hero-scale headings */
-h2 { font-size: clamp(2.25rem, 3.5vw, 3.5rem); }   /* CHANGE HERE: section headings */
-h3 { font-size: clamp(1.5rem, 2.2vw, 2rem); }      /* CHANGE HERE: card / sub headings */
+h1 { font-size: clamp(2.75rem, 5vw, 5rem); }       
+h2 { font-size: clamp(2.25rem, 3.5vw, 3.5rem); }   
+h3 { font-size: clamp(1.5rem, 2.2vw, 2rem); }      
 
 /* Italic used as an accent word within a heading, e.g. <em>seamless.</em> */
 h1 em, h2 em, h3 em {
@@ -159,8 +153,8 @@ h1 em, h2 em, h3 em {
 p {
   font-family: var(--font-body);
   color: var(--color-body-muted);
-  font-size: 1rem; /* CHANGE HERE for paragraph size */
-  max-width: 60ch; /* keeps long paragraphs readable — remove per-instance if needed */
+  font-size: 1rem; 
+  max-width: 60ch; 
 }
 
 /* Eyebrow / tiny uppercase label above headings (e.g. "WHAT WE OFFER") */
@@ -185,7 +179,7 @@ p {
 }
 
 .section {
-  padding-block: var(--space-2xl); /* CHANGE HERE for vertical section rhythm */
+  padding-block: var(--space-2xl); 
 }
 
 .projects-section {
@@ -215,7 +209,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--space-md) + 0.85rem) var(--container-pad) var(--space-md); /* CHANGE HERE: extra top value pushes nav/logo/CTA down from the very top edge */
+  padding: calc(var(--space-md) + 0.85rem) var(--container-pad) var(--space-md);
   font-family: var(--font-nav);
 }
 
@@ -249,7 +243,7 @@ p {
 .nav__links a.is-active {
   color: var(--color-title);
   transform: scale(1.08);
-  text-shadow: 0 0 4px rgba(243, 241, 239, 0.25); /* CHANGE HERE for glow strength */
+  text-shadow: 0 0 4px rgba(243, 241, 239, 0.25); 
 }
 
 .nav__cta {
@@ -275,7 +269,7 @@ p {
   font-weight: 500;
   border-color: var(--color-title);
   transform: scale(1.04);
-  box-shadow: 0 0 4px rgba(243, 241, 239, 0.1); /* CHANGE HERE for glow strength */
+  box-shadow: 0 0 4px rgba(243, 241, 239, 0.1); 
 }
 
 /* Applied via js/main.js once the user scrolls past the hero */
@@ -290,6 +284,121 @@ p {
   background-color: rgba(2, 12, 23, 0.9);
   backdrop-filter: blur(10px);
   border-bottom: 0.5px solid rgba(143, 112, 88, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   BURGER MENU (mobile nav — hidden entirely above 900px)
+   -------------------------------------------------------------------------- */
+.nav__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.nav__burger span {
+  display: block;
+  width: 22px;
+  height: 0.5px;
+  background-color: var(--color-title);
+  transition: transform var(--duration-fast) var(--ease-standard),
+              opacity var(--duration-fast) var(--ease-standard);
+}
+
+.nav__burger.is-open span:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.nav__burger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+.nav__burger.is-open span:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  background-color: rgba(2, 12, 23, 0.7);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.nav-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 99;
+  width: min(340px, 82vw);
+  height: 100%;
+  height: 100dvh;
+  background-color: var(--color-bg-raised);
+  border-left: 0.5px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2xl);
+  padding: var(--space-2xl) var(--space-xl);
+  transform: translateX(100%);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.mobile-nav.is-open {
+  transform: translateX(0);
+}
+
+.mobile-nav__links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.mobile-nav__links a {
+  font-family: var(--font-nav);
+  font-size: 1.225rem;
+  font-weight: 400;
+  color: var(--color-body-muted);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.mobile-nav__links a:hover,
+.mobile-nav__links a.is-active {
+  color: var(--color-title);
+}
+
+.mobile-nav__cta {
+  align-self: flex-start;
+}
+
+body.nav-open {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .nav__links,
+  .nav__cta {
+    display: none;
+  }
+  .nav__burger {
+    display: flex;
+  }
+  .nav {
+    padding-block: var(--space-sm) var(--space-sm);
+  }
+  .nav__logo img {
+    height: 44px;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -321,7 +430,7 @@ p {
   border-color: var(--color-title);
   font-weight: 600;
   transform: scale(1.04);
-  box-shadow: 0 0 4px rgba(243, 241, 239, 0.1); /* CHANGE HERE for glow strength */
+  box-shadow: 0 0 4px rgba(243, 241, 239, 0.1); 
 }
 
 .btn--filled {
@@ -341,7 +450,7 @@ p {
 
 .footer__grid {
   display: grid;
-  grid-template-columns: 1fr auto auto auto 1fr; /* equal outer columns guarantee the middle block is truly centered, regardless of how wide the logo/text or icons blocks are */
+  grid-template-columns: 1fr auto auto auto 1fr; 
   align-items: center;
   gap: var(--space-lg);
   width: 100%;
@@ -370,7 +479,7 @@ p {
 }
 
 .footer__brand img {
-  width: 40px; /* CHANGE HERE for logo size */
+  width: 40px; 
   flex-shrink: 0;
 }
 
@@ -407,12 +516,30 @@ p {
    RESPONSIVE
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
-  .nav__links {
-    display: none; /* TODO: mobile menu — flag when we build nav interactivity */
-  }
-
   :root {
     --container-pad: 6vw;
+  }
+
+  .footer__grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: var(--space-lg);
+    padding-inline: var(--container-pad);
+  }
+  .footer__brand,
+  .footer__cta {
+    justify-self: center;
+  }
+  .footer__cta {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer__icons {
+    display: none;
+  }
+  .footer__divider:last-of-type {
+    display: none;
   }
 }
 
@@ -429,7 +556,7 @@ p {
   z-index: 9999;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* CHANGE HERE if this causes issues on a specific mobile browser */
+  height: 100dvh; 
 }
 
 #intro-preloader svg {
@@ -480,7 +607,7 @@ p {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* crops to fill — appropriate here since video, unlike the static photo, isn't limited by source resolution the same way */
+  object-fit: cover; 
   z-index: 0;
 }
 
@@ -505,7 +632,7 @@ img.hero__media {
   opacity: 0.25; 
 }
 
-/* Darkens the photo/video so title text stays legible — CHANGE HERE for a lighter/darker hero */
+/* Darkens the photo/video so title text stays legible */
 .hero__scrim {
   position: absolute;
   inset: 0;
@@ -554,14 +681,13 @@ img.hero__media {
    ------------------------------------------------------------------------- */
 .story {
   display: grid;
-  grid-template-columns: 340px 0.85fr auto 1.3fr; /* CHANGE HERE — map column widened 260→340px, text column widened 1fr→1.3fr (heading trimmed to 0.85fr to compensate) */
+  grid-template-columns: 340px 0.85fr auto 1.3fr; 
   gap: var(--space-md);
   align-items: center;
   padding-block: 30px;
   padding-left: 0px;
 }
 
-/* Vertical rule between the heading and body columns, matching the mockup */
 .story__divider {
   width: 1px;
   align-self: stretch;
@@ -616,7 +742,7 @@ img.hero__media {
 }
 
 .story__link:hover {
-  gap: 16px; /* CHANGE HERE — was var(--space-lg)/40px, a 4x jump from the base 10px that made the arrow shoot too far right */
+  gap: 16px; 
   color: var(--color-title);
   transform: scale(1.06);
   filter: drop-shadow(0 0 2px rgba(243, 241, 239, 0.15));
@@ -651,7 +777,7 @@ img.hero__media {
 
 .values {
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; /* 4 equal content columns + 3 thin divider columns between them */
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; 
   align-items: center;
   gap: var(--space-lg);
   padding-block: 40px;
@@ -664,8 +790,11 @@ img.hero__media {
 }
 
 @media (max-width: 900px) {
+  .values-bleed {
+    padding-inline: var(--container-pad);
+  }
   .values {
-    grid-template-columns: 1fr 1fr; /* dividers hidden below, so just 2 equal content columns */
+    grid-template-columns: 1fr 1fr; 
   }
   .values__divider {
     display: none;
@@ -676,11 +805,19 @@ img.hero__media {
   .values {
     grid-template-columns: 1fr;
   }
+  .value-card {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+  .value-card p {
+    width: auto;
+    max-width: 240px;
+  }
 }
 
 .value-card {
   display: flex;
-  align-items: center; /* CHANGE HERE — vertically centers the heading+text against the icon's height, was defaulting to stretch */
+  align-items: center; 
   gap: var(--space-md);
   justify-self: center;
 }
@@ -719,7 +856,9 @@ img.hero__media {
    instead of the site's standard 5vw --container-pad used elsewhere,
    matching the mockup's true edge-to-edge treatment. */
 .projects-bleed {
-  padding-inline: 40px; /* CHANGE HERE — measured from mockup at 1440px reference width */
+  max-width: 1900px; 
+  margin-inline: auto;
+  padding-inline: 40px; 
 }
 
 .projects-layout {
@@ -779,8 +918,8 @@ img.hero__media {
 
 .gallery-card {
   position: relative;
-  aspect-ratio: 273 / 295; /* CHANGE HERE — precisely measured from mockup reference image */
-  border-radius: 10px; /* CHANGE HERE for gallery image corner radius */
+  aspect-ratio: 273 / 295; 
+  border-radius: 10px; 
   overflow: hidden;
   border: 1px solid rgba(143, 112, 88, 0.4);
 }
@@ -858,8 +997,8 @@ img.hero__media {
 .gallery-card:hover .gallery-card__arrow {
   border-color: var(--color-title);
   background-color: rgba(243, 241, 239, 0.08);
-  transform: translateY(10px) scale(1.08); /* combined with the existing translateY offset, not replacing it */
-  box-shadow: 0 0 3px rgba(243, 241, 239, 0.12); /* CHANGE HERE for glow strength */
+  transform: translateY(10px) scale(1.08);
+  box-shadow: 0 0 3px rgba(243, 241, 239, 0.12); 
 }
 
 /* -------------------------------------------------------------------------
@@ -897,6 +1036,8 @@ img.hero__media {
 
 .services-bleed {
   width: 100%;
+  max-width: 1900px; 
+  margin-inline: auto;
   padding-inline: 60px; 
 }
 
@@ -914,8 +1055,11 @@ img.hero__media {
 }
 
 @media (max-width: 900px) {
+  .services-bleed--home {
+    padding-inline: var(--container-pad);
+  }
   .services-row {
-    grid-template-columns: 1fr 1fr; /* dividers hidden below, so just 2 equal content columns */
+    grid-template-columns: 1fr 1fr; 
   }
   .services__divider {
     display: none;
@@ -925,6 +1069,10 @@ img.hero__media {
 @media (max-width: 560px) {
   .services-row {
     grid-template-columns: 1fr;
+  }
+  .service-item {
+    justify-self: stretch;
+    justify-content: flex-start;
   }
 }
 
@@ -1061,10 +1209,10 @@ img.hero__media {
   position: absolute;
   inset: 0;
   background-image: url('../images/mottledoverlay.png');
-  background-size: 900px auto; /* CHANGE HERE — fixed tile size instead of stretching one instance across the whole section (which blurred/distorted on wide screens) */
+  background-size: 900px auto; 
   background-repeat: repeat;
   background-position: center;
-  opacity: 0.5; /* CHANGE HERE for overlay strength */
+  opacity: 0.5; 
   pointer-events: none;
   z-index: 0;
 }
@@ -1098,7 +1246,7 @@ img.hero__media {
 
 .footer__cta p {
   font-family: var(--font-display);
-  font-size: 35px;
+  font-size: clamp(1.5rem, 3vw, 2.1875rem);
   line-height: 0.8; 
   color: var(--color-title);
   margin: 0;
@@ -1142,18 +1290,26 @@ img.hero__media {
   .story {
     grid-template-columns: 1fr;
     gap: var(--space-md);
+    padding-left: calc(var(--container-pad) + 12px);
   }
   .story__divider {
     display: none;
+  }
+  .story__body p,
+  .story__link {
+    padding-left: 0;
   }
   .values {
     grid-template-columns: repeat(2, 1fr);
   }
   .projects-layout {
-    grid-template-columns: repeat(2, 1fr); /* text column becomes a full row above a 2x2 card grid */
+    grid-template-columns: repeat(2, 1fr); 
   }
   .projects-layout .projects-intro {
-    grid-column: 1 / -1; /* text spans full width at this breakpoint instead of squeezing into one card column */
+    grid-column: 1 / -1; 
+  }
+  .projects-intro__link {
+    margin-top: var(--space-md);
   }
 }
 
@@ -1165,6 +1321,12 @@ img.hero__media {
   .commitment__content {
     max-width: 100%;
     background: rgba(2, 12, 23, 0.6);
+  }
+  .commitment__scrim {
+    background: rgba(2, 12, 23, 0.72);
+  }
+  .hero__content {
+    padding-bottom: var(--space-lg);
   }
 }
 
@@ -1266,7 +1428,7 @@ img.hero__media {
 
 .about-quote__signature {
   font-family: 'Herr Von Muellerhoff', cursive;
-  font-size: 55px;
+  font-size: clamp(2rem, 5vw, 3.4375rem);
   color: rgb(209, 184, 165);
   max-width: none;
   margin-inline: auto;
@@ -1385,7 +1547,7 @@ img.hero__media {
   margin-bottom: var(--space-lg);
   padding-top: 40px;
   max-width: 900px;
-  font-size: 100px;
+  font-size: clamp(2.75rem, 8vw, 6.25rem);
   line-height: 0.9;
 }
 
@@ -1441,10 +1603,10 @@ img.hero__media {
 
 .process-step__number {
   display: block;
-  font-family: 'Cormorant Infant', serif; /* CHANGE HERE — was var(--font-display) */
+  font-family: 'Cormorant Infant', serif; 
   font-style: italic;
-  letter-spacing: -0.1em; /* -10% */
-  font-size: 200px;
+  letter-spacing: -0.1em; 
+  font-size: clamp(4rem, 14vw, 12.5rem);
   color: var(--color-brown);
   opacity: 0.22; 
   line-height: 1;
@@ -1514,7 +1676,7 @@ img.hero__media {
 .services-hero__content h1 {
   margin-bottom: var(--space-lg);
   padding-top: 40px;
-  font-size: 100px;
+  font-size: clamp(2.75rem, 8vw, 6.25rem);
   max-width: 900px;
 }
 
@@ -1542,6 +1704,8 @@ img.hero__media {
 
 .services-bleed {
   width: 100%;
+  max-width: 1900px; 
+  margin-inline: auto;
   padding-inline: 100px;
 }
 
@@ -1574,7 +1738,7 @@ img.hero__media {
   display: block;
   font-family: 'Cormorant Infant', serif; 
   font-style: italic;
-  font-size: 250px; 
+  font-size: clamp(4.5rem, 16vw, 15.625rem); 
   letter-spacing: -0.1em; /* -10% */
   color: var(--color-brown);
   opacity: 0.22 !important; 
@@ -1667,7 +1831,7 @@ img.hero__media {
     grid-template-columns: 1fr;
   }
   .service-block__image {
-    order: -1; /* image above text on smaller screens */
+    order: -1; 
   }
 }
 
@@ -1701,7 +1865,7 @@ img.hero__media {
   padding-top: 40px;
   max-width: 900px;
   line-height: 0.8;
-  font-size: 100px;
+  font-size: clamp(2.75rem, 8vw, 6.25rem);
 }
 
 .portfolio-hero__content p {
@@ -1800,7 +1964,7 @@ img.hero__media {
   display: block;
   font-family: 'Cormorant Infant', serif;
   font-style: italic;
-  font-size: 140px;
+  font-size: clamp(3rem, 10vw, 8.75rem);
   letter-spacing: -0.1em;
   color: var(--color-bg-raised);
   opacity: 0.4; 
@@ -1868,7 +2032,7 @@ img.hero__media {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm); /* CHANGE HERE for space between dots and title */
+  gap: var(--space-sm); 
   max-width: 640px;
 }
 
@@ -1926,18 +2090,35 @@ img.hero__media {
   .portfolio-card__controls {
     bottom: calc(var(--space-md) + 70px);
   }
+  .portfolio-card__bottom {
+    left: var(--space-md);
+    right: calc(var(--space-md) + 56px); 
+    bottom: var(--space-md);
+    max-width: none;
+  }
+  .portfolio-card__view {
+    right: var(--space-md);
+    bottom: var(--space-md);
+  }
 }
 /* ==========================================================================
    CONTACT PAGE
-   Append this whole block to the end of css/styles.css.
-   Reuses existing tokens/patterns (--color-*, .eyebrow, .btn, .reveal) so it
-   drops straight into the established system — no new colours introduced.
+   Reuses existing tokens/patterns (--color-*, .eyebrow, .btn, .reveal)
    ========================================================================== */
 
 /* -------------------------------------------------------------------------
    HERO — reuses .hero/.hero--fullscreen/.hero__media/.hero__scrim, centered
    content matching the Process/Services/Projects hero pattern.
    ------------------------------------------------------------------------- */
+.contact-hero__scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 12, 23, 0.55) 0%,
+    rgba(2, 12, 23, 0.35) 45%,
+    rgba(2, 12, 23, 0.65) 100%
+  );
+}
+
 .contact-hero__content {
   position: absolute;
   inset: 0;
@@ -1954,8 +2135,14 @@ img.hero__media {
   margin-bottom: var(--space-lg);
   padding-top: 40px;
   max-width: 900px;
-  line-height: 0.9;
-  font-size: 100px; /* CHANGE HERE to match other hero sizes if you tune those */
+  line-height: 0.7;
+  font-size: clamp(2.75rem, 8vw, 6.25rem);
+  padding-bottom: 30px;
+}
+
+.contact-hero__content .eyebrow {
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 .contact-hero__content p {
@@ -2137,7 +2324,7 @@ img.hero__media {
   color: var(--color-brown);
   margin-top: -0.4rem;
   margin-bottom: var(--space-sm);
-  margin-left: calc(15px + 0.6rem); /* aligns under the label text, past the checkbox */
+  margin-left: calc(15px + 0.6rem); 
   transition: color var(--duration-fast) var(--ease-standard);
 }
 
@@ -2282,6 +2469,18 @@ a.contact-info-value:hover {
   max-width: 32ch;
 }
 
+.contact-info-license {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 0.5px solid var(--color-border);
+  font-family: var(--font-nav);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-body-muted);
+}
+
 /* -------------------------------------------------------------------------
    RESPONSIVE — CONTACT PAGE
    ------------------------------------------------------------------------- */
@@ -2298,9 +2497,6 @@ a.contact-info-value:hover {
   }
   .contact-form-card {
     padding: var(--space-lg);
-  }
-  .contact-hero__content h1 {
-    font-size: clamp(2.75rem, 9vw, 4rem);
   }
 }
 
@@ -2415,10 +2611,6 @@ a.contact-info-value:hover {
    SERVICES PAGE
    ========================================================================== */
 
-/* Simple fade-in. .service-block__number pins opacity to 0.22 !important
-   elsewhere in this file, so a plain .reveal opacity:0 gets overridden and
-   never actually fades — this higher-specificity !important rule is what
-   lets it genuinely fade in instead. */
 .service-block__number.reveal {
   opacity: 0 !important;
   transition: opacity var(--duration-slow) var(--ease-standard);
@@ -2488,8 +2680,6 @@ a.contact-info-value:hover {
   transition: opacity var(--duration-base) var(--ease-standard);
 }
 
-/* Active step (whichever is centred in the viewport — see js/main.js)
-   brightens its numeral and gives the badge a gentle pop. */
 .process-step.is-active .process-step__number {
   opacity: 0.5;
 }
@@ -2506,8 +2696,7 @@ a.contact-info-value:hover {
 
 
 /* -------------------------------------------------------------------------
-   HERO SCROLL-CUE — small vertical bob to draw the eye down, on every
-   page whose hero has a down-arrow (Process, Services, Projects, Contact).
+   HERO SCROLL-CUE — 
    ------------------------------------------------------------------------- */
 @keyframes scroll-cue-bob {
   0%, 100% { transform: translate(-50%, 0); }
@@ -2519,4 +2708,175 @@ a.contact-info-value:hover {
 .portfolio-hero__scroll-cue,
 .contact-hero__scroll-cue {
   animation: scroll-cue-bob 2s var(--ease-standard) infinite;
+}
+/* -------------------------------------------------------------------------
+   MOBILE FOOTER — simplify to just brand + CTA
+   ------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .footer__icons {
+    display: none;
+  }
+  .footer__divider:last-of-type {
+    display: none;
+  }
+  .footer {
+    padding-block: 20px;
+  }
+  .footer__grid {
+    gap: var(--space-md);
+  }
+  .footer__brand img {
+    width: 56px;
+  }
+  .footer__cta {
+    gap: var(--space-sm);
+  }
+  .footer__cta p {
+    font-size: 1.25rem;
+  }
+  .footer__cta .btn {
+    padding-inline: 36px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   VALUES + HOME SERVICES ROW — 
+   ------------------------------------------------------------------------- */
+@media (max-width: 560px) {
+  .value-card {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+  .service-item {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   HOME SERVICES ROW — mobile padding
+   ------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .services-bleed.services-bleed--home {
+    padding-inline: var(--container-pad);
+  }
+}
+/* ==========================================================================
+   MOBILE / TABLET HOME ALIGNMENT FIXES
+   ========================================================================== */
+@media (max-width: 900px) {
+  .story__map svg {
+    overflow: visible;
+  }
+
+  .value-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    justify-self: stretch;
+    width: 100%;
+    gap: var(--space-md);
+  }
+
+  .value-card img {
+    width: 82px;
+    height: 82px;
+    object-fit: contain;
+    justify-self: center;
+  }
+
+  .value-card p {
+    width: auto;
+    max-width: 240px;
+  }
+
+  .services-bleed--home .service-item {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: center;
+    justify-self: stretch;
+    width: 100%;
+    gap: var(--space-md);
+  }
+
+  .services-bleed--home .service-item img,
+  .services-bleed--home .service-item img[src*="newbuilds"],
+  .services-bleed--home .service-item img[src*="renovations"],
+  .services-bleed--home .service-item img[src*="extensions"],
+  .services-bleed--home .service-item img[src*="custombuilds"] {
+    width: 78px;
+    height: 78px;
+    object-fit: contain;
+    justify-self: center;
+  }
+
+  .footer__grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: 16px;
+    padding-inline: var(--container-pad);
+    text-align: left;
+  }
+
+  .footer__divider,
+  .footer__icons {
+    display: none;
+  }
+
+  .footer__brand {
+    justify-self: stretch;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .footer__brand img {
+    width: 38px;
+  }
+
+  .footer__contact {
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .footer__cta {
+    justify-self: stretch;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .footer__cta p {
+    font-size: clamp(1rem, 3.5vw, 1.25rem);
+    line-height: 0.9;
+  }
+
+  .footer__cta .btn {
+    justify-content: center;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .footer__grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(126px, 0.8fr);
+    gap: 12px;
+  }
+
+  .footer__brand img {
+    width: 34px;
+  }
+
+  .footer__contact {
+    font-size: 9px;
+  }
+
+  .footer__cta p {
+    font-size: 1rem;
+  }
 }

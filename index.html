@@ -11,11 +11,6 @@
 
 <!-- =========================================================
      INTRO PRELOADER — plays on every load/refresh, then removes itself.
-     Animation is the site logo forming with a hard-edged sweep reveal,
-     then fading to transparent. No filter/blur (removed for crispness).
-     Total runtime: 2.5s (see js/main.js for the matching removal timer
-     — CHANGE HERE if you edit the SVG timing).
-     References images/mainlogo.png directly (no embedded base64).
      ========================================================= -->
 <div id="intro-preloader">
   <svg width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -52,15 +47,24 @@
     <li><a href="projects.html">Projects</a></li>
   </ul>
   <a href="contact.html" class="nav__cta">Contact Us</a>
+  <button class="nav__burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+  <ul class="mobile-nav__links">
+    <li><a href="index.html" class="is-active">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="btn btn--filled mobile-nav__cta">Contact Us</a>
+</div>
 
 <!-- =========================================================
      HERO — ANIMATED VIDEO VARIANT
-     Compare against index.html (static image hero).
-     The video stays hidden against the navy hero background until its first
-     real frame is ready, preventing a poster/previous-page image flash.
-     Video renders at native aspect ratio (no crop/zoom) — same fix as
-     the static hero.
      ========================================================= -->
 <header class="hero hero--fullscreen">
   <video
@@ -254,7 +258,7 @@
   </div>
 </div>
 
-<div class="services-bleed">
+<div class="services-bleed services-bleed--home">
   <div class="services-row">
     <div class="service-item reveal" data-reveal-delay="0">
       <img src="images/newbuilds.png" alt="">
@@ -310,7 +314,7 @@
 </section>
 
 <!-- =========================================================
-     FOOTER — reused verbatim across all pages
+     FOOTER 
      ========================================================= -->
 <footer class="footer has-overlay">
   <div class="footer__grid">
@@ -332,9 +336,9 @@
     <div class="footer__divider" aria-hidden="true"></div>
 
     <div class="footer__icons">
-      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <span><img src="images/phone.png" alt="">0427 448 836</span>
       <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
-      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+      <a href="https://instagram.com/lottihomes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
     </div>
   </div>
 </footer>

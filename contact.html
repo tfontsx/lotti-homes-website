@@ -47,18 +47,32 @@
     <li><a href="projects.html">Projects</a></li>
   </ul>
   <a href="contact.html" class="nav__cta">Contact Us</a>
+  <button class="nav__burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+  <ul class="mobile-nav__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="btn btn--filled mobile-nav__cta is-active">Contact Us</a>
+</div>
 
 <!-- =========================================================
      HERO
      ========================================================= -->
 <header class="hero hero--fullscreen">
   <img class="hero__media" src="images/contact/contactushero.png" alt="Lotti Homes team discussing a build with clients">
-  <div class="hero__scrim"></div>
+  <div class="hero__scrim contact-hero__scrim"></div>
   <div class="contact-hero__content">
     <span class="eyebrow">Get In Touch</span>
-    <h1>Let's talk about<br>your <em>next project.</em></h1>
-    <p>Whether it's a new build, a renovation or an extension, we'd love to hear about it. Reach out for a free, no-obligation quote across Adelaide and South Australia.</p>
+    <h1>Consult with us about<br>your next <em>project.</em></h1>
+    <p>Tell us about your project and our team will be in touch within one business day. Whether it's a new build, renovation or extension anywhere across Adelaide and South Australia, we'd love to hear your ideas and work with you to bring your vision to reality.</p>
   </div>
   <div class="contact-hero__scroll-cue" aria-hidden="true">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -75,8 +89,7 @@
 
     <!-- ENQUIRY FORM -->
     <div class="contact-form-card reveal">
-      <span class="eyebrow">Send An Enquiry</span>
-      <h2>Request your <em>free</em> quote.</h2>
+      <h2>Send us an enquiry</h2>
       <p>Fill in the form below and we'll get back to you as soon as possible.</p>
 
       <form id="enquiryForm" class="enquiry-form" autocomplete="on">
@@ -136,7 +149,7 @@
           <p>We only use the information you provide here to respond to your enquiry and prepare a quote. We don't sell or share your details with third parties, and you can ask us to access, correct or delete your information at any time by emailing <a href="mailto:info@lottihomes.com.au">info@lottihomes.com.au</a>.</p>
         </div>
 
-        <button type="submit" class="btn btn--filled form-submit-btn">
+        <button type="submit" class="btn btn--outline form-submit-btn">
           <span>Send Enquiry</span>
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -149,16 +162,23 @@
 
     <!-- DIRECT CONTACT DETAILS -->
     <div class="contact-info-col reveal">
-      <span class="eyebrow">Get In Touch</span>
+      <span class="eyebrow">Contact Details</span>
       <h2>Prefer to reach us <em>directly?</em></h2>
-      <p>Our friendly team is here to answer your questions and help you take your first step toward bringing your vision to reality.</p>
+      <p>Our friendly team is here to answer your questions and help you take your first step toward your dream home.</p>
 
       <ul class="contact-info-list">
         <li class="contact-info-item">
           <span class="contact-info-icon"><img src="images/contact/phone.png" alt=""></span>
           <span class="contact-info-body">
-            <span class="contact-info-label">Call Us</span>
-            <a href="tel:" class="contact-info-value">04XX XXX XXX</a>
+            <span class="contact-info-label">Joe Vellotti (Director)</span>
+            <a href="tel:" class="contact-info-value">0411 229 279</a>
+          </span>
+        </li>
+        <li class="contact-info-item">
+          <span class="contact-info-icon"><img src="images/contact/phone.png" alt=""></span>
+          <span class="contact-info-body">
+            <span class="contact-info-label">Dom Vellotti (Director)</span>
+            <a href="tel:" class="contact-info-value">0427 448 836</a>
           </span>
         </li>
         <li class="contact-info-item">
@@ -172,7 +192,7 @@
           <span class="contact-info-icon"><img src="images/instagram.png" alt=""></span>
           <span class="contact-info-body">
             <span class="contact-info-label">Instagram</span>
-            <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener" class="contact-info-value">@lotti_homes</a>
+            <a href="https://instagram.com/lottihomes" target="_blank" rel="noopener" class="contact-info-value">@lotti_homes</a>
           </span>
         </li>
         <li class="contact-info-item">
@@ -183,13 +203,15 @@
           </span>
         </li>
       </ul>
+
+      <p class="contact-info-license">Licensed &amp; Insured — Lic. BLD 286009</p>
     </div>
 
   </div>
 </section>
 
 <!-- =========================================================
-     FOOTER — reused verbatim from the other pages
+     FOOTER 
      ========================================================= -->
 <footer class="footer has-overlay">
   <div class="footer__grid">
@@ -211,9 +233,9 @@
     <div class="footer__divider" aria-hidden="true"></div>
 
     <div class="footer__icons">
-      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <span><img src="images/phone.png" alt="">0427 448 836</span>
       <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
-      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+      <a href="https://instagram.com/lottihomes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
     </div>
   </div>
 </footer>

@@ -22,7 +22,21 @@
     <li><a href="projects.html">Projects</a></li>
   </ul>
   <a href="contact.html" class="nav__cta">Contact Us</a>
+  <button class="nav__burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="mobile-nav" id="mobileNav">
+  <ul class="mobile-nav__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="process.html" class="is-active">Our Process</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="projects.html">Projects</a></li>
+  </ul>
+  <a href="contact.html" class="btn btn--filled mobile-nav__cta">Contact Us</a>
+</div>
 
 <!-- =========================================================
      HERO
@@ -43,13 +57,7 @@
 </header>
 
 <!-- =========================================================
-     THE LOTTI PROCESS — numbered steps with the scroll-driven
-     "journey line" running behind them (see js/main.js).
-
-     NOTE: the mockup heading says "Seven steps" but only 5 were shown
-     in the provided design — built the 5 visible ones below. Send
-     through steps 6 and 7 and I'll drop them straight in; each block
-     is self-contained so adding more is a straight copy-paste.
+     THE LOTTI PROCESS 
      ========================================================= -->
 <section class="section container">
   <div class="process-steps__heading">
@@ -100,7 +108,7 @@
 </section>
 
 <!-- =========================================================
-     FOOTER — reused verbatim from the other pages
+     FOOTER 
      ========================================================= -->
 <footer class="footer has-overlay">
   <div class="footer__grid">
@@ -122,9 +130,9 @@
     <div class="footer__divider" aria-hidden="true"></div>
 
     <div class="footer__icons">
-      <span><img src="images/phone.png" alt="">04XX XXX XXX</span>
+      <span><img src="images/phone.png" alt="">0427 448 836</span>
       <a href="mailto:info@lottihomes.com.au"><img src="images/mail.png" alt="">info@lottihomes.com.au</a>
-      <a href="https://instagram.com/lotti_homes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
+      <a href="https://instagram.com/lottihomes" target="_blank" rel="noopener"><img src="images/instagram.png" alt="">@lotti_homes</a>
     </div>
   </div>
 </footer>
