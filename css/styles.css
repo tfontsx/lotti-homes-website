@@ -2625,7 +2625,7 @@ a.contact-info-value:hover {
 }
 
 .service-item:hover img {
-  transform: scale(1.08) rotate(-4deg);
+  transform: scale(1.08);
 }
 
 /* ==========================================================================
