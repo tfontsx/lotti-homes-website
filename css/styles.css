@@ -2390,6 +2390,15 @@ img.hero__media {
   text-align: center;
   max-width: none;
   margin-top: var(--space-md);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.form-note--success {
+  color: var(--color-brown);
+}
+
+.form-note--error {
+  color: #C4776A;
 }
 
 /* -------------------------------------------------------------------------

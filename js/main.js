@@ -263,5 +263,62 @@ document.addEventListener('DOMContentLoaded', () => {
       privacyToggle.setAttribute('aria-expanded', isOpen);
     });
   }
+
+  /* -----------------------------------------------------------------------
+     CONTACT PAGE — ENQUIRY FORM SUBMISSION (Web3Forms)
+     ----------------------------------------------------------------------- */
+  const enquiryForm = document.getElementById('enquiryForm');
+  const formNote = document.getElementById('formNote');
+
+  if (enquiryForm) {
+    const submitBtn = enquiryForm.querySelector('.form-submit-btn');
+    const submitBtnLabel = submitBtn ? submitBtn.querySelector('span') : null;
+    const defaultNoteText = formNote ? formNote.textContent : '';
+
+    const setNote = (text, isError) => {
+      if (!formNote) return;
+      formNote.textContent = text;
+      formNote.classList.toggle('form-note--error', !!isError);
+      formNote.classList.toggle('form-note--success', !isError && text !== defaultNoteText);
+    };
+
+    enquiryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Honeypot check — if a bot filled this, silently pretend success.
+      const honeypot = enquiryForm.querySelector('input[name="botcheck"]');
+      if (honeypot && honeypot.checked) {
+        enquiryForm.reset();
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtnLabel) submitBtnLabel.textContent = 'Sending...';
+      setNote('Sending your enquiry...', false);
+
+      try {
+        const formData = new FormData(enquiryForm);
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          enquiryForm.reset();
+          setNote("Thanks — your enquiry has been sent. We'll be in touch within one business day.", false);
+        } else {
+          setNote('Something went wrong sending your enquiry. Please try again or email us directly.', true);
+        }
+      } catch (err) {
+        setNote('Something went wrong sending your enquiry. Please check your connection and try again.', true);
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtnLabel) submitBtnLabel.textContent = 'Send Enquiry';
+      }
+    });
+  }
   
 });
