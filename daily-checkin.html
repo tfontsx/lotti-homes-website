@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Daily Site Check-In | Lotti Homes</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="tool-page">
+
+  <div class="tool-progress">
+    <div class="tool-progress__track">
+      <div class="tool-progress__fill" id="progressFill"></div>
+    </div>
+    <span class="tool-progress__count" id="progressCount">0 / 6</span>
+  </div>
+
+  <header class="tool-header">
+    <img src="images/mainlogo.png" alt="Lotti Homes">
+    <h1>Daily Site <em>Check-In</em></h1>
+    <p>Complete this checklist at the start of every shift, before starting work.</p>
+  </header>
+
+  <div class="tool-container">
+    <div id="checkinFormWrap">
+      <form id="checkinForm" novalidate>
+
+        <div class="contact-form-card reveal">
+          <h2>Your Details</h2>
+          <p>These details identify your check-in record for today.</p>
+
+          <div class="enquiry-form">
+            <div class="form-group">
+              <label for="workerName">Full Name</label>
+              <input type="text" id="workerName" name="workerName" placeholder="Full Name" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="company">Company</label>
+                <input type="text" id="company" name="company" placeholder="Company Name" required>
+              </div>
+              <div class="form-group">
+                <label for="checkinDate">Date</label>
+                <input type="date" id="checkinDate" name="checkinDate" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="siteAddress">Site / Project Address</label>
+              <input type="text" id="siteAddress" name="siteAddress" placeholder="Site Address" required>
+            </div>
+          </div>
+        </div>
+
+        <div id="questions"></div>
+
+        <div class="contact-form-card reveal">
+          <h2>Notes</h2>
+          <p>Optional — add detail for your Site Supervisor if relevant.</p>
+
+          <div class="enquiry-form">
+            <div class="form-group">
+              <label for="hazardsIdentified">Hazards Identified Today</label>
+              <textarea id="hazardsIdentified" name="hazardsIdentified" rows="3" placeholder="Describe any hazards on site today..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="incidents">Incidents / Near Misses</label>
+              <textarea id="incidents" name="incidents" rows="3" placeholder="Describe any incidents or near misses..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="additionalNotes">Additional Notes</label>
+              <textarea id="additionalNotes" name="additionalNotes" rows="3" placeholder="Anything else your supervisor should know..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="signatureName">Type your full name to sign</label>
+              <input type="text" id="signatureName" name="signatureName" placeholder="Full Name" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-submit-bar">
+          <button type="submit" class="btn btn--filled" id="submitBtn">
+            <span>Submit Check-In</span>
+          </button>
+          <p class="form-note" id="formNote"></p>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="tool-success" id="successState">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M7.5 12.5L10.5 15.5L16.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>Check-In Complete</h2>
+      <p>Thank you — your daily check-in has been recorded. Have a safe day on site.</p>
+    </div>
+  </div>
+
+  <footer class="tool-footer">
+    Lotti Homes Pty Ltd — Lic. BLD 286009
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/daily-checkin.js"></script>
+<script src="js/tool-reveal.js"></script>
+</body>
+</html>

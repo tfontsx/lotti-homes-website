@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Worker & Subcontractor Safety Induction | Lotti Homes</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="tool-page">
+
+  <div class="tool-progress">
+    <div class="tool-progress__track">
+      <div class="tool-progress__fill" id="progressFill"></div>
+    </div>
+    <span class="tool-progress__count" id="progressCount">0 / 29</span>
+  </div>
+
+  <header class="tool-header">
+    <img src="images/mainlogo.png" alt="Lotti Homes">
+    <h1>Worker &amp; Subcontractor<br><em>Safety Induction</em></h1>
+    <p>Please complete every section below before starting work on a Lotti Homes site. This induction takes about 5&nbsp;minutes.</p>
+  </header>
+
+  <div class="tool-container">
+    <div id="inductionFormWrap">
+      <form id="inductionForm" novalidate>
+
+        <div class="contact-form-card reveal">
+          <h2>Your Details</h2>
+          <p>These details identify your induction record on site.</p>
+
+          <div class="enquiry-form">
+            <div class="form-group">
+              <label for="workerName">Full Name</label>
+              <input type="text" id="workerName" name="workerName" placeholder="Full Name" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="company">Company</label>
+                <input type="text" id="company" name="company" placeholder="Company Name" required>
+              </div>
+              <div class="form-group">
+                <label for="trade">Trade / Occupation</label>
+                <input type="text" id="trade" name="trade" placeholder="e.g. Carpenter" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="inductionDate">Date</label>
+                <input type="date" id="inductionDate" name="inductionDate" required>
+              </div>
+              <div class="form-group">
+                <label for="supervisor">Supervisor</label>
+                <input type="text" id="supervisor" name="supervisor" placeholder="Site Supervisor Name" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="questions"></div>
+
+        <div class="contact-form-card declaration-card reveal">
+          <h2>Worker Declaration</h2>
+          <p class="declaration-intro">I declare that:</p>
+          <div class="declaration-list" id="declarations"></div>
+
+          <div class="enquiry-form" style="margin-top: var(--space-md);">
+            <div class="form-group">
+              <label for="signatureName">Type your full name to sign</label>
+              <input type="text" id="signatureName" name="signatureName" placeholder="Full Name" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-submit-bar">
+          <button type="submit" class="btn btn--filled" id="submitBtn">
+            <span>Submit Induction</span>
+          </button>
+          <p class="form-note" id="formNote"></p>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="tool-success" id="successState">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M7.5 12.5L10.5 15.5L16.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>Induction Complete</h2>
+      <p>Thank you — your safety induction has been recorded. Please report to your Site Supervisor before starting work.</p>
+    </div>
+  </div>
+
+  <footer class="tool-footer">
+    Lotti Homes Pty Ltd — Lic. BLD 286009
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/site-induction.js"></script>
+<script src="js/tool-reveal.js"></script>
+</body>
+</html>

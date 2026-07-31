@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin | Lotti Homes</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="admin-page">
+
+  <!-- LOGIN -->
+  <div class="admin-login" id="loginScreen">
+    <div class="admin-login-card">
+      <img src="images/mainlogo.png" alt="Lotti Homes">
+      <h1>Admin Portal</h1>
+
+      <form id="loginForm" class="enquiry-form" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="admin@lottihomes.com.au" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn--filled">
+          <span>Sign In</span>
+        </button>
+        <p class="admin-error" id="loginError"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="admin-dashboard" id="dashboard">
+    <div class="admin-topbar">
+      <img class="admin-topbar__logo" src="images/mainlogo.png" alt="Lotti Homes">
+      <span class="admin-topbar__title">Admin Portal</span>
+      <button class="admin-signout" id="signOutBtn">Sign Out</button>
+    </div>
+
+    <div class="admin-container">
+
+      <div class="admin-stats" id="adminStats">
+        <div class="admin-stat">
+          <span class="admin-stat__value" id="statInductions">—</span>
+          <span class="admin-stat__label">Total Inductions</span>
+          <span class="admin-stat__delta" id="statInductionsToday"></span>
+        </div>
+        <div class="admin-stat">
+          <span class="admin-stat__value" id="statCheckins">—</span>
+          <span class="admin-stat__label">Total Check-Ins</span>
+          <span class="admin-stat__delta" id="statCheckinsToday"></span>
+        </div>
+        <div class="admin-stat admin-stat--flag">
+          <span class="admin-stat__value" id="statFlags">—</span>
+          <span class="admin-stat__label">Flagged Answers</span>
+          <span class="admin-stat__delta" id="statFlagsWeek"></span>
+        </div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab is-active" data-tab="inductions">Site Inductions</button>
+        <button class="admin-tab" data-tab="checkins">Daily Check-Ins</button>
+      </div>
+
+      <div class="admin-panel is-active" id="panel-inductions">
+        <div class="admin-quickdates" data-quickdates="inductions">
+          <button class="admin-chip is-active" data-range="all">All Time</button>
+          <button class="admin-chip" data-range="today">Today</button>
+          <button class="admin-chip" data-range="week">This Week</button>
+          <button class="admin-chip" data-range="month">This Month</button>
+        </div>
+        <div class="admin-filters">
+          <input type="text" id="inductionSearch" placeholder="Search by worker name or company...">
+          <label class="admin-flag-toggle">
+            <input type="checkbox" id="inductionFlaggedOnly">
+            <span>Flagged only</span>
+          </label>
+        </div>
+        <p class="admin-count" id="inductionCount"></p>
+        <div id="inductionList"></div>
+      </div>
+
+      <div class="admin-panel" id="panel-checkins">
+        <div class="admin-quickdates" data-quickdates="checkins">
+          <button class="admin-chip is-active" data-range="all">All Time</button>
+          <button class="admin-chip" data-range="today">Today</button>
+          <button class="admin-chip" data-range="week">This Week</button>
+          <button class="admin-chip" data-range="month">This Month</button>
+        </div>
+        <div class="admin-filters">
+          <input type="text" id="checkinSearch" placeholder="Search by worker name or company...">
+          <label class="admin-flag-toggle">
+            <input type="checkbox" id="checkinFlaggedOnly">
+            <span>Flagged only</span>
+          </label>
+        </div>
+        <p class="admin-count" id="checkinCount"></p>
+        <div id="checkinList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
