@@ -44,23 +44,26 @@
 
     <div class="admin-container">
 
-      <div class="admin-stats" id="adminStats">
-        <div class="admin-stat">
-          <span class="admin-stat__value" id="statInductions">—</span>
-          <span class="admin-stat__label">Total Inductions</span>
-          <span class="admin-stat__delta" id="statInductionsToday"></span>
+      <section class="admin-overview">
+        <span class="admin-overview__title">Overview</span>
+        <div class="admin-stats" id="adminStats">
+          <div class="admin-stat">
+            <span class="admin-stat__value" id="statInductions">—</span>
+            <span class="admin-stat__label">Total Inductions</span>
+            <span class="admin-stat__delta" id="statInductionsToday"></span>
+          </div>
+          <div class="admin-stat">
+            <span class="admin-stat__value" id="statCheckins">—</span>
+            <span class="admin-stat__label">Total Check-Ins</span>
+            <span class="admin-stat__delta" id="statCheckinsToday"></span>
+          </div>
+          <div class="admin-stat admin-stat--flag">
+            <span class="admin-stat__value" id="statFlags">—</span>
+            <span class="admin-stat__label">Flagged Answers</span>
+            <span class="admin-stat__delta" id="statFlagsWeek"></span>
+          </div>
         </div>
-        <div class="admin-stat">
-          <span class="admin-stat__value" id="statCheckins">—</span>
-          <span class="admin-stat__label">Total Check-Ins</span>
-          <span class="admin-stat__delta" id="statCheckinsToday"></span>
-        </div>
-        <div class="admin-stat admin-stat--flag">
-          <span class="admin-stat__value" id="statFlags">—</span>
-          <span class="admin-stat__label">Flagged Answers</span>
-          <span class="admin-stat__delta" id="statFlagsWeek"></span>
-        </div>
-      </div>
+      </section>
 
       <div class="admin-tabs">
         <button class="admin-tab is-active" data-tab="inductions">Site Inductions</button>
@@ -68,36 +71,32 @@
       </div>
 
       <div class="admin-panel is-active" id="panel-inductions">
-        <div class="admin-quickdates" data-quickdates="inductions">
-          <button class="admin-chip is-active" data-range="all">All Time</button>
-          <button class="admin-chip" data-range="today">Today</button>
-          <button class="admin-chip" data-range="week">This Week</button>
-          <button class="admin-chip" data-range="month">This Month</button>
-        </div>
-        <div class="admin-filters">
-          <input type="text" id="inductionSearch" placeholder="Search by worker name or company...">
-          <label class="admin-flag-toggle">
-            <input type="checkbox" id="inductionFlaggedOnly">
-            <span>Flagged only</span>
-          </label>
+        <div class="admin-toolbar">
+          <div class="admin-quickdates" data-quickdates="inductions">
+            <button class="admin-chip is-active" data-range="all">All Time</button>
+            <button class="admin-chip" data-range="today">Today</button>
+            <button class="admin-chip" data-range="week">This Week</button>
+            <button class="admin-chip" data-range="month">This Month</button>
+          </div>
+          <div class="admin-filters">
+            <input type="text" id="inductionSearch" placeholder="Search by worker name or company...">
+          </div>
         </div>
         <p class="admin-count" id="inductionCount"></p>
         <div id="inductionList"></div>
       </div>
 
       <div class="admin-panel" id="panel-checkins">
-        <div class="admin-quickdates" data-quickdates="checkins">
-          <button class="admin-chip is-active" data-range="all">All Time</button>
-          <button class="admin-chip" data-range="today">Today</button>
-          <button class="admin-chip" data-range="week">This Week</button>
-          <button class="admin-chip" data-range="month">This Month</button>
-        </div>
-        <div class="admin-filters">
-          <input type="text" id="checkinSearch" placeholder="Search by worker name or company...">
-          <label class="admin-flag-toggle">
-            <input type="checkbox" id="checkinFlaggedOnly">
-            <span>Flagged only</span>
-          </label>
+        <div class="admin-toolbar">
+          <div class="admin-quickdates" data-quickdates="checkins">
+            <button class="admin-chip is-active" data-range="all">All Time</button>
+            <button class="admin-chip" data-range="today">Today</button>
+            <button class="admin-chip" data-range="week">This Week</button>
+            <button class="admin-chip" data-range="month">This Month</button>
+          </div>
+          <div class="admin-filters">
+            <input type="text" id="checkinSearch" placeholder="Search by worker name or company...">
+          </div>
         </div>
         <p class="admin-count" id="checkinCount"></p>
         <div id="checkinList"></div>

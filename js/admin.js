@@ -65,15 +65,13 @@
 
   const inductionSearch = document.getElementById('inductionSearch');
   const checkinSearch = document.getElementById('checkinSearch');
-  const inductionFlaggedOnly = document.getElementById('inductionFlaggedOnly');
-  const checkinFlaggedOnly = document.getElementById('checkinFlaggedOnly');
 
   let inductions = [];
   let checkins = [];
 
   const filterState = {
-    inductions: { search: '', flaggedOnly: false, range: 'all' },
-    checkins: { search: '', flaggedOnly: false, range: 'all' },
+    inductions: { search: '', range: 'all' },
+    checkins: { search: '', range: 'all' },
   };
 
   function esc(str) {
@@ -130,10 +128,16 @@
       const matchesSearch = !term ||
         (row.worker_name || '').toLowerCase().includes(term) ||
         (row.company || '').toLowerCase().includes(term);
-      const matchesFlag = !state.flaggedOnly || countFlags(row.responses) > 0;
       const matchesRange = inDateRange(row[dateField], state.range);
-      return matchesSearch && matchesFlag && matchesRange;
+      return matchesSearch && matchesRange;
     });
+  }
+
+  function statusIcon(flags) {
+    if (flags > 0) {
+      return `<svg class="admin-status admin-status--bad" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="${flags} flagged answer${flags === 1 ? '' : 's'}"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M9 9L15 15M15 9L9 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+    }
+    return `<svg class="admin-status admin-status--good" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="All clear"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M7.5 12.5L10.5 15.5L16.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
 
   function renderAnswers(responses, labels) {
@@ -168,7 +172,7 @@
         <details class="admin-row">
           <summary>
             <div class="admin-row__main">
-              <span class="admin-row__name">${esc(row.worker_name)}</span>
+              <span class="admin-row__name">${statusIcon(flags)}${esc(row.worker_name)}</span>
               <span class="admin-row__meta">${esc(row.company)} · ${esc(row.trade)} · ${fmtDate(row.induction_date)}</span>
             </div>
             <div class="admin-row__right">
@@ -208,7 +212,7 @@
         <details class="admin-row">
           <summary>
             <div class="admin-row__main">
-              <span class="admin-row__name">${esc(row.worker_name)}</span>
+              <span class="admin-row__name">${statusIcon(flags)}${esc(row.worker_name)}</span>
               <span class="admin-row__meta">${esc(row.company)} · ${esc(row.site_address)} · ${fmtDate(row.checkin_date)}</span>
             </div>
             <div class="admin-row__right">
@@ -283,14 +287,6 @@
   });
   checkinSearch.addEventListener('input', () => {
     filterState.checkins.search = checkinSearch.value;
-    renderCheckins();
-  });
-  inductionFlaggedOnly.addEventListener('change', () => {
-    filterState.inductions.flaggedOnly = inductionFlaggedOnly.checked;
-    renderInductions();
-  });
-  checkinFlaggedOnly.addEventListener('change', () => {
-    filterState.checkins.flaggedOnly = checkinFlaggedOnly.checked;
     renderCheckins();
   });
 
