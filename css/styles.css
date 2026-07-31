@@ -3271,7 +3271,7 @@ a.contact-info-value:hover {
   width: 46px;
   height: 46px;
   color: var(--color-brown);
-  margin-bottom: var(--space-md);
+  margin: 0 auto var(--space-md);
 }
 
 .tool-success svg circle {
