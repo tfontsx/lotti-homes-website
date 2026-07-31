@@ -344,19 +344,24 @@
     const submitBtn = loginForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
 
-    const { error } = await client.auth.signInWithPassword({
-      email: loginForm.email.value.trim(),
-      password: loginForm.password.value,
-    });
+    try {
+      const { error } = await client.auth.signInWithPassword({
+        email: loginForm.email.value.trim(),
+        password: loginForm.password.value,
+      });
 
-    submitBtn.disabled = false;
+      if (error) {
+        loginError.textContent = 'Incorrect email or password.';
+        return;
+      }
 
-    if (error) {
-      loginError.textContent = 'Incorrect email or password.';
-      return;
+      showDashboard();
+    } catch (err) {
+      console.error(err);
+      loginError.textContent = 'Could not reach the server. Check your connection and try again.';
+    } finally {
+      submitBtn.disabled = false;
     }
-
-    showDashboard();
   });
 
   signOutBtn.addEventListener('click', async () => {
