@@ -22,7 +22,7 @@
     {
       id: 'swms_reviewed',
       title: 'SWMS Reviewed',
-      intro: 'I have reviewed the Safe Work Method Statement(s) relevant to today’s tasks.',
+      intro: 'I have reviewed and provided Lotti Homes with my Safe Work Method Statement(s) (SWMS) relevant to today’s tasks.',
       blocking: true,
     },
     {
