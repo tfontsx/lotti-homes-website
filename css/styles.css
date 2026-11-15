@@ -3995,24 +3995,24 @@ a.contact-info-value:hover {
   text-underline-offset: 3px;
 }
 
-/* Privacy / Terms links: a slim centred row at the very foot of the footer */
-.footer__legalbar {
-  position: relative;
-  z-index: 1;
-  text-align: center;
+/* Privacy / Terms links: small, side by side, under the Instagram link */
+.footer__icons .footer__legal {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: 4px;
   font-family: var(--font-nav);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-body-muted);
-  padding: var(--space-sm) var(--container-pad) 0;
 }
 
-.footer__legalbar a {
+.footer__icons .footer__legal a {
+  display: inline;
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
-  transition: color var(--duration-fast) var(--ease-standard);
 }
 
-.footer__legalbar a:hover {
+.footer__icons .footer__legal a:hover {
   color: var(--color-title);
 }
