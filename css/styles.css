@@ -3911,3 +3911,108 @@ a.contact-info-value:hover {
     font-size: 0.62rem;
   }
 }
+
+/* --------------------------------------------------------------------------
+   LEGAL PAGES (privacy.html, terms.html)
+   Plain text pages: a heading, then numbered sections of readable copy.
+   -------------------------------------------------------------------------- */
+.legal {
+  padding-top: clamp(120px, 16vw, 190px);
+  padding-bottom: var(--space-2xl);
+}
+
+.legal__inner {
+  max-width: 860px;
+}
+
+.legal h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.6rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-title);
+  margin-block: var(--space-sm) var(--space-xs);
+}
+
+.legal h1 em {
+  font-style: italic;
+  color: var(--color-brown);
+}
+
+.legal__updated {
+  font-family: var(--font-nav);
+  font-size: 0.8rem;
+  color: var(--color-body-muted);
+  margin-bottom: var(--space-xl);
+}
+
+.legal section {
+  padding-block: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.legal h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  color: var(--color-title);
+  margin-bottom: var(--space-xs);
+}
+
+.legal p,
+.legal li {
+  max-width: none;
+  font-family: var(--font-body);
+  font-size: 0.97rem;
+  line-height: 1.75;
+  color: var(--color-body-muted);
+}
+
+.legal p + p,
+.legal p + ul,
+.legal ul + p {
+  margin-top: var(--space-sm);
+}
+
+.legal ul {
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+
+.legal li + li {
+  margin-top: 0.5rem;
+}
+
+.legal strong {
+  color: var(--color-title);
+  font-weight: 500;
+}
+
+.legal a {
+  color: var(--color-brown);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Privacy / Terms links: a slim centred row at the very foot of the footer */
+.footer__legalbar {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-family: var(--font-nav);
+  font-size: 0.75rem;
+  color: var(--color-body-muted);
+  padding: var(--space-sm) var(--container-pad) 0;
+}
+
+.footer__legalbar a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.footer__legalbar a:hover {
+  color: var(--color-title);
+}
