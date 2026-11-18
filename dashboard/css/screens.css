@@ -347,3 +347,16 @@
 .ph-del:hover { background:var(--danger-fill); transform:scale(1.1); opacity:1; }
 .icon-del { width:28px; height:28px; padding:0; border:0; border-radius:50%; background:transparent; color:var(--i3); display:flex; align-items:center; justify-content:center; flex:none; transition:background .2s, color .2s, transform .2s; }
 .icon-del:hover { background:color-mix(in srgb, var(--halt) 14%, transparent); color:var(--halt); transform:scale(1.08); }
+
+/* ---------- uniform nested cards with a subtle colour bar (milestones, risks, notes, documents) ---------- */
+.pd-three .li, .doc { height:64px; box-sizing:border-box; background:var(--s2); border-radius:14px; padding:0 14px; margin-bottom:8px; border:0; box-shadow:inset 0 0 0 1px var(--line5); display:grid; align-items:center; gap:14px; overflow:hidden; }
+.pd-three .li { grid-template-columns:3px minmax(0,1fr) auto; }
+.pd-three .li.ms { grid-template-columns:3px auto minmax(0,1fr) auto; }
+.pd-three .li:last-child, .doc:last-child { margin-bottom:0; padding-bottom:0; }
+.pd-three .lh-card-head + .li { padding-top:0; }
+.doc { grid-template-columns:3px 30px minmax(0,1fr) auto auto; gap:12px; }
+.rbar { display:block; width:3px; height:32px; border-radius:2px; background:var(--c); opacity:.5; align-self:center; }
+.li.risk .rbar { align-self:center; min-height:0; opacity:.6; }
+.li .nb, .li .rt { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.li .t { min-width:0; }
+.li.ms .t { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

@@ -15,6 +15,7 @@
   var ICO = {
     tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>',
     cross: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5l1-4L16.8 4.2a1.8 1.8 0 0 1 2.5 0l.5.5a1.8 1.8 0 0 1 0 2.5L8.5 18.5z"/><path d="M14.5 6.5l3 3"/></svg>',
     trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l.8 12.2h8.4L17 7M10.2 10.5v5.5M13.8 10.5v5.5"/></svg>',
   };
   function money(n) { return n ? fmt.money(n) : '—'; }
@@ -327,15 +328,15 @@
         UI.sect('Delivery') +
         '<div class="pd-three">' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Upcoming milestones</h2><button type="button" class="lh-link" data-act="addm">+ Add</button></div>' +
-        (openMiles.length ? openMiles.map(function (m) { return '<div class="li"><span class="due">' + esc(fmt.date(m.due_date)) + '</span><span class="t">' + esc(m.title) + '</span><span class="tools"><button type="button" data-mdone="' + m.id + '" title="Mark done" aria-label="Mark done">' + ICO.tick + '</button><button type="button" data-mdel="' + m.id + '" title="Delete" aria-label="Delete">' + ICO.cross + '</button></span></div>'; }).join('') : '<div class="faint">No upcoming milestones.</div>') + '</section>' +
+        (openMiles.length ? openMiles.map(function (m) { return '<div class="li ms" style="--c:var(--steel)"><i class="rbar"></i><span class="due">' + esc(fmt.date(m.due_date)) + '</span><span class="t nb">' + esc(m.title) + '</span><span class="tools"><button type="button" data-medit="' + m.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-mdone="' + m.id + '" title="Mark done" aria-label="Mark done">' + ICO.tick + '</button><button type="button" data-mdel="' + m.id + '" title="Delete" aria-label="Delete">' + ICO.cross + '</button></span></div>'; }).join('') : '<div class="faint">No upcoming milestones.</div>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Risks &amp; issues</h2><button type="button" class="lh-link" data-act="addr">+ Add</button></div>' +
-        (D.risks.length ? D.risks.map(function (k) { var sv = SEV[k.severity] || SEV.low, col = k.severity === 'high' ? 'var(--halt)' : k.severity === 'medium' ? 'var(--wait)' : 'var(--steel)'; return '<div class="li risk" style="--c:' + col + '"><i class="rbar"></i><div class="t"><div class="rt">' + esc(k.title) + '</div>' + (k.detail ? '<div class="faint tiny rd">' + esc(k.detail) + '</div>' : '') + '<div class="rm">' + esc(k.kind) + ' · ' + sv[1] + '</div></div><span class="tools"><button type="button" data-rclose="' + k.id + '" title="Resolve" aria-label="Resolve">' + ICO.tick + '</button></span></div>'; }).join('') : '<div class="faint">No open risks or issues.</div>') + '</section>' +
+        (D.risks.length ? D.risks.map(function (k) { var sv = SEV[k.severity] || SEV.low, col = k.severity === 'high' ? 'var(--halt)' : k.severity === 'medium' ? 'var(--wait)' : 'var(--steel)'; return '<div class="li risk" style="--c:' + col + '"><i class="rbar"></i><div class="t"><div class="rt">' + esc(k.title) + '</div>' + '<div class="rm">' + esc(k.kind) + ' · ' + sv[1] + '</div></div><span class="tools"><button type="button" data-redit="' + k.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-rclose="' + k.id + '" title="Resolve" aria-label="Resolve">' + ICO.tick + '</button></span></div>'; }).join('') : '<div class="faint">No open risks or issues.</div>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Client notes</h2><button type="button" class="lh-link" data-act="addn">+ Add note</button></div>' +
-        (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note"><div class="t">' + esc(n.body) + '<div class="cap" style="margin-top:7px">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">' + ICO.cross + '</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
+        (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note" style="--c:' + (n.visible_to_client ? 'var(--ok)' : 'var(--i3)') + '"><i class="rbar"></i><div class="t"><div class="nb">' + esc(n.body) + '</div><div class="cap" style="margin-top:7px">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-nedit="' + n.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">' + ICO.cross + '</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
         UI.sect('Media &amp; documents') +
         '<div class="pd-media' + (D.photos.length ? '' : ' no-photos') + '"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Photos</h2><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(D.rooms.map(function (r) { return [r.id, r.name]; })), photoFilter, 'room') + '</div></div><div id="phGrid" class="ph-grid"></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Documents</h2><button type="button" class="lh-link" data-act="upload">Upload</button></div><input type="file" id="docFile" hidden multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.dwg">' +
-        (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc"><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="share-btn' + (d.shared_with_client ? ' on' : '') + '" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '" aria-pressed="' + (d.shared_with_client ? 'true' : 'false') + '" title="' + (d.shared_with_client ? 'Visible to the client. Click to stop sharing.' : 'Share with the client') + '">' + (d.shared_with_client ? '<i></i>Shared' : 'Share') + '</button><button type="button" class="icon-del" data-ddel="' + d.id + '" title="Delete document" aria-label="Delete document">' + ICO.trash + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
+        (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc" style="--c:' + (d.shared_with_client ? 'var(--ok)' : 'var(--i3)') + '"><i class="rbar"></i><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="share-btn' + (d.shared_with_client ? ' on' : '') + '" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '" aria-pressed="' + (d.shared_with_client ? 'true' : 'false') + '" title="' + (d.shared_with_client ? 'Visible to the client. Click to stop sharing.' : 'Share with the client') + '">' + (d.shared_with_client ? '<i></i>Shared' : 'Share') + '</button><button type="button" class="icon-del" data-ddel="' + d.id + '" title="Delete document" aria-label="Delete document">' + ICO.trash + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
         '<div style="margin-top:34px"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';
       paintPhotos(); paintWeather(); alignComplete();
       window.scrollTo(0, y);
@@ -362,6 +363,9 @@
     async function onClick(e) {
       if (!D) return;
       var t = e.target, el;
+      if ((el = t.closest('[data-medit]'))) { editMilestone(el.getAttribute('data-medit')); return; }
+      if ((el = t.closest('[data-redit]'))) { editRisk(el.getAttribute('data-redit')); return; }
+      if ((el = t.closest('[data-nedit]'))) { editNote(el.getAttribute('data-nedit')); return; }
       if ((el = t.closest('[data-pdel]'))) { deletePhoto(el.getAttribute('data-pdel')); return; }
       if ((el = t.closest('[data-ddel]'))) { deleteDoc(el.getAttribute('data-ddel')); return; }
       if ((el = t.closest('[data-room]'))) { photoFilter = el.getAttribute('data-room'); draw(); return; }
@@ -432,6 +436,34 @@
           if (v.manager && v.manager !== raw.project_manager_id) await sbDo(LH.sb.rpc('set_project_manager', { p_project_id: id, p_user_id: v.manager }));
         },
       }).then(function (ok) { if (ok) { UI.toast('Project saved.'); refresh(); } });
+    }
+    function editMilestone(mid) {
+      var m = D.miles.filter(function (x) { return x.id === mid; })[0]; if (!m) return;
+      UI.form({
+        title: 'Edit milestone', submitLabel: 'Save', values: { title: m.title, due: m.due_date || '', vis: m.visible_to_client ? '1' : '0' },
+        fields: [{ name: 'title', label: 'Milestone', required: true, span: 2 }, { name: 'due', label: 'Due date', type: 'date', required: true }, { name: 'vis', label: 'Show to client', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }],
+        onSubmit: async function (v) { await sbDo(LH.sb.from('project_milestones').update({ title: v.title, due_date: v.due, visible_to_client: v.vis === '1' }).eq('id', mid)); },
+      }).then(function (ok) { if (ok) { UI.toast('Milestone saved.'); refresh(); } });
+    }
+    function editRisk(kid) {
+      var k = D.risks.filter(function (x) { return x.id === kid; })[0]; if (!k) return;
+      UI.form({
+        title: 'Edit risk or issue', submitLabel: 'Save', values: { title: k.title, kind: k.kind, severity: k.severity, detail: k.detail || '' },
+        fields: [{ name: 'title', label: 'What is it?', required: true, span: 2 }, { name: 'kind', label: 'Type', type: 'select', options: [{ v: 'risk', l: 'Risk' }, { v: 'issue', l: 'Issue' }] },
+          { name: 'severity', label: 'Severity', type: 'select', options: [{ v: 'low', l: 'Low' }, { v: 'medium', l: 'Medium' }, { v: 'high', l: 'High' }] }, { name: 'detail', label: 'Detail (optional)', type: 'textarea', rows: 3, span: 2 }],
+        onSubmit: async function (v) { await sbDo(LH.sb.from('project_risks').update({ kind: v.kind, title: v.title, detail: UI.nullIfBlank(v.detail), severity: v.severity }).eq('id', kid)); },
+      }).then(function (ok) { if (ok) { UI.toast('Saved.'); refresh(); } });
+    }
+    function editNote(nid) {
+      var n = D.notes.filter(function (x) { return x.id === nid; })[0]; if (!n) return;
+      UI.form({
+        title: 'Edit note', submitLabel: 'Save', values: { body: n.body, vis: n.visible_to_client ? '1' : '0' },
+        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
+        onSubmit: async function (v) {
+          await sbDo(LH.sb.from('project_notes').update({ body: v.body }).eq('id', nid));
+          if ((v.vis === '1') !== !!n.visible_to_client) await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: nid, p_visible: v.vis === '1' }));
+        },
+      }).then(function (ok) { if (ok) { UI.toast('Note saved.'); refresh(); } });
     }
     function milestoneForm() {
       UI.form({
