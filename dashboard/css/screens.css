@@ -367,3 +367,8 @@
 
 /* opening a popup no longer shifts the page: the scrollbar's space is always reserved */
 html { scrollbar-gutter:stable; }
+
+/* milestone date and title share the same font size and line height so they sit on one baseline */
+.li.ms .due, .li.ms .t { font-size:12.5px; line-height:20px; height:20px; display:block; }
+.li.ms .due { font-weight:500; }
+.li.ms .t { font-weight:400; }
