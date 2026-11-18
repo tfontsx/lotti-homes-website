@@ -157,10 +157,10 @@
     var cr = d.leads.length ? Math.round((Object.keys(consulted).length / d.leads.length) * 100) : null;
     var rq = Object.keys(reachedQuote).length, won = d.leads.filter(function (l) { return l.status === 'won'; }).length;
     var wr = rq ? Math.min(100, Math.round((won / rq) * 100)) : null;
-    var days = [], byId = {}; d.leads.forEach(function (l) { byId[l.id] = l; });
-    Object.keys(firstQuote).forEach(function (id) { if (byId[id]) days.push((new Date(firstQuote[id]) - new Date(byId[id].created)) / 86400000); });
-    var avg = days.length ? days.reduce(function (a, b) { return a + b; }, 0) / days.length : null;
-    return { newN: nowN, delta: deltaTxt, up: diff >= 0, cr: cr, wr: wr, avg: avg };
+    var lost = d.leads.filter(function (l) { return l.status === 'lost'; }), lostValue = 0;
+    lost.forEach(function (l) { lostValue += l.value; });
+    var lp = d.leads.length ? Math.round((lost.length / d.leads.length) * 100) : null;
+    return { newN: nowN, delta: deltaTxt, up: diff >= 0, cr: cr, wr: wr, lp: lp, ln: lost.length, lv: lostValue };
   }
 
   function footer(l) {
@@ -196,7 +196,7 @@
     }
     function column(stage, list) {
       var total = list.reduce(function (a, l) { return a + l.value; }, 0), collapsed = (stage === 'won' && !S.showWon) || (stage === 'lost' && !S.showLost);
-      var head = '<div class="kb-head"><span class="cap" style="color:' + (stage === 'won' ? 'var(--ok)' : stage === 'lost' ? 'var(--halt)' : 'var(--i2)') + '">' + LABEL[stage].toUpperCase() + '</span><span class="kb-count">' + list.length + (total ? ' · ' + fmt.money(total) : '') + '</span></div>';
+      var head = '<div class="kb-head"><span class="kb-name"><i style="background:' + DOT[stage] + '"></i>' + LABEL[stage] + '</span><span class="kb-count"><b>' + list.length + '</b>' + (total ? ' · ' + fmt.money(total) : '') + '</span></div>';
       var body = '';
       if (stage === 'won' || stage === 'lost') {
         body += '<button type="button" class="kb-toggle" data-toggle="' + stage + '"><span>' + (collapsed ? 'Show ' + list.length + ' ' + stage : 'Hide ' + stage) + '</span><i class="' + (collapsed ? '' : 'up') + '"></i></button>';
@@ -221,7 +221,6 @@
       var types = [], srcs = [];
       D.leads.forEach(function (l) { if (l.type && types.indexOf(l.type) === -1) types.push(l.type); if (srcs.indexOf(l.source) === -1) srcs.push(l.source); });
       var open = L.filter(function (l) { return OPEN.indexOf(l.status) !== -1; });
-      var sortLabel = { next: ['Sorted by next action', 'overdue first, then soonest'], value: ['Sorted by value', 'biggest first'], newest: ['Sorted by newest', 'most recent enquiry first'], status: ['Sorted by status', 'earliest stage first'] }[S.sort];
       var rows = sortRows(open.slice());
 
       view.innerHTML =
@@ -231,14 +230,13 @@
         UI.stat('New this month', String(st.newN), '', esc(st.delta), st.up ? 'ok' : 'wait', 0) +
         UI.stat('Consult booking rate', st.cr == null ? '—' : String(st.cr), st.cr == null ? '' : '%', 'enquiry → consultation', 'ok', 60) +
         UI.stat('Win rate', st.wr == null ? '—' : String(st.wr), st.wr == null ? '' : '%', 'quoted → won', 'steel', 120) +
-        UI.stat('Avg. time to quote', st.avg == null ? '—' : st.avg.toFixed(1), st.avg == null ? '' : ' days', st.avg == null ? 'no quotes sent yet' : 'target 5', st.avg == null ? '' : (st.avg <= 5 ? 'ok' : 'wait'), 180) + '</div>' +
+        UI.stat('Leads lost', st.lp == null ? '—' : String(st.lp), st.lp == null ? '' : '%', st.lp == null ? 'No leads yet' : st.ln + ' lost · ' + fmt.money(st.lv), st.lp == null ? '' : (st.lp > 50 ? 'halt' : st.lp > 30 ? 'wait' : 'ok'), 180) + '</div>' +
         UI.sect('Pipeline') +
         '<div class="chip-row">' + UI.chips([['all', 'All types']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '<span class="chip-sep"></span>' +
         UI.chips([['all', 'All sources']].concat(srcs.map(function (s) { return [s, s === 'website' ? 'Website' : (SRC[s] || s)]; })), S.source, 'source') + '</div>' +
         '<div class="kb">' + STAGES.map(function (s) { return column(s, L.filter(function (l) { return l.status === s; })); }).join('') + '</div>' +
         UI.sect('All open leads') +
-        '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">' + sortLabel[0] + ' <small class="faint tiny">' + sortLabel[1] + '</small></h2>' +
-        '<div class="sort-row"><span class="faint tiny">Sort</span>' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div></div>' +
+        '<section class="lh-card"><div class="sort-row left"><span class="faint tiny">Sort</span>' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div>' +
         (rows.length ? '<div class="tbl-scroll"><div class="tbl-inner"><div class="ld-head ld-grid"><div>Lead</div><div>Source</div><div>Status</div><div>Value</div><div>Received</div><div>Next action</div><div>Due</div></div>' +
           rows.map(function (l, i) {
             var due = dueInfo(l);

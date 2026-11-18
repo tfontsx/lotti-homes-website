@@ -13,11 +13,13 @@
 
   function one(x) { return Array.isArray(x) ? x[0] : x; }
   function money(n) { return n ? fmt.money(n) : '—'; }
-  function mapProject(r, stages) {
+  function mapProject(r, stages, miles) {
     var fin = one(r.project_financials) || {}, cl = one(r.clients) || {}, ty = one(r.project_types) || {};
     var mine = (stages || []).filter(function (s) { return s.project_id === r.id; }).sort(function (a, b) { return a.position - b.position; });
     var cur = mine.filter(function (s) { return s.status === 'current'; })[0];
+    var nm = (miles || []).filter(function (m) { return m.project_id === r.id; })[0];
     return {
+      mgr: r.project_manager_name || '', nextMile: nm ? nm.title : '', nextMileDate: nm ? nm.due_date : null,
       id: r.id, code: r.code, name: r.name, status: r.status, health: r.health, st: LH.projectStatus(r), pct: r.percent_complete || 0, delay: r.delay_days, note: r.client_status_message,
       start: r.start_date, forecastDate: r.forecast_completion_date, completedAt: r.completed_at, street: r.site_street || r.name, suburb: r.site_suburb || '',
       client: cl.name || '', type: ty.name || '', stage: cur ? cur.name : '', stageCount: mine.length, stagePos: cur ? cur.position : 0,
@@ -28,6 +30,13 @@
     if (p.contract > 0 && p.forecast > 0) return { pct: ((p.contract - p.forecast) / p.contract) * 100, kind: 'forecast' };
     if (p.contract > 0 && p.budget > 0) return { pct: ((p.contract - p.budget) / p.contract) * 100, kind: 'budget' };
     return null;
+  }
+  function daysLeft(p) {
+    if (p.status === 'completed' || !p.forecastDate) return { text: '—', cls: '' };
+    var d = UI.daysUntil(p.forecastDate);
+    if (d < 0) return { text: (-d) + (d === -1 ? ' day over' : ' days over'), cls: 'haltc' };
+    if (d === 0) return { text: 'Today', cls: 'warn' };
+    return { text: d + (d === 1 ? ' day' : ' days'), cls: d <= 14 ? 'warn' : '' };
   }
   function statusLabel(p) {
     if (p.status === 'completed') return { cls: '', text: 'Complete' };
@@ -43,11 +52,12 @@
   async function loadList() {
     var sb = LH.sb;
     var r = await Promise.all([
-      sb.from('projects').select('id,code,name,status,health,percent_complete,delay_days,start_date,forecast_completion_date,completed_at,client_status_message,site_street,site_suburb,clients(name),project_types(name),project_financials(contract_value_cents,original_budget_cents,forecast_cost_cents,actual_cost_cents)').is('deleted_at', null).order('created_at', { ascending: false }),
+      sb.from('projects').select('id,code,name,status,health,percent_complete,delay_days,start_date,forecast_completion_date,completed_at,client_status_message,site_street,site_suburb,project_manager_name,clients(name),project_types(name),project_financials(contract_value_cents,original_budget_cents,forecast_cost_cents,actual_cost_cents)').is('deleted_at', null).order('created_at', { ascending: false }),
       sb.from('project_stages').select('project_id,name,status,position'),
+      sb.from('project_milestones').select('project_id,title,due_date').is('completed_at', null).order('due_date', { ascending: true }),
     ]);
     if (r[0].error) throw r[0].error; if (r[1].error) throw r[1].error;
-    return (r[0].data || []).map(function (x) { return mapProject(x, r[1].data || []); });
+    return (r[0].data || []).map(function (x) { return mapProject(x, r[1].data || [], r[2].data || []); });
   }
 
   async function newProjectForm(existing, onDone) {
@@ -118,26 +128,21 @@
       });
     }
     function portfolioCard(act) {
-      var withF = act.filter(function (p) { return p.contract > 0 && p.forecast > 0; }), withB = act.filter(function (p) { return p.contract > 0 && p.budget > 0; });
       var sum = function (a, k) { return a.reduce(function (t, p) { return t + p[k]; }, 0); };
-      var contract = sum(act, 'contract'), label, pct = null, sub = '', a, b, c;
-      if (withF.length) {
-        pct = ((sum(withF, 'contract') - sum(withF, 'forecast')) / sum(withF, 'contract')) * 100; label = 'Portfolio margin · forecast';
-        var wb = withF.filter(function (p) { return p.budget > 0; });
-        if (wb.length) { var bm = ((sum(wb, 'contract') - sum(wb, 'budget')) / sum(wb, 'contract')) * 100, d = pct - bm; sub = '<span class="' + (d < 0 ? 'wait' : 'ok') + '">' + (d >= 0 ? '+' : '−') + Math.abs(d).toFixed(1) + ' pts vs original budget</span>'; }
-        a = ['Contract', money(contract)]; b = ['Forecast cost', money(sum(withF, 'forecast'))]; c = ['Actual to date', money(sum(act, 'actual'))];
-      } else if (withB.length) {
-        pct = ((sum(withB, 'contract') - sum(withB, 'budget')) / sum(withB, 'contract')) * 100; label = 'Portfolio margin · budget';
-        sub = '<span class="faint">Add forecast costs on each project for a live margin</span>';
-        a = ['Contract', money(contract)]; b = ['Original budget', money(sum(withB, 'budget'))]; c = ['Budgeted profit', money(sum(withB, 'contract') - sum(withB, 'budget'))];
-      } else { label = 'Portfolio margin'; sub = '<span class="faint">Add a contract value and budget to see the margin</span>'; a = ['Contract', money(contract)]; b = ['Budget', '—']; c = ['Actual to date', money(sum(act, 'actual'))]; }
-      return '<div class="lh-card lift stat big" style="animation-delay:0ms"><div class="cap">' + esc(label) + '</div><div class="bigrow"><span class="bigv">' + (pct == null ? '—' : pct.toFixed(1) + '<small>%</small>') + '</span>' + sub + '</div>' +
-        '<div class="mini3">' + [a, b, c].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
+      var contract = sum(act, 'contract'), earned = act.reduce(function (t, p) { return t + p.contract * Math.min(100, p.pct) / 100; }, 0);
+      var left = Math.max(0, contract - earned), pct = contract > 0 ? Math.round((earned / contract) * 100) : 0;
+      var withC = act.filter(function (p) { return p.contract > 0; }), avg = withC.length ? contract / withC.length : 0;
+      var bp = fmt.moneyParts(left);
+      var sub = contract > 0 ? '<span class="ok">' + pct + '% of contract delivered</span>' : '<span class="faint">Add contract values to see the picture</span>';
+      return '<div class="lh-card lift stat big" style="animation-delay:0ms"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
+        '<span class="faint" style="font-size:11px">still to deliver</span>' + sub + '</div>' +
+        '<div class="mini3">' + [['Contract under way', money(contract)], ['Earned to date', money(earned)], ['Avg. project value', money(avg)]].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
     }
     function draw() {
       var act = activeSet(), L = shown(), y = window.scrollY;
       view.classList.toggle('enter', !drawn); drawn = true;
-      var onTrack = act.filter(function (p) { return p.st === 'ontime'; }).length, risk = act.filter(function (p) { return p.st !== 'ontime'; });
+      var onTrack = act.filter(function (p) { return p.st === 'ontime'; }).length;
+      var soon = act.filter(function (p) { var d = UI.daysUntil(p.start); return d != null && d >= 0 && d <= 30; }).sort(function (a, b) { return a.start < b.start ? -1 : 1; });
       var next = act.filter(function (p) { return p.forecastDate; }).sort(function (a, b) { return a.forecastDate < b.forecastDate ? -1 : 1; })[0];
       var types = []; P.forEach(function (p) { if (p.type && types.indexOf(p.type) === -1) types.push(p.type); });
       var contractAll = act.reduce(function (t, p) { return t + p.contract; }, 0);
@@ -147,17 +152,17 @@
         UI.sect('Portfolio') +
         '<div class="pf-grid">' + portfolioCard(act) +
         UI.stat('On track', onTrack + ' of ' + act.length, '', '', '', 60) +
-        UI.stat('At risk', String(risk.length), '', esc(risk.slice(0, 2).map(function (p) { return p.street.replace(/^\d+\w*\s+/, ''); }).join(' · ')) || '&nbsp;', risk.length ? 'halt' : '', 120) +
+        UI.stat('Starting soon', String(soon.length), '', soon.length ? esc('Next: ' + fmt.date(soon[0].start) + ' · ' + soon[0].street) : 'Nothing starts in the next 30 days', soon.length ? 'steel' : '', 120) +
         UI.stat('Next handover', next ? fmt.date(next.forecastDate) : '—', '', next ? esc(next.street) : 'No forecast dates', '', 180) + '</div>' +
         UI.sect('All projects') +
         '<section class="lh-card"><div class="lh-card-head"><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
         '<div class="chip-row" style="margin:0">' + UI.chips([['active', 'Active'], ['complete', 'Complete']], S.show, 'show') + '</div></div>' +
-        (L.length ? '<div class="tbl-scroll"><div class="tbl-inner wide"><div class="pr-head pr-grid"><div>ID</div><div>Project · client</div><div>Type</div><div>Contract</div><div>Budget</div><div>Forecast</div><div>Actual</div><div>Margin</div><div>Stage</div><div>Progress</div><div>Status</div></div>' +
+        (L.length ? '<div class="tbl-scroll"><div class="tbl-inner wide"><div class="pr-head pr-grid"><div>ID</div><div>Project · client</div><div>Type</div><div>Contract</div><div>Budget</div><div>Days left</div><div>Next milestone</div><div>Manager</div><div>Stage</div><div>Progress</div><div>Status</div></div>' +
           L.map(function (p, i) {
-            var m = margin(p), sl = statusLabel(p);
+            var sl = statusLabel(p), dl = daysLeft(p);
             return '<a class="pr-row pr-grid" href="#/projects/' + p.id + '" style="--i:' + i + '"><div class="faint code">' + esc(p.code || '') + '</div><div><div class="n">' + esc(p.street) + '</div><div class="s">' + esc([p.client, p.suburb].filter(Boolean).join(' · ')) + '</div></div>' +
-              '<div>' + esc(p.type || '—') + '</div><div>' + (p.contract ? fmt.moneyFull(p.contract) : '—') + '</div><div>' + money(p.budget) + '</div><div class="' + (p.forecast && p.budget && p.forecast > p.budget ? 'warn' : '') + '">' + money(p.forecast) + '</div><div>' + money(p.actual) + '</div>' +
-              '<div' + (m && m.kind === 'budget' ? ' class="faint" title="Budgeted margin — no forecast cost yet"' : '') + '>' + (m ? m.pct.toFixed(1) + '%' : '—') + '</div><div>' + esc(p.stage || '—') + '</div>' +
+              '<div>' + esc(p.type || '—') + '</div><div>' + money(p.contract) + '</div><div>' + money(p.budget) + '</div><div class="' + dl.cls + '">' + esc(dl.text) + '</div>' +
+              '<div class="mile">' + (p.nextMile ? esc(p.nextMile) + '<div class="faint tiny">' + esc(fmt.date(p.nextMileDate)) + '</div>' : '—') + '</div><div>' + esc(p.mgr || '—') + '</div><div>' + esc(p.stage || '—') + '</div>' +
               '<div><div class="prog"><div class="bar"><i style="width:' + Math.min(100, p.pct) + '%"></i></div><span>' + p.pct + '%</span></div></div><div>' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></a>';
           }).join('') + '</div></div>' : '<div class="lh-empty">No projects here yet.</div>') + '</section>';
       window.scrollTo(0, y);
