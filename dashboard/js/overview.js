@@ -41,11 +41,14 @@
       sb.from('bookings').select('id,project_id,lead_id,kind,title,starts_at,ends_at,status').neq('status', 'cancelled').gte('ends_at', from).lte('starts_at', to).order('starts_at', { ascending: true }),
       sb.from('business_settings').select('rain_risk_threshold_pct').limit(1).maybeSingle(),
       sb.from('weather_notices').select('project_id,notice_date').gte('notice_date', LH.keyOf(today.y, today.m, today.d)),
+      sb.from('project_milestones').select('project_id,title,due_date').is('completed_at', null).order('due_date', { ascending: true }),
     ]);
     for (var i = 0; i < 4; i++) if (r[i].error) throw r[i].error;
 
     var stageBy = {};
     (r[1].data || []).forEach(function (s) { stageBy[s.project_id] = s.name; });
+    var mileBy = {};
+    ((r[6] && r[6].data) || []).forEach(function (m) { if (!mileBy[m.project_id]) mileBy[m.project_id] = m; });
     var projects = (r[0].data || []).map(function (p) {
       var fin = one(p.project_financials) || {}, cl = one(p.clients) || {}, ty = one(p.project_types) || {};
       return {
@@ -54,6 +57,7 @@
         forecast: p.forecast_completion_date, completedAt: p.completed_at, createdAt: p.created_at,
         address: [p.site_street, p.site_suburb].filter(Boolean).join(', ') || p.name,
         street: p.site_street || p.name, client: cl.name || '', type: ty.name || '',
+        nextMile: mileBy[p.id] ? mileBy[p.id].title : '', nextMileDate: mileBy[p.id] ? mileBy[p.id].due_date : null,
         stage: stageBy[p.id] || '', contract: (fin.contract_value_cents || 0) / 100,
         cost: (fin.forecast_cost_cents || 0) / 100, budget: (fin.original_budget_cents || 0) / 100,
       };
@@ -295,13 +299,13 @@
       var h = '<section class="lh-card lift" style="animation-delay:360ms"><div class="lh-card-head"><h2 class="lh-card-title">Active projects</h2>' +
         '<div style="display:flex;gap:6px">' + [['all', 'All'], ['ontime', 'On track'], ['risk', 'At risk']].map(function (f) { return '<button type="button" class="lh-chip' + (S.filter === f[0] ? ' on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div></div>';
       if (!rows.length) return h + '<div class="lh-empty">No projects here yet.</div></section>';
-      h += '<div class="pj-scroll"><div class="pj-inner"><div class="pj-head"><div>Project</div><div>Stage</div><div>Progress</div><div>Contract</div><div>Margin</div><div>Completion</div><div>Status</div></div>';
+      h += '<div class="pj-scroll"><div class="pj-inner"><div class="pj-head"><div>Project</div><div>Stage</div><div>Progress</div><div>Contract</div><div>Next milestone</div><div>Completion</div><div>Status</div></div>';
       rows.forEach(function (p) {
-        var st = STATUS[p.st], m = p.contract > 0 && p.cost > 0 ? (((p.contract - p.cost) / p.contract) * 100).toFixed(1) + '%' : '—';
+        var st = STATUS[p.st];
         var label = st.label; if (p.st === 'delayed' && p.delay) label = p.delay + (p.delay === 1 ? ' day behind' : ' days behind');
         h += '<div class="pj-row" data-open="' + esc(p.id) + '"><div><div class="n">' + esc(p.street) + '</div><div class="s">' + esc([p.type, p.client].filter(Boolean).join(' · ')) + '</div></div>' +
           '<div>' + esc(p.stage || '—') + '</div><div><div class="prog"><div class="bar"><i style="width:' + Math.min(100, p.pct) + '%"></i></div><span>' + p.pct + '%</span></div></div>' +
-          '<div>' + (p.contract ? fmt.money(p.contract) : '—') + '</div><div>' + m + '</div><div>' + fmt.date(p.forecast) + '</div>' +
+          '<div>' + (p.contract ? fmt.money(p.contract) : '—') + '</div><div class="mile">' + (p.nextMile ? esc(p.nextMile) + '<div class="faint tiny">' + esc(fmt.date(p.nextMileDate)) + '</div>' : '—') + '</div><div>' + fmt.date(p.forecast) + '</div>' +
           '<div><span class="lh-pill ' + st.cls + '"><i></i>' + esc(label) + '</span></div></div>';
       });
       return h + '</div></div></section>';

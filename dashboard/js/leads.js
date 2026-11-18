@@ -24,21 +24,6 @@
       converted: r.converted_project_id,
     };
   }
-  function when(dateStr) {
-    var d = UI.daysUntil(dateStr);
-    if (d === 0) return 'today';
-    if (d === 1) return 'tomorrow';
-    if (d > 1 && d < 7) return WD.format(new Date(dateStr + 'T00:00:00Z'));
-    return fmt.date(dateStr);
-  }
-  function dueInfo(l) {
-    var d = UI.daysUntil(l.follow);
-    if (d == null) return { text: '—', cls: '' };
-    if (d < 0) return { text: 'Overdue ' + (-d) + (d === -1 ? ' day' : ' days'), cls: 'halt' };
-    if (d === 0) return { text: 'Today', cls: 'wait' };
-    return { text: WD.format(new Date(l.follow + 'T00:00:00Z')) + ' ' + fmt.date(l.follow), cls: '' };
-  }
-
   /* ---------- shared writes (same rules as the app) ---------- */
   async function moveTo(id, stage, wasLost) {
     var cols = { status: stage };
@@ -105,7 +90,7 @@
         { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) },
         { name: 'newtype', label: 'Or a new type', placeholder: 'e.g. Extension' },
-        { name: 'value', label: 'Estimated value', type: 'money' }, { name: 'follow', label: 'Follow-up date', type: 'date' },
+        { name: 'value', label: 'Estimated value', type: 'money' },
         { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2 }],
       onSubmit: async function (v) {
         if (v.email || v.phone) {
@@ -118,7 +103,7 @@
         var typeId = await typeIdFor(v.newtype || v.type);
         var ins = await LH.sb.from('leads').insert({
           name: v.name, email: UI.nullIfBlank(v.email), phone: UI.nullIfBlank(v.phone), suburb: UI.nullIfBlank(v.suburb), source: v.source, status: 'new',
-          project_type_id: typeId, est_value_cents: UI.cents(v.value) || 0, follow_up_date: UI.nullIfBlank(v.follow), notes: UI.nullIfBlank(v.notes),
+          project_type_id: typeId, est_value_cents: UI.cents(v.value) || 0, notes: UI.nullIfBlank(v.notes),
         });
         if (ins.error) throw ins.error;
       }
@@ -164,10 +149,9 @@
   }
 
   function footer(l) {
-    var d = UI.daysUntil(l.follow), tone = d != null && d < 0 ? 'halt' : 'wait';
     if (l.status === 'new') return { t: UI.ago(l.created), tone: '' };
-    if (l.status === 'contacted') return l.follow ? { t: 'Follow-up ' + when(l.follow), tone: tone } : { t: UI.ago(l.updated), tone: '' };
-    if (l.status === 'consulted') return l.follow ? { t: 'Quote due ' + when(l.follow), tone: tone } : { t: 'Quote needed', tone: 'wait' };
+    if (l.status === 'contacted') return { t: UI.ago(l.updated), tone: '' };
+    if (l.status === 'consulted') return { t: 'Quote needed', tone: 'wait' };
     if (l.status === 'quoted') return { t: 'Sent ' + fmt.date(fmt.dayKey(l.updated)), tone: 'wait' };
     if (l.status === 'won') return { t: 'Won ' + fmt.date(fmt.dayKey(l.updated)), tone: '' };
     return { t: (LOST.filter(function (x) { return x[0] === l.lostReason; })[0] || [0, 'Lost'])[1], tone: '' };
@@ -207,12 +191,12 @@
     }
     function sortRows(rows) {
       var order = { new: 0, contacted: 1, consulted: 2, quoted: 3 };
-      var key = function (l) { var d = UI.daysUntil(l.follow); return d == null ? 9999 : d; };
       return rows.sort(function (a, b) {
         if (S.sort === 'value') return b.value - a.value;
         if (S.sort === 'newest') return a.created < b.created ? 1 : -1;
         if (S.sort === 'status') return order[a.status] - order[b.status];
-        return key(a) - key(b);
+        var o = order[a.status] - order[b.status];
+        return o !== 0 ? o : (a.updated < b.updated ? -1 : 1);
       });
     }
     function draw() {
@@ -237,12 +221,11 @@
         '<div class="kb">' + STAGES.map(function (s) { return column(s, L.filter(function (l) { return l.status === s; })); }).join('') + '</div>' +
         UI.sect('All open leads') +
         '<section class="lh-card"><div class="sort-row left">' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div>' +
-        (rows.length ? '<div class="tbl-scroll"><div class="tbl-inner"><div class="ld-head ld-grid"><div>Lead</div><div>Source</div><div>Status</div><div>Value</div><div>Received</div><div>Next action</div><div>Due</div></div>' +
+        (rows.length ? '<div class="tbl-scroll"><div class="tbl-inner"><div class="ld-head ld-grid"><div>Lead</div><div>Source</div><div>Status</div><div>Value</div><div>Received</div><div>Next action</div></div>' +
           rows.map(function (l, i) {
-            var due = dueInfo(l);
             return '<a class="ld-row ld-grid" href="#/leads/' + l.id + '" style="--i:' + i + '"><div><div class="n">' + esc(l.name) + '</div><div class="s">' + esc([l.type, l.suburb].filter(Boolean).join(' · ') || '—') + '</div></div>' +
               '<div class="src">' + esc(SRC[l.source] || l.source) + '</div><div class="st"><i style="background:' + DOT[l.status] + '"></i>' + LABEL[l.status] + '</div><div class="vv">' + (l.value ? fmt.money(l.value) : '—') + '</div>' +
-              '<div class="faint">' + fmt.date(fmt.dayKey(l.created)) + '</div><div>' + NEXT[l.status] + '</div><div>' + (due.cls ? '<span class="lh-pill ' + due.cls + '">' + esc(due.text) + '</span>' : '<span class="muted">' + esc(due.text) + '</span>') + '</div></a>';
+              '<div class="faint">' + fmt.date(fmt.dayKey(l.created)) + '</div><div>' + NEXT[l.status] + '</div></a>';
           }).join('') + '</div></div>' : '<div class="lh-empty">No open leads match these filters.</div>') + '</section>';
       window.scrollTo(0, y);
     }
@@ -269,8 +252,8 @@
       else if (el.hasAttribute('data-toggle')) { var k = el.getAttribute('data-toggle'); if (k === 'won') S.showWon = !S.showWon; else S.showLost = !S.showLost; }
       else if (el.getAttribute('data-act') === 'add') { addLeadForm(D.types, refresh); return; }
       else if (el.getAttribute('data-act') === 'csv') {
-        UI.csv('leads', [['Name', 'Email', 'Phone', 'Suburb', 'Source', 'Type', 'Status', 'Value', 'Win chance %', 'Follow-up', 'Received']].concat(
-          filtered().map(function (l) { return [l.name, l.email, l.phone, l.suburb, SRC[l.source] || l.source, l.type, LABEL[l.status], l.value, l.prob, l.follow || '', fmt.dayKey(l.created)]; })));
+        UI.csv('leads', [['Name', 'Email', 'Phone', 'Suburb', 'Source', 'Type', 'Status', 'Value', 'Win chance %', 'Received']].concat(
+          filtered().map(function (l) { return [l.name, l.email, l.phone, l.suburb, SRC[l.source] || l.source, l.type, LABEL[l.status], l.value, l.prob, fmt.dayKey(l.created)]; })));
         return;
       }
       draw();
@@ -430,18 +413,18 @@
       var lens = [30, 45, 60, 90, 120]; if (lens.indexOf(elen) === -1) { lens.push(elen); lens.sort(function (a, b) { return a - b; }); }
       UI.form({
         title: 'Edit details', submitLabel: 'Save', wide: true,
-        values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type, follow: l.follow || '',
+        values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type,
           cwhen: ec && ec.start && !ec.cancelled ? LH.toLocalInput(ec.start) : '', clen: String(elen), cplace: ec && ec.place ? ec.place : '' },
         fields: [{ name: 'name', label: 'Name', required: true, span: 2 }, { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'suburb', label: 'Suburb' },
           { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
           { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) },
-          { name: 'newtype', label: 'Or a new type' }, { name: 'follow', label: 'Follow-up date', type: 'date' },
+          { name: 'newtype', label: 'Or a new type' },
           { name: 'cwhen', label: 'Consultation date and time (Adelaide)', type: 'datetime-local', span: 2, hint: ec && ec.start && !ec.cancelled ? 'Change this to move the booking. It updates the calendar and the app.' : 'Fill this in to book a consultation.' },
           { name: 'clen', label: 'Consultation length', type: 'select', options: lens.map(function (m) { return { v: String(m), l: m < 60 ? m + ' minutes' : (m % 60 === 0 ? (m / 60) + (m === 60 ? ' hour' : ' hours') : m + ' minutes') }; }) },
           { name: 'cplace', label: 'Consultation location' }],
         onSubmit: async function (v) {
           var typeId = await typeIdFor(v.newtype || v.type);
-          var r = await LH.sb.from('leads').update({ name: v.name, email: UI.nullIfBlank(v.email), phone: UI.nullIfBlank(v.phone), suburb: UI.nullIfBlank(v.suburb), source: v.source, project_type_id: typeId, follow_up_date: UI.nullIfBlank(v.follow) }).eq('id', id);
+          var r = await LH.sb.from('leads').update({ name: v.name, email: UI.nullIfBlank(v.email), phone: UI.nullIfBlank(v.phone), suburb: UI.nullIfBlank(v.suburb), source: v.source, project_type_id: typeId }).eq('id', id);
           if (r.error) throw r.error;
           var when = UI.nullIfBlank(v.cwhen);
           if (when) {
