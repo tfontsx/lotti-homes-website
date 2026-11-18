@@ -230,12 +230,19 @@
     refresh();
 
     async function loadPhotoUrls() {
-      var need = D.photos.filter(function (p) { return !urls[p.id] && p.path; });
-      if (!need.length) return;
-      var res = await LH.sb.storage.from('project-photos').createSignedUrls(need.map(function (p) { return p.path; }), 3600);
-      if (res.error || !res.data) return;
-      var byPath = {}; res.data.forEach(function (x) { if (x.signedUrl) byPath[x.path] = x.signedUrl; });
-      need.forEach(function (p) { if (byPath[p.path]) urls[p.id] = byPath[p.path]; });
+      var groups = { 'project-photos': [], 'photo-originals': [] }, owner = {};
+      D.photos.forEach(function (p) {
+        if (urls[p.id]) return;
+        var orig = one(p.photo_internal);
+        if (p.path) { groups['project-photos'].push(p.path); owner['project-photos|' + p.path] = p.id; }
+        else if (orig && orig.original_path) { groups['photo-originals'].push(orig.original_path); owner['photo-originals|' + orig.original_path] = p.id; }
+      });
+      for (var bucket in groups) {
+        if (!groups[bucket].length) continue;
+        var res = await LH.sb.storage.from(bucket).createSignedUrls(groups[bucket], 3600);
+        if (res.error || !res.data) continue;
+        res.data.forEach(function (x) { var id = owner[bucket + '|' + x.path]; if (id && x.signedUrl) urls[id] = x.signedUrl; });
+      }
       if (!destroyed) paintPhotos();
     }
 
@@ -309,13 +316,13 @@
         '<div><span>Earned to date</span><b>' + (contract ? fmt.moneyFull(earned) + ' · ' + p.pct + '%' : '—') + '</b></div>' +
         '<div><span>Day count</span><b class="' + dayCls + '">' + esc(dayCount) + '</b></div><div><span>Days left</span><b class="' + dl.cls + '">' + esc(dl.text) + '</b></div></div>' +
         (contract ? '<div class="faint tiny" style="margin:18px 0 8px">Earned to date · ' + p.pct + '%</div><div class="bar fat"><i style="width:' + Math.min(100, p.pct) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:18px">Add a contract value to see what has been earned.</div>') +
-        '<div style="margin-top:18px"><button type="button" class="lh-btn sm" data-act="fin">Edit financials</button></div></section></div>' +
+        '<div class="card-foot"><button type="button" class="lh-btn sm" data-act="fin">Edit financials</button></div></section></div>' +
         UI.sect('Delivery') +
         '<div class="pd-three">' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Upcoming milestones</h2><button type="button" class="lh-link" data-act="addm">+ Add</button></div>' +
         (openMiles.length ? openMiles.map(function (m) { return '<div class="li"><span class="due">' + esc(fmt.date(m.due_date)) + '</span><span class="t">' + esc(m.title) + '</span><span class="tools"><button type="button" data-mdone="' + m.id + '" title="Mark done" aria-label="Mark done">✓</button><button type="button" data-mdel="' + m.id + '" title="Delete" aria-label="Delete">×</button></span></div>'; }).join('') : '<div class="faint">No upcoming milestones.</div>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Risks &amp; issues</h2><button type="button" class="lh-link" data-act="addr">+ Add</button></div>' +
-        (D.risks.length ? D.risks.map(function (k) { var s = SEV[k.severity] || SEV.low; return '<div class="li risk"><div class="t">' + esc(k.title) + (k.detail ? '<div class="faint tiny">' + esc(k.detail) + '</div>' : '') + '<div style="margin-top:8px">' + UI.pill(s[0], s[1]) + ' <span class="faint tiny">' + esc(k.kind) + '</span></div></div><span class="tools"><button type="button" data-rclose="' + k.id + '" title="Resolve" aria-label="Resolve">✓</button></span></div>'; }).join('') : '<div class="faint">No open risks or issues.</div>') + '</section>' +
+        (D.risks.length ? D.risks.map(function (k) { var sv = SEV[k.severity] || SEV.low, col = k.severity === 'high' ? 'var(--halt)' : k.severity === 'medium' ? 'var(--wait)' : 'var(--steel)'; return '<div class="li risk" style="--c:' + col + '"><i class="rbar"></i><div class="t"><div class="rt">' + esc(k.title) + '</div>' + (k.detail ? '<div class="faint tiny rd">' + esc(k.detail) + '</div>' : '') + '<div class="rm">' + esc(k.kind) + ' · ' + sv[1] + '</div></div><span class="tools"><button type="button" data-rclose="' + k.id + '" title="Resolve" aria-label="Resolve">✓</button></span></div>'; }).join('') : '<div class="faint">No open risks or issues.</div>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Client notes</h2><button type="button" class="lh-link" data-act="addn">+ Add note</button></div>' +
         (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note"><div class="t">' + esc(n.body) + '<div class="cap" style="margin-top:7px">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">×</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
         UI.sect('Media &amp; documents') +
