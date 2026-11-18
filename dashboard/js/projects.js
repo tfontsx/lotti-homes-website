@@ -274,9 +274,12 @@
       var total = D.stages.length, curI = D.stages.findIndex(function (s) { return s.status === 'current'; });
       var segs = D.stages.map(function (s, i) { return '<button type="button" class="seg ' + (s.status === 'complete' ? 'done' : s.status === 'current' ? 'now' : '') + '" data-pos="' + s.position + '" title="' + esc(s.name) + '"></button>'; }).join('');
       var openMiles = D.miles.filter(function (m) { return !m.completed_at; }), nextM = openMiles[0];
-      var contract = p.contract, forecast = p.forecast, actual = p.actual, budgetNow = p.budget + D.vars.b;
-      var gm = contract > 0 && forecast > 0 ? contract - forecast : null, gmPct = gm != null ? (gm / contract) * 100 : null;
-      var spent = forecast > 0 ? Math.round((actual / forecast) * 100) : null;
+      var contract = p.contract, earned = contract * Math.min(100, p.pct) / 100, dl = daysLeft(p);
+      var toStart = UI.daysUntil(p.start), totalDays = (p.start && p.forecastDate) ? Math.round((Date.parse(p.forecastDate + 'T00:00:00Z') - Date.parse(p.start + 'T00:00:00Z')) / 86400000) : null;
+      var dayCount = '—', dayCls = '';
+      if (p.status === 'completed') dayCount = 'Completed';
+      else if (toStart != null && toStart > 0) dayCount = 'Starts in ' + toStart + (toStart === 1 ? ' day' : ' days');
+      else if (toStart != null && totalDays) { var dayNo = -toStart + 1; dayCount = 'Day ' + dayNo + ' of ' + totalDays; if (dayNo > totalDays) dayCls = 'haltc'; }
       var weekRows = D.week.map(function (b) {
         var col = b.kind === 'contractor' ? 'var(--ok)' : b.kind === 'admin' ? 'var(--wait)' : 'var(--steel)';
         return '<div class="wk"><span class="d">' + WD.format(new Date(fmt.dayKey(b.starts_at) + 'T00:00:00Z')) + ' ' + new Date(fmt.dayKey(b.starts_at) + 'T00:00:00Z').getUTCDate() + '</span><i style="background:' + col + '"></i><span class="t">' + esc(b.title) + '</span></div>';
@@ -299,9 +302,9 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Owner view</span></div>' +
         '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget) : '—') + '</b></div>' +
         (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c)) + '</b></div>' : '') +
-        '<div><span>Forecast cost</span><b>' + (forecast ? fmt.moneyFull(forecast) : '—') + '</b></div><div><span>Actual cost to date</span><b>' + (actual ? fmt.moneyFull(actual) : '—') + '</b></div>' +
-        '<div><span>Gross margin</span><b class="' + (gm == null ? '' : gm >= 0 ? 'okc' : 'haltc') + '">' + (gm == null ? '—' : fmt.moneyFull(gm) + ' · ' + gmPct.toFixed(1) + '%') + '</b></div></div>' +
-        (spent != null ? '<div class="faint tiny" style="margin:18px 0 8px">Spent vs forecast · ' + spent + '%</div><div class="bar fat"><i style="width:' + Math.min(100, spent) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:18px">Add a forecast cost to track spend against it.</div>') +
+        '<div><span>Earned to date</span><b>' + (contract ? fmt.moneyFull(earned) + ' · ' + p.pct + '%' : '—') + '</b></div>' +
+        '<div><span>Day count</span><b class="' + dayCls + '">' + esc(dayCount) + '</b></div><div><span>Days left</span><b class="' + dl.cls + '">' + esc(dl.text) + '</b></div></div>' +
+        (contract ? '<div class="faint tiny" style="margin:18px 0 8px">Earned to date · ' + p.pct + '%</div><div class="bar fat"><i style="width:' + Math.min(100, p.pct) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:18px">Add a contract value to see what has been earned.</div>') +
         '<div style="margin-top:18px"><button type="button" class="lh-btn sm" data-act="fin">Edit financials</button></div></section></div>' +
         UI.sect('Delivery') +
         '<div class="pd-three">' +
@@ -370,11 +373,11 @@
     function finForm() {
       var p = D.p;
       UI.form({
-        title: 'Edit financials', intro: 'Owner-only. Forecast and actual costs drive the margin figures.', submitLabel: 'Save', wide: true,
-        values: { contract: p.contract || '', budget: p.budget || '', forecast: p.forecast || '', actual: p.actual || '' },
-        fields: [{ name: 'contract', label: 'Contract value', type: 'money' }, { name: 'budget', label: 'Original budget', type: 'money' }, { name: 'forecast', label: 'Forecast cost', type: 'money' }, { name: 'actual', label: 'Actual cost to date', type: 'money' }],
+        title: 'Edit financials', intro: 'Owner-only. The contract value and budget drive the earned-to-date figures.', submitLabel: 'Save', wide: true,
+        values: { contract: p.contract || '', budget: p.budget || '' },
+        fields: [{ name: 'contract', label: 'Contract value', type: 'money' }, { name: 'budget', label: 'Original budget', type: 'money' }],
         onSubmit: async function (v) {
-          var cols = {}; ['contract:contract_value_cents', 'budget:original_budget_cents', 'forecast:forecast_cost_cents', 'actual:actual_cost_cents'].forEach(function (m) { var k = m.split(':'); var c = UI.cents(v[k[0]]); if (c != null) cols[k[1]] = c; });
+          var cols = {}; ['contract:contract_value_cents', 'budget:original_budget_cents'].forEach(function (m) { var k = m.split(':'); var c = UI.cents(v[k[0]]); if (c != null) cols[k[1]] = c; });
           await sbDo(LH.sb.from('project_financials').update(cols).eq('project_id', id));
         },
       }).then(function (ok) { if (ok) { UI.toast('Financials saved.'); refresh(); } });
