@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Dashboard | Lotti Homes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,200;0,300;0,400;1,300;1,400&amp;family=Geist:wght@300;400;500;600&amp;family=Archivo:wght@500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css?v=1">
+<script>
+  // Apply the saved theme (or the device's) before anything paints.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('lh-theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body>
+
+<!-- Sign in -->
+<main class="lh-login" id="login" hidden>
+  <form class="lh-login-card" id="loginForm" novalidate autocomplete="on">
+    <span class="lh-login-mark" data-mark></span>
+    <h1>Lotti Homes</h1>
+    <p class="sub">Sign in with your admin account.</p>
+    <label class="lh-field"><span class="cap">Email</span>
+      <input class="lh-input" type="email" id="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+    </label>
+    <label class="lh-field"><span class="cap">Password</span>
+      <input class="lh-input" type="password" id="password" autocomplete="current-password" required>
+    </label>
+    <button class="lh-btn primary block" type="submit" id="loginBtn">Sign in</button>
+    <p class="lh-error" id="loginError" role="alert"></p>
+  </form>
+</main>
+
+<!-- Dashboard -->
+<div class="lh-app" id="app" hidden>
+  <nav class="lh-rail" id="rail" aria-label="Main"></nav>
+  <div class="lh-main">
+    <div class="lh-bloom" aria-hidden="true"></div>
+    <header class="lh-top">
+      <div class="lh-search">
+        <svg class="si" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.2-4.2"></path></svg>
+        <input id="search" type="search" placeholder="Search projects, leads, clients, contractors" autocomplete="off" aria-label="Search">
+        <kbd>⌘K</kbd>
+        <div class="lh-results" id="results" hidden></div>
+      </div>
+      <div class="grow"></div>
+      <div class="lh-sync"><span class="lh-dot" id="syncDot"></span><span id="syncText">Synced with app</span></div>
+      <span class="lh-chip wx" id="topWx"></span>
+      <button class="lh-icon-btn" id="themeBtn" type="button" aria-label="Switch between light and dark"></button>
+      <button class="lh-avatar" id="avatarBtn" type="button" aria-haspopup="true" aria-label="Account"></button>
+      <div class="lh-menu" id="menu" hidden>
+        <div class="who"><div id="menuName"></div><div class="faint" id="menuEmail" style="font-size:12px"></div></div>
+        <button type="button" id="signOutBtn">Sign out</button>
+      </div>
+    </header>
+    <main class="lh-page" id="view" tabindex="-1"></main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="../js/supabase-config.js?v=2"></script>
+<script src="js/mark.js"></script>
+<script src="js/core.js?v=1"></script>
+<script src="js/overview.js?v=1"></script>
+<script src="js/compliance.js?v=1"></script>
+<script src="js/soon.js?v=1"></script>
+<script src="js/boot.js?v=1"></script>
+</body>
+</html>
