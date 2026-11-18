@@ -174,7 +174,7 @@
     }
 
     refresh().catch(function (e) { console.error(e); view.innerHTML = '<div class="lh-err">Couldn\'t load submissions.</div>'; });
-    return { refresh: refresh, destroy: function () { destroyed = true; view.removeEventListener('click', onClick); view.removeEventListener('input', onInput); } };
+    return { watch: ['site_inductions', 'daily_checkins'], refresh: refresh, destroy: function () { destroyed = true; view.removeEventListener('click', onClick); view.removeEventListener('input', onInput); } };
   }
 
   LH.screens.compliance = { title: 'Compliance', render: render };

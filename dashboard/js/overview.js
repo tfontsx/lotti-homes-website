@@ -372,7 +372,9 @@
       w.document.close(); w.focus(); w.print();
     }
 
-    return { refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
+    return {
+      watch: ['projects', 'project_stages', 'project_financials', 'leads', 'bookings', 'weather_notices', 'business_settings', 'clients'],
+      refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
   }
 
   LH.screens.overview = { title: 'Overview', render: render };

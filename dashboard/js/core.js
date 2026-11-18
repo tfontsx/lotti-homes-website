@@ -145,6 +145,7 @@
     if (!t) return;
     if (!navigator.onLine) { t.textContent = 'Offline'; dot.classList.add('off'); return; }
     dot.classList.remove('off');
+    if (live.on) { t.textContent = 'Synced with app · live'; return; }
     if (!lastSync) { t.textContent = 'Synced with app'; return; }
     var s = Math.round((Date.now() - lastSync) / 1000);
     t.textContent = 'Synced with app · ' + (s < 10 ? 'just now' : s < 60 ? s + 's ago' : Math.round(s / 60) + ' min ago');
@@ -191,7 +192,7 @@
     LH.$('#app').hidden = true;
     LH.$('#login').hidden = false;
     LH.$('#loginError').textContent = msg || '';
-    stopPolling();
+    stopPolling(); stopLive();
   }
 
   async function enter(session) {
@@ -210,11 +211,12 @@
     LH.$('#menuEmail').textContent = LH.state.email;
     drawRail(); drawThemeBtn(); drawTopWeather();
     startPolling();
+    startLive();
     LH.route();
   }
 
   LH.signOut = async function () {
-    stopPolling();
+    stopPolling(); stopLive();
     LH.state.user = null;
     await LH.sb.auth.signOut();
     LH.$('#password').value = '';
@@ -264,10 +266,47 @@
     poll = setInterval(function () {
       drawSync();
       if (document.hidden || !current || !current.refresh) return;
-      if (Date.now() - lastSync > 45000) { Promise.resolve(current.refresh()).catch(function () {}); }
+      // While the live connection is up, polling is only a safety net.
+      if (Date.now() - lastSync > (live.on ? 300000 : 45000)) { Promise.resolve(current.refresh()).catch(function () {}); }
     }, 15000);
   }
   function stopPolling() { if (poll) clearInterval(poll); poll = null; }
+
+  /* ---------- live updates (Supabase Realtime) ----------
+     Any change the signed-in admin is allowed to see — made in the app, the dashboard or the
+     website forms — refreshes the open screen within about a second. Screens may list the
+     tables they care about in `watch`; changes to other tables are ignored. */
+  var live = { channel: null, on: false, timer: null, last: 0, seen: false };
+  function startLive() {
+    stopLive();
+    live.channel = LH.sb.channel('lh-dashboard')
+      .on('postgres_changes', { event: '*', schema: 'public' }, onLiveChange)
+      .subscribe(function (status) {
+        var was = live.on;
+        live.on = status === 'SUBSCRIBED';
+        drawSync();
+        // After a drop and reconnect, catch up on anything missed.
+        if (live.on && !was && live.seen && current && current.refresh) Promise.resolve(current.refresh()).catch(function () {});
+        if (live.on) live.seen = true;
+      });
+  }
+  function stopLive() {
+    clearTimeout(live.timer);
+    if (live.channel && LH.sb) { try { LH.sb.removeChannel(live.channel); } catch (e) { /* already gone */ } }
+    live.channel = null; live.on = false; live.seen = false;
+  }
+  function onLiveChange(p) {
+    if (!current || !current.refresh) return;
+    var w = current.watch;
+    if (w && p && p.table && w.indexOf(p.table) === -1) return;
+    clearTimeout(live.timer);
+    // Bursts of changes become one refresh, and never more than one every ~2.5 seconds.
+    var wait = Math.max(300, 2500 - (Date.now() - live.last));
+    live.timer = setTimeout(function () {
+      live.last = Date.now();
+      if (current && current.refresh) Promise.resolve(current.refresh()).catch(function () {});
+    }, wait);
+  }
 
   /* ---------- search ---------- */
   var index = null;
