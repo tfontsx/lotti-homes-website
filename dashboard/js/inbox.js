@@ -6,6 +6,7 @@
   var MIMES = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
   var WDL = new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', weekday: 'short' });
 
+  var DOC_EXT = { 'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG', 'image/webp': 'IMG' };
   function one(x) { return Array.isArray(x) ? x[0] : x; }
   function time12(iso) { var t = fmt.time(iso), h = +t.slice(0, 2), m = t.slice(3); return (h % 12 || 12) + ':' + m + (h < 12 ? ' am' : ' pm'); }
   function when(iso) {
@@ -29,13 +30,14 @@
     var S = { sel: args && args[0] ? args[0] : null, filter: 'all', q: '' };
 
     view.innerHTML =
-      '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Same threads as the app · clients get a push notification</div></div>' +
+      '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Same threads as the app · Clients get a push notification</div></div>' +
       '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="new">+ New conversation</button><button class="lh-btn" type="button" data-act="readall">Mark all read</button></div></div>' +
       UI.sect('Conversations') +
       '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:12px 0 10px"></div><div id="inThreads" class="in-threads"></div></section>' +
       '<section class="in-chat lh-card"><div id="inHead" class="in-head"></div><div id="inMsgs" class="in-msgs"></div>' +
       '<form id="inForm" class="in-compose" autocomplete="off"><button type="button" class="in-plus" id="inAttach" aria-label="Attach a file">+</button><input type="file" id="inFile" hidden accept=".pdf,.jpg,.jpeg,.png,.webp"><input class="lh-input" id="inText" placeholder="Write a message" aria-label="Message"><button class="lh-btn primary" type="submit" id="inSend">Send</button></form></section>' +
       '<aside class="in-side lh-card" id="inSide"></aside></div>';
+    view.classList.add('fit');
     var el = { q: LH.$('#inQ', view), chips: LH.$('#inChips', view), threads: LH.$('#inThreads', view), head: LH.$('#inHead', view), msgs: LH.$('#inMsgs', view), side: LH.$('#inSide', view), text: LH.$('#inText', view), form: LH.$('#inForm', view), file: LH.$('#inFile', view) };
     el.threads.innerHTML = UI.skeleton([[60], [60, 10], [60, 10]]);
 
@@ -60,7 +62,7 @@
         var th = D.threads.filter(function (t) { return t.id === S.sel; })[0];
         var m = await Promise.all([
           sb.from('v_messages').select('id,thread_id,sender_role,body,attachments,sent_at,sender_name,is_mine').eq('thread_id', S.sel).order('sent_at', { ascending: true }).limit(300),
-          sb.from('project_documents').select('id,title,shared_with_client').eq('project_id', th.project).eq('shared_with_client', true).order('created_at', { ascending: false }).limit(5),
+          sb.from('project_documents').select('id,title,mime_type,size_bytes,storage_path,created_at').eq('project_id', th.project).eq('shared_with_client', true).order('created_at', { ascending: false }).limit(30),
         ]);
         D.messages = m[0].data || []; D.docs = m[1].data || [];
         if (th.unread > 0) { LH.sb.rpc('mark_thread_read', { p_thread_id: S.sel }).then(function () {}); th.unread = 0; }
@@ -84,10 +86,12 @@
       view.classList.toggle('enter', !drawn); drawn = true;
       var q = S.q.trim().toLowerCase();
       var list = D.threads.filter(function (t) { return (S.filter === 'all' || t.unread > 0) && (!q || (t.client + ' ' + t.street + ' ' + t.suburb).toLowerCase().indexOf(q) !== -1); });
+      var listTop = el.threads.scrollTop;
       el.chips.innerHTML = UI.chips([['all', 'All'], ['unread', 'Unread']], S.filter, 'filter');
       el.threads.innerHTML = list.length ? list.map(function (t) {
         return '<button type="button" class="in-t' + (t.id === S.sel ? ' on' : '') + '" data-thread="' + t.id + '"><span class="av">' + esc(ini(t.client)) + '</span><span class="tb"><span class="r1"><b>' + esc(t.client) + '</b><i>' + esc(when(t.last)) + '</i></span><span class="r2">' + esc(t.street) + '</span><span class="r3"><span>' + esc(t.preview) + '</span>' + (t.unread ? '<em>' + t.unread + '</em>' : '') + '</span></span></button>';
       }).join('') : '<div class="faint" style="padding:18px 6px">' + (D.threads.length ? 'No conversations match.' : 'No conversations yet. Start one with + New conversation.') + '</div>';
+      el.threads.scrollTop = listTop;
       var th = D.threads.filter(function (t) { return t.id === S.sel; })[0];
       if (!th) { el.head.innerHTML = ''; el.msgs.innerHTML = '<div class="in-empty">Pick a conversation.</div>'; el.side.innerHTML = ''; el.form.hidden = true; return; }
       el.form.hidden = false;
@@ -107,7 +111,7 @@
       el.msgs.dataset.thread = th.id;
       if (first || nearBottom) el.msgs.scrollTop = el.msgs.scrollHeight;
       el.side.innerHTML = '<h3 class="lh-card-title">Project</h3><div class="serif" style="font-size:16px;margin-top:14px">' + esc(th.street) + '</div><div class="faint tiny" style="margin-top:4px">' + esc([th.stage, th.pct + '%'].filter(Boolean).join(' · ')) + '</div><div class="bar" style="margin-top:12px"><i style="width:' + Math.min(100, th.pct) + '%"></i></div>' +
-        '<div class="cap" style="margin:22px 0 4px">Shared files</div>' + (D.docs.length ? D.docs.map(function (d) { return '<div class="in-doc">' + esc(d.title) + '</div>'; }).join('') : '<div class="faint tiny" style="padding:8px 0">Nothing shared yet.</div>') +
+        '<div class="cap" style="margin:22px 0 4px">Shared files</div>' + (D.docs.length ? D.docs.map(function (d) { var ext = DOC_EXT[d.mime_type] || (String(d.title).split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="sf-card"><div class="sf-top"><span class="ico">' + esc(ext) + '</span><div class="sf-tx"><span class="n" title="' + esc(d.title) + '">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + (d.size_bytes >= 1048576 ? (d.size_bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB') : '') + '</span></div></div><div class="sf-act"><button type="button" class="lh-btn sm" data-sf-open="' + d.id + '">Open</button><button type="button" class="lh-btn sm" data-sf-dl="' + d.id + '">Download</button></div></div>'; }).join('') : '<div class="faint tiny" style="padding:8px 0">Nothing shared yet.</div>') +
         '<a class="lh-btn" style="margin-top:18px;width:100%" href="#/projects/' + th.project + '">Open project</a>';
     }
 
@@ -130,8 +134,16 @@
       btn.disabled = false;
     }
 
+    async function sharedFile(id, download) {
+      var d = D.docs.filter(function (x) { return x.id === id; })[0]; if (!d) return;
+      var res = await LH.sb.storage.from('project-documents').createSignedUrl(d.storage_path, 300, download ? { download: d.title } : undefined);
+      if (res.error || !res.data) { UI.toast('Couldn\'t open that file.', 'error'); return; }
+      if (download) { var a = document.createElement('a'); a.href = res.data.signedUrl; a.download = d.title; document.body.appendChild(a); a.click(); a.remove(); } else window.open(res.data.signedUrl, '_blank', 'noopener');
+    }
     async function onClick(e) {
-      var t = e.target.closest('[data-thread],[data-filter],[data-act],#inAttach'); if (!t) return;
+      var t = e.target.closest('[data-thread],[data-filter],[data-act],[data-sf-open],[data-sf-dl],#inAttach'); if (!t) return;
+      if (t.hasAttribute('data-sf-open')) { sharedFile(t.getAttribute('data-sf-open'), false); return; }
+      if (t.hasAttribute('data-sf-dl')) { sharedFile(t.getAttribute('data-sf-dl'), true); return; }
       if (t.id === 'inAttach') { el.file.click(); return; }
       if (t.hasAttribute('data-thread')) { S.sel = t.getAttribute('data-thread'); history.replaceState(null, '', '#/inbox/' + S.sel); refresh(); return; }
       if (t.hasAttribute('data-filter')) { S.filter = t.getAttribute('data-filter'); paint(); return; }
@@ -165,8 +177,8 @@
     function onFile(e) { if (e.target.id !== 'inFile' || !e.target.files.length) return; var f = e.target.files[0]; e.target.value = ''; send(el.text.value.trim(), f); el.text.value = ''; }
     view.addEventListener('click', onClick); view.addEventListener('input', onInput); view.addEventListener('submit', onSubmit); view.addEventListener('change', onFile);
 
-    return { watch: ['messages', 'message_threads', 'thread_reads', 'projects', 'project_documents', 'project_stages'], refresh: refresh,
-      destroy: function () { destroyed = true; view.classList.remove('enter'); ['click', 'input', 'submit', 'change'].forEach(function (n) { view.removeEventListener(n, { click: onClick, input: onInput, submit: onSubmit, change: onFile }[n]); }); } };
+    return { watch: ['messages', 'message_threads', 'thread_reads', 'projects', 'project_documents', 'project_stages'], refresh: refresh, fast: true, pollMs: 8000,
+      destroy: function () { destroyed = true; view.classList.remove('enter', 'fit'); view.removeEventListener('click', onClick); view.removeEventListener('input', onInput); view.removeEventListener('submit', onSubmit); view.removeEventListener('change', onFile); } };
   }
 
   LH.screens.inbox = { title: 'Inbox', render: render };

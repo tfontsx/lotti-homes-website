@@ -141,7 +141,7 @@
       var sold = P.filter(function (p) { return p.created && +fmt.dayKey(p.created).slice(0, 4) === year; });
       var soldValue = sum(sold, 'contract'), bp = fmt.moneyParts(soldValue);
       return '<div class="lh-card lift stat big wash" style="animation-delay:0ms;--wash:var(--steel)"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
-        '<span class="faint" style="font-size:11px">sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
+        '<span class="faint" style="font-size:11px">Sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
         '<div class="mini3">' + [['Contract under way', money(contract)], ['Earned to date', money(earned)], ['Avg. project value', money(avg)]].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
     }
     function draw() {
@@ -153,7 +153,7 @@
       var types = []; P.forEach(function (p) { if (p.type && types.indexOf(p.type) === -1) types.push(p.type); });
       var contractAll = act.reduce(function (t, p) { return t + p.contract; }, 0);
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Portfolio</div><h1 class="ov-hello">Projects</h1><div class="hero-sub">' + act.length + (act.length === 1 ? ' active project' : ' active projects') + ' · ' + fmt.money(contractAll) + ' contract value · all figures live from the app</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Portfolio</div><h1 class="ov-hello">Projects</h1><div class="hero-sub">' + act.length + (act.length === 1 ? ' active project' : ' active projects') + ' · ' + fmt.money(contractAll) + ' contract value · All figures live from the app</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export Excel</button><button class="lh-btn" type="button" data-act="pdf">PDF report</button><button class="lh-btn primary" type="button" data-act="new">+ New project</button></div></div>' +
         UI.sect('Portfolio') +
         '<div class="pf-grid">' + portfolioCard(act) +
@@ -269,7 +269,7 @@
       var d0 = w.forecast[0], temp = w.currentTempC != null ? Math.round(w.currentTempC) : d0.maxTempC;
       var wet = w.forecast.filter(function (d) { return d.chanceOfRain != null && d.chanceOfRain >= D.rain; })[0];
       var h = '<div class="wx-top"><span class="cloud" aria-hidden="true"><i></i><i></i></span><span class="serif wx-t">' + esc(temp) + '°</span><span class="faint tiny">Adelaide · today</span></div>' +
-        '<div class="faint tiny" style="margin:6px 0 14px">' + esc(d0.precis) + (wet ? '' : ' · no impact on site') + '</div><div class="wx-days">';
+        '<div class="faint tiny" style="margin:6px 0 14px">' + esc(d0.precis) + (wet ? '' : ' · No impact on site') + '</div><div class="wx-days">';
       w.forecast.forEach(function (d) {
         var pct = d.chanceOfRain || 0, hot = pct >= D.rain;
         h += '<div class="wx-d' + (hot ? ' hot' : '') + '"><span class="w">' + WD.format(new Date(d.date + 'T00:00:00Z')).toUpperCase() + '</span><span class="g"><i style="height:' + Math.max(8, pct) + '%"></i></span><span class="p">' + pct + '%</span></div>';

@@ -208,7 +208,7 @@
       var rows = sortRows(open.slice());
 
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Pipeline</div><h1 class="ov-hello">Leads</h1><div class="hero-sub">' + D.leads.length + (D.leads.length === 1 ? ' lead' : ' leads') + ' · synced from website forms and the app</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Pipeline</div><h1 class="ov-hello">Leads</h1><div class="hero-sub">' + D.leads.length + (D.leads.length === 1 ? ' lead' : ' leads') + ' · Synced from website forms and the app</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export CSV</button><button class="lh-btn primary" type="button" data-act="add">+ Add lead</button></div></div>' +
         UI.sect('At a glance') + '<div class="ov-glance">' +
         UI.stat('New this month', String(st.newN), '', esc(st.delta), st.up ? 'ok' : 'wait', 0, 'steel') +
@@ -337,7 +337,7 @@
       view.innerHTML =
         '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:16px">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
         '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
-        esc([l.suburb, 'enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
+        esc([l.suburb, 'Enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
         '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
         (l.converted ? '<a class="lh-btn primary" href="#/projects/' + l.converted + '">Open project</a>' : (l.status !== 'won' ? '<button class="lh-btn primary" type="button" data-act="convert">Convert to project</button>' : '')) + '</div></div>' +
         UI.sect('Status') + '<section class="lh-card" style="padding:22px 28px">' + stepper(l) +
@@ -360,7 +360,7 @@
         }).join('') : '<div class="faint tiny" style="margin-top:14px">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
         '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section>' +
         '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:12px"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
-        '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section></div></div>';
+        '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">Weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section></div></div>';
       window.scrollTo(0, y);
     }
 

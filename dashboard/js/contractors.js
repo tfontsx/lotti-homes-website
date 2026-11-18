@@ -11,7 +11,6 @@
   function keyOfNum(n) { var d = new Date(n * DAY); return LH.keyOf(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); }
   function todayNum() { var t = LH.today(); return Math.round(Date.UTC(t.y, t.m, t.d) / DAY); }
   function mondayNum(n) { var d = new Date(n * DAY); return n - ((d.getUTCDay() + 6) % 7); }
-  function shortStreet(s) { return String(s || '').replace(/^\d+\w*\s+/, '').split(' ')[0] || String(s || ''); }
 
   /** Worst thing wrong with a contractor's paperwork, as a pill. */
   function compliance(c, certs) {
@@ -41,7 +40,7 @@
         var r = await Promise.all([
           sb.from('contractors').select('id,name,contractor_type_id,contact_name,phone,email,abn,notes,is_active,verified_checks,contractor_types(name)').order('name'),
           sb.from('contractor_certificates').select('id,contractor_id,kind,title,number,expiry_date,file_path'),
-          sb.from('bookings').select('id,project_id,title,starts_at,ends_at,projects(site_street,deleted_at),booking_internal(contractor_id)').eq('kind', 'contractor').neq('status', 'cancelled').gte('ends_at', from).lte('starts_at', to),
+          sb.from('bookings').select('id,project_id,title,starts_at,ends_at,projects(name,site_street,deleted_at),booking_internal(contractor_id)').eq('kind', 'contractor').neq('status', 'cancelled').gte('ends_at', from).lte('starts_at', to),
           sb.from('contractor_types').select('id,name').order('name'),
           sb.from('business_settings').select('rain_risk_threshold_pct').limit(1).maybeSingle(),
         ]);
@@ -50,7 +49,7 @@
         (r[2].data || []).forEach(function (b) {
           var bi = one(b.booking_internal), pj = one(b.projects) || {};
           if (!bi || !bi.contractor_id || pj.deleted_at) return;
-          bookings.push({ id: b.id, contractor: bi.contractor_id, project: b.project_id, street: pj.site_street || '', title: b.title, s: numOfInstant(b.starts_at), e: numOfInstant(new Date(new Date(b.ends_at).getTime() - 1).toISOString()) });
+          bookings.push({ id: b.id, contractor: bi.contractor_id, project: b.project_id, street: pj.site_street || pj.name || '', title: b.title, s: numOfInstant(b.starts_at), e: numOfInstant(new Date(new Date(b.ends_at).getTime() - 1).toISOString()) });
         });
         D = { cons: r[0].data || [], certs: r[1].data || [], bookings: bookings, types: r[3].data || [], rain: (r[4].data && r[4].data.rain_risk_threshold_pct) || 60 };
         LH.touchSynced();
@@ -82,18 +81,18 @@
       var rows = shown.map(function (c, idx) {
         var mine = D.bookings.filter(function (b) { return b.contractor === c.id && b.e >= mon && b.s <= mon + 6; }), pl = lanes(mine, mon), nl = pl.reduce(function (m, p) { return Math.max(m, p.lane + 1); }, 1);
         var cells = ''; for (var k = 0; k < 7; k++) cells += '<i class="cw-cell" style="grid-column:' + (k + 1) + ';grid-row:1 / span ' + nl + '"></i>';
-        var bars = pl.map(function (p) { return '<button type="button" class="cw-bar' + (rainDays[p.b.s] || false ? ' rain' : '') + '" data-booking="' + p.b.id + '" title="' + esc(p.b.title || '') + '" style="grid-column:' + (p.a + 1) + ' / ' + (p.z + 2) + ';grid-row:' + (p.lane + 1) + '">' + esc(shortStreet(p.b.street)) + '</button>'; }).join('');
+        var bars = pl.map(function (p) { return '<button type="button" class="cw-bar' + (rainDays[p.b.s] || false ? ' rain' : '') + '" data-booking="' + p.b.id + '" title="' + esc(p.b.title || '') + '" style="grid-column:' + (p.a + 1) + ' / ' + (p.z + 2) + ';grid-row:' + (p.lane + 1) + '">' + esc(p.b.street) + '</button>'; }).join('');
         var cp = compliance(c, D.certs.filter(function (x) { return x.contractor_id === c.id; }));
         return '<div class="cw-row cw-grid" style="--i:' + idx + '"><button type="button" class="cw-who" data-manage="' + c.id + '"><span class="tp">' + esc((one(c.contractor_types) || {}).name || '') + '</span><span class="nm">' + esc(c.name) + '</span><span class="ct">' + esc([c.contact_name, c.phone].filter(Boolean).join(' · ')) + '</span></button>' +
           '<div class="cw-days" style="--rows:' + nl + '">' + cells + bars + (pl.length ? '' : '<span class="cw-free">Available all week</span>') + '</div><div>' + UI.pill(cp.cls, cp.text) + '</div></div>';
       }).join('');
       var rangeEnd = mon + 6;
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Contacts &amp; bookings</div><h1 class="ov-hello">Contractors</h1><div class="hero-sub">' + D.cons.filter(function (c) { return c.is_active; }).length + ' contractors · bookings appear on the Google Calendar</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Contacts &amp; bookings</div><h1 class="ov-hello">Contractors</h1><div class="hero-sub">' + D.cons.filter(function (c) { return c.is_active; }).length + ' contractors · Bookings appear on Google Calendar</div></div>' +
         '<div class="ov-actions no-print"><div class="chip-row" style="margin:0">' + UI.chips([['0', 'This week'], ['1', 'Next week']], String(S.week), 'week') + '</div><button class="lh-btn" type="button" data-act="csv">Export</button><button class="lh-btn primary" type="button" data-act="add">+ Add contractor</button></div></div>' +
-        UI.sect(S.week ? 'Next week' : 'This week') + '<div class="chip-row">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
+        '<div class="lh-sect"><span class="cap">' + (S.week ? 'Next week' : 'This week') + '</span><span class="sect-sub">' + esc(fmt.date(keyOfNum(mon)) + ' – ' + fmt.date(keyOfNum(rangeEnd))) + '</span><span class="rule"></span></div>' + '<div class="chip-row">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
         '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:980px"><div class="cw-head cw-grid"><div>Contractor</div><div class="cw-days-head">' + head + '</div><div>Compliance</div></div>' +
-        (rows || '<div class="lh-empty">No contractors here yet. Add one to start booking them.</div>') + '</div></div><div class="faint tiny" style="margin-top:12px">' + esc(fmt.date(keyOfNum(mon)) + ' – ' + fmt.date(keyOfNum(rangeEnd))) + '</div></section>';
+        (rows || '<div class="lh-empty">No contractors here yet. Add one to start booking them.</div>') + '</div></div></section>';
       window.scrollTo(0, y);
     }
 

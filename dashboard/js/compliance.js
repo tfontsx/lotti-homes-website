@@ -2,7 +2,7 @@
    website (moved here from the old admin portal). Read-only, plus delete and CSV export. */
 (function () {
   'use strict';
-  var LH = window.LH, esc = LH.esc, fmt = LH.fmt;
+  var LH = window.LH, esc = LH.esc, fmt = LH.fmt, UI = LH.ui;
 
   var INDUCTION = {
     company_safety: 'Company Safety', fit_for_work: 'Fit for Work', competency_licensing: 'Competency & Licensing', white_card: 'White Card',
@@ -121,8 +121,8 @@
         '<h1 class="ov-hello" style="font-size:38px">Site <em>safety</em></h1><div class="muted" style="margin-top:8px;max-width:620px">Inductions and daily check-ins submitted by contractors from the website forms.</div></div>' +
         '<div class="no-print" style="display:flex;gap:10px"><button class="lh-btn" type="button" id="cpCsv">Export CSV</button></div></div>' +
         '<div class="cp-stats" style="margin-top:22px">' +
-        stat('Total inductions', S.inductions.length, tIn + ' today') + stat('Total check-ins', S.checkins.length, tCk + ' today') + stat('Flagged answers', tFlags, wFlags + ' this week') + '</div>' +
-        '<div class="lh-card" style="margin-bottom:18px"><div class="cap" style="margin-bottom:10px">Form links — print these as QR codes for site</div><div class="cp-link">' +
+        UI.stat('Total inductions', String(S.inductions.length), '', esc(tIn + ' today'), 'steel', 0, 'steel') + UI.stat('Total check-ins', String(S.checkins.length), '', esc(tCk + ' today'), 'ok', 60, 'ok') + UI.stat('Flagged answers', String(tFlags), '', esc(wFlags + ' this week'), tFlags ? 'halt' : 'ok', 120, tFlags ? 'halt' : 'wait') + '</div>' +
+        '<div class="lh-card" style="margin-bottom:18px"><div class="cap" style="margin-bottom:14px">Form links — print these as QR codes for site</div><div class="cp-link">' +
         link('Site induction', origin + '/site-induction.html') + link('Daily check-in', origin + '/daily-checkin.html') + '</div></div>' +
         '<div class="cp-tools"><div class="lh-seg">' + [['inductions', 'Site inductions'], ['checkins', 'Daily check-ins']].map(function (t) { return '<button type="button" data-tab="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<div class="lh-seg">' + [['all', 'All time'], ['today', 'Today'], ['week', 'This week'], ['month', 'This month']].map(function (t) { return '<button type="button" data-range="' + t[0] + '" class="' + (S.range === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
@@ -134,10 +134,9 @@
       window.scrollTo(0, scroll);
       if (hadFocus) { var i = LH.$('#cpSearch'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
     }
-    function stat(l, v, s) { return '<div class="lh-card stat"><div class="cap">' + l + '</div><div class="v">' + v + '</div><div class="s">' + esc(s) + '</div></div>'; }
     function link(label, url) {
-      return '<div><div style="margin-bottom:8px">' + esc(label) + '</div><a class="lh-link" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url.replace(/^https?:\/\//, '')) + '</a> ' +
-        '<button type="button" class="lh-btn sm" data-copy="' + esc(url) + '" style="margin-left:10px">Copy</button></div>';
+      return '<div class="cp-linkcard"><div class="lt"><div class="ln">' + esc(label) + '</div><a class="lh-link" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url.replace(/^https?:\/\//, '')) + '</a></div>' +
+        '<div class="la"><a class="lh-btn sm" href="' + esc(url) + '" target="_blank" rel="noopener">Open</a><button type="button" class="lh-btn sm" data-copy="' + esc(url) + '">Copy</button></div></div>';
     }
 
     async function onClick(e) {

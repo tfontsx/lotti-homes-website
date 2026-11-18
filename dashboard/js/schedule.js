@@ -102,7 +102,7 @@
       var y = window.scrollY; view.classList.toggle('enter', !drawn); drawn = true;
       if (!D.projects.length) { view.innerHTML = '<div class="lh-card soon"><div class="cap" style="margin-bottom:14px">Schedule</div><h2>No active projects</h2><p class="muted">Create a project and its stages will appear here.</p><a class="lh-btn primary" href="#/projects/new">+ New project</a></div>'; return; }
       var p = D.project, pl = D.plan;
-      var head = '<div class="ov-hero"><div><div class="cap">Schedule · ' + esc(p.site_street || p.name) + '</div><h1 class="ov-hello">Schedule</h1><div class="hero-sub">Planned vs actual · contractor bookings push to Google Calendar</div></div>' +
+      var head = '<div class="ov-hero"><div><div class="cap">Schedule · ' + esc(p.site_street || p.name) + '</div><h1 class="ov-hello">Schedule</h1><div class="hero-sub">Actual progress by stage · Contractor bookings push to Google Calendar</div></div>' +
         '<div class="ov-actions no-print"><label class="proj-pick"><span class="cap">Project</span><select id="schProject" class="pick-sel">' + D.projects.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === p.id ? ' selected' : '') + '>' + esc(x.site_street || x.name) + '</option>'; }).join('') + '</select></label>' +
         '<button class="lh-btn" type="button" data-act="csv">Export</button><button class="lh-btn primary" type="button" data-act="assign">+ Assign contractor</button></div></div>';
       if (!pl) { view.innerHTML = head + '<div class="lh-card lh-empty">This project has no start date yet. Set one with Edit project.</div>'; return; }

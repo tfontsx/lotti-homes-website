@@ -96,7 +96,7 @@
         }).then(function (done) { if (done) { UI.toast('Saved.'); refresh(); } });
       } else if (a === 'cal') {
         var c = D.cal, st = calStatus();
-        UI.choose('Google Calendar', st.text + (c && c.last_synced_at ? ' · last synced ' + fmt.dateTime(c.last_synced_at) : ''), [{ key: 'ok', label: 'Got it', primary: true }]).then(function () {});
+        UI.choose('Google Calendar', st.text + (c && c.last_synced_at ? ' · Last synced ' + fmt.dateTime(c.last_synced_at) : ''), [{ key: 'ok', label: 'Got it', primary: true }]).then(function () {});
         UI.toast('Connect or reconnect Google Calendar from Settings in the app.');
       } else if (a === 'forms') {
         var origin = location.origin;

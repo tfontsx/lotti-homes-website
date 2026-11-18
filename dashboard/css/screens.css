@@ -372,3 +372,6 @@ html { scrollbar-gutter:stable; }
 .li.ms .due, .li.ms .t { font-size:12.5px; line-height:20px; height:20px; display:block; }
 .li.ms .due { font-weight:500; }
 .li.ms .t { font-weight:400; }
+
+/* Helper text always starts with a capital */
+.hero-sub::first-letter, .stat .s::first-letter, .faint.tiny::first-letter { text-transform:uppercase; }

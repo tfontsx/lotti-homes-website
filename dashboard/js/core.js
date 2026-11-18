@@ -277,8 +277,8 @@
       drawSync();
       if (document.hidden || !current || !current.refresh) return;
       // While the live connection is up, polling is only a safety net.
-      if (Date.now() - lastSync > (live.on ? 300000 : 45000)) { Promise.resolve(current.refresh()).catch(function () {}); }
-    }, 15000);
+      if (Date.now() - lastSync > (current.pollMs || (live.on ? 60000 : 30000))) { Promise.resolve(current.refresh()).catch(function () {}); }
+    }, 5000);
   }
   function stopPolling() { if (poll) clearInterval(poll); poll = null; }
 
@@ -311,7 +311,7 @@
     if (w && p && p.table && w.indexOf(p.table) === -1) return;
     clearTimeout(live.timer);
     // Bursts of changes become one refresh, and never more than one every ~2.5 seconds.
-    var wait = Math.max(300, 2500 - (Date.now() - live.last));
+    var wait = current.fast ? 150 : Math.max(300, 2500 - (Date.now() - live.last));
     live.timer = setTimeout(function () {
       live.last = Date.now();
       if (current && current.refresh) Promise.resolve(current.refresh()).catch(function () {});
