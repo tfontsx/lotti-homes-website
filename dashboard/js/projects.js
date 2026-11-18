@@ -303,7 +303,7 @@
       }).join('') || '<div class="faint" style="padding:6px 0">Nothing booked on site this week.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:14px">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
+        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:16px">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
         esc(c.name || '') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +

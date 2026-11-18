@@ -335,7 +335,7 @@
       }).join('') || '<div class="faint">No activity yet.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:14px">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
+        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:16px">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
         '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
         esc([l.suburb, 'enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
         '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
