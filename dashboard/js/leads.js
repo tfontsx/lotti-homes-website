@@ -236,7 +236,7 @@
         UI.chips([['all', 'All sources']].concat(srcs.map(function (s) { return [s, s === 'website' ? 'Website' : (SRC[s] || s)]; })), S.source, 'source') + '</div>' +
         '<div class="kb">' + STAGES.map(function (s) { return column(s, L.filter(function (l) { return l.status === s; })); }).join('') + '</div>' +
         UI.sect('All open leads') +
-        '<section class="lh-card"><div class="sort-row left"><span class="faint tiny">Sort</span>' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div>' +
+        '<section class="lh-card"><div class="sort-row left">' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div>' +
         (rows.length ? '<div class="tbl-scroll"><div class="tbl-inner"><div class="ld-head ld-grid"><div>Lead</div><div>Source</div><div>Status</div><div>Value</div><div>Received</div><div>Next action</div><div>Due</div></div>' +
           rows.map(function (l, i) {
             var due = dueInfo(l);
@@ -374,7 +374,7 @@
         '<div class="est-items">' + (D.items.length ? D.items.map(function (i) {
           var a = i.amount_cents / 100; return '<div class="ei"><div class="el"><span>' + esc(i.label) + '</span><span>' + fmt.money(a) + '</span></div><div class="bar"><i style="width:' + (total ? Math.min(100, (a / total) * 100) : 0) + '%"></i></div></div>';
         }).join('') : '<div class="faint tiny" style="margin-top:14px">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
-        '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button><button type="button" class="lh-btn primary" data-act="quote">Send quote</button></div></section>' +
+        '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section>' +
         '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:12px"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
         '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section></div></div>';
       window.scrollTo(0, y);
@@ -408,7 +408,7 @@
       else if (a === 'notes') notesForm();
       else if (a === 'estimate') estimateForm();
       else if (a === 'prob') probForm();
-      else if (a === 'quote') sendQuote();
+      else if (a === 'quote') markQuoted();
       else if (a === 'delete') {
         if (await UI.confirm('Delete ' + l.name + '? This removes the lead and its history.', { title: 'Delete lead', yes: 'Delete', danger: true })) {
           run(async function () { var r = await LH.sb.rpc('delete_leads', { p_lead_ids: [l.id] }); if (r.error) throw r.error; destroyed = true; LH.go('leads'); }, 'Lead deleted.');
@@ -502,21 +502,8 @@
         },
       }).then(function (ok) { if (ok) { UI.toast('Estimate saved.'); refresh(); } });
     }
-    async function sendQuote() {
-      var l = D.lead;
-      var total = D.items.reduce(function (a, i) { return a + i.amount_cents / 100; }, 0) || l.value;
-      if (!total) { UI.toast('Add an estimate first.', 'error'); return; }
-      var ok = await UI.confirm('This marks ' + l.name + ' as quoted' + (l.email ? ' and opens an email draft to ' + l.email + '.' : '. They have no email on file, so you will need to send the quote yourself.'), { title: 'Send quote', yes: 'Mark as quoted' });
-      if (!ok) return;
-      try {
-        if (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1) await moveTo(l.id, 'quoted', false);
-        await refresh();
-        if (l.email) {
-          var lines = D.items.map(function (i) { return '• ' + i.label + ': ' + fmt.moneyFull(i.amount_cents / 100); }).join('\n');
-          var body = 'Hi ' + l.name.split(' ')[0] + ',\n\nThanks for meeting with us. Here is your quote' + (l.type ? ' for your ' + l.type.toLowerCase() : '') + ':\n\n' + (lines ? lines + '\n\n' : '') + 'Total: ' + fmt.moneyFull(total) + '\n\nWe would love to build this for you. Let us know if you have any questions.\n\nKind regards,\nLotti Homes';
-          window.location.href = 'mailto:' + encodeURIComponent(l.email) + '?subject=' + encodeURIComponent('Your Lotti Homes quote') + '&body=' + encodeURIComponent(body);
-        } else UI.toast('Marked as quoted.');
-      } catch (e) { UI.toast(LH.errMsg(e), 'error'); }
+    function markQuoted() {
+      run(function () { return moveTo(D.lead.id, 'quoted', false); }, 'Marked as quoted.');
     }
 
     return { watch: ['leads', 'lead_activity', 'consultations', 'lead_estimate_items', 'bookings'], refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); view.removeEventListener('submit', onSubmit); } };

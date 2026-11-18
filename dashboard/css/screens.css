@@ -175,6 +175,7 @@
 .ph-grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
 .ph { aspect-ratio:1; border:0; padding:0; border-radius:12px; overflow:hidden; background:repeating-linear-gradient(135deg, var(--tint) 0 3px, transparent 3px 8px), var(--faint); transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; }
 .ph:hover { transform:translateY(-2px) scale(1.02); box-shadow:var(--card-sh-hover); } .ph img { width:100%; height:100%; object-fit:cover; display:block; animation:lhFade .4s both; }
+.ph-empty { grid-column:1 / -1; padding:2px 0 0; font-size:12.5px; }
 .ph.more { display:flex; align-items:center; justify-content:center; color:var(--i3); font-size:12px; }
 .doc { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line5); } .doc:last-child { border-bottom:0; }
 .doc .ico { width:30px; height:36px; border-radius:6px; box-shadow:inset 0 0 0 1px var(--line2); display:flex; align-items:center; justify-content:center; font:600 7.5px/1 Archivo,sans-serif; letter-spacing:.06em; color:var(--i3); flex:none; }

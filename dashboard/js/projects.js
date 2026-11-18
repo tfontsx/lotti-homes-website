@@ -157,7 +157,7 @@
         UI.sect('All projects') +
         '<section class="lh-card"><div class="lh-card-head"><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
         '<div class="chip-row" style="margin:0">' + UI.chips([['active', 'Active'], ['complete', 'Complete']], S.show, 'show') + '</div></div>' +
-        (L.length ? '<div class="tbl-scroll"><div class="tbl-inner wide"><div class="pr-head pr-grid"><div>ID</div><div>Project · client</div><div>Type</div><div>Contract</div><div>Budget</div><div>Days left</div><div>Next milestone</div><div>Manager</div><div>Stage</div><div>Progress</div><div>Status</div></div>' +
+        (L.length ? '<div class="tbl-scroll"><div class="tbl-inner wide"><div class="pr-head pr-grid"><div>ID</div><div>Project · client</div><div>Type</div><div>Contract</div><div>Budget</div><div>Days left</div><div>Next milestone</div><div>Project manager</div><div>Stage</div><div>Progress</div><div>Status</div></div>' +
           L.map(function (p, i) {
             var sl = statusLabel(p), dl = daysLeft(p);
             return '<a class="pr-row pr-grid" href="#/projects/' + p.id + '" style="--i:' + i + '"><div class="faint code">' + esc(p.code || '') + '</div><div><div class="n">' + esc(p.street) + '</div><div class="s">' + esc([p.client, p.suburb].filter(Boolean).join(' · ')) + '</div></div>' +
@@ -245,7 +245,7 @@
       box.innerHTML = list.length ? list.slice(0, 12).map(function (p) {
         var src = urls[p.id];
         return '<button type="button" class="ph" data-photo="' + p.id + '" aria-label="' + esc(p.caption || 'Photo') + '">' + (src ? '<img loading="lazy" alt="" src="' + esc(src) + '">' : '') + '</button>';
-      }).join('') + (list.length > 12 ? '<div class="ph more">+' + (list.length - 12) + ' more</div>' : '') : '<div class="faint" style="grid-column:1/-1;padding:24px 0">No photos here yet. Upload them from the app.</div>';
+      }).join('') + (list.length > 12 ? '<div class="ph more">+' + (list.length - 12) + ' more</div>' : '') : '<div class="faint ph-empty">No photos here yet. Upload them from the app.</div>';
     }
     function paintWeather() {
       var box = LH.$('#wxBox', view); if (!box || !D) return;
