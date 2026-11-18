@@ -308,8 +308,8 @@
     }
 
     /* ---------- page ---------- */
-    function stat(label, value, unit, sub, tone, delay) {
-      return '<div class="lh-card lift stat" style="animation-delay:' + delay + 'ms"><div class="cap">' + esc(label) + '</div><div class="v">' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div><div class="s ' + tone + '">' + esc(sub) + '</div></div>';
+    function stat(label, value, unit, sub, tone, delay, wash) {
+      return '<div class="lh-card lift stat wash" style="animation-delay:' + delay + 'ms;--wash:var(--' + wash + ')"><div class="cap">' + esc(label) + '</div><div class="v">' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div><div class="s ' + tone + '">' + esc(sub) + '</div></div>';
     }
     function sect(label) { return '<div class="lh-sect"><span class="cap">' + label + '</span><span class="rule"></span></div>'; }
 
@@ -328,10 +328,10 @@
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" id="ovSheet">Export day sheet</button><a class="lh-btn primary" href="#/projects/new">+ New project</a></div></div>' +
         sect('At a glance') +
         '<div class="ov-glance">' +
-        stat('Active contract value', c.num, c.unit, added, 'ok', 0) +
-        stat('Lead conversion', rate, M.rate == null ? '' : '%', rateSub, M.rate == null ? '' : 'ok', 60) +
-        stat('Pipeline (weighted)', w.num, w.unit, M.open + ' open ' + (M.open === 1 ? 'lead' : 'leads'), 'ok', 120) +
-        stat('Delivered value · ' + t.y, dl.num, dl.unit, M.done + (M.done === 1 ? ' project completed' : ' projects completed'), 'steel', 180) + '</div>' +
+        stat('Active contract value', c.num, c.unit, added, 'ok', 0, 'steel') +
+        stat('Lead conversion', rate, M.rate == null ? '' : '%', rateSub, M.rate == null ? '' : 'ok', 60, 'ok') +
+        stat('Pipeline (weighted)', w.num, w.unit, M.open + ' open ' + (M.open === 1 ? 'lead' : 'leads'), 'ok', 120, 'wait') +
+        stat('Delivered value · ' + t.y, dl.num, dl.unit, M.done + (M.done === 1 ? ' project completed' : ' projects completed'), 'steel', 180, 'steel') + '</div>' +
         sect('Schedule &amp; attention') +
         '<div class="ov-grid">' + scheduleCard() + attentionCard(rain) + '</div>' +
         sect('Active projects') + projectsCard();
