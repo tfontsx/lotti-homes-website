@@ -274,6 +274,7 @@
       var total = D.stages.length, curI = D.stages.findIndex(function (s) { return s.status === 'current'; });
       var segs = D.stages.map(function (s, i) { return '<button type="button" class="seg ' + (s.status === 'complete' ? 'done' : s.status === 'current' ? 'now' : '') + '" data-pos="' + s.position + '" title="' + esc(s.name) + '"></button>'; }).join('');
       var openMiles = D.miles.filter(function (m) { return !m.completed_at; }), nextM = openMiles[0];
+      var stagePill = p.status === 'completed' ? UI.pill('ok', 'Complete') : (curI >= 0 ? UI.pill('steel', 'In progress') : UI.pill('', 'Not started'));
       var stageText = p.status === 'completed' ? 'All stages complete' : (total ? 'Stage ' + (curI >= 0 ? curI + 1 : total) + ' of ' + total : 'No stages yet');
       var contract = p.contract, earned = contract * Math.min(100, p.pct) / 100, dl = daysLeft(p);
       var toStart = UI.daysUntil(p.start), totalDays = (p.start && p.forecastDate) ? Math.round((Date.parse(p.forecastDate + 'T00:00:00Z') - Date.parse(p.start + 'T00:00:00Z')) / 86400000) : null;
@@ -288,20 +289,18 @@
 
       view.innerHTML =
         '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:14px">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
-        esc(c.name || '') + '</div></div>' +
+        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub hs-row">' +
+        '<span>' + esc(c.name || '') + '</span>' + (p.start ? '<i class="vr"></i><span><span class="cap">Project start date</span><span class="hs-v">' + esc(fmt.dateY(p.start)) + '</span></span>' : '') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +
         (p.status !== 'completed' && curI >= 0 && curI < total - 1 ? '<button class="lh-btn" type="button" data-act="advance">Next stage</button>' : '') +
         (p.status !== 'completed' ? '<button class="lh-btn" type="button" data-act="complete">Mark complete</button>' : '') + '<button class="lh-btn primary" type="button" data-act="message">Message client</button></div></div>' +
         UI.sect('Progress &amp; financials') +
-        '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span>' +
-        '<div class="stage-block"><div class="cap">Stage status</div><div class="sb-row"><span class="serif sb-n">' + esc(stageText) + '</span>' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div></div>' +
-        '<div class="pg-side"><div class="segs">' + segs + '</div><div class="pg-facts"><div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div></div>' +
-        '<div><div class="cap">Project start date</div><div class="serif fact">' + esc(p.start ? fmt.dateY(p.start) : '—') + '</div></div>' +
+        '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span></div>' +
+        '<div class="pg-side"><div class="segs">' + segs + '</div><div class="stage-line"><span class="cap">Stage status</span><span class="serif sb-n">' + esc(stageText) + '</span>' + stagePill + '</div></div></div>' +
+        '<div class="pg-strip"><div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div></div>' +
         '<div><div class="cap">Forecast completion</div><div class="fact fc"><span class="serif">' + esc(fmt.date(p.forecastDate)) + '</span> ' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div>' +
         '<div><div class="cap">Next milestone</div><div class="serif fact">' + (nextM ? esc(nextM.title) + ' · ' + esc(fmt.date(nextM.due_date)) : '—') + '</div></div>' +
         '<div><div class="cap">Project manager</div><div class="serif fact">' + esc(raw.project_manager_name || '—') + '</div></div></div>' +
-        '</div></div>' +
         '<div class="pg-split"><div><div class="split-h"><span class="cap">On site this week</span><span class="faint tiny">Synced to Google Calendar</span></div>' + weekRows + '</div><div id="wxBox" class="wxbox"></div></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Owner view</span></div>' +
         '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget) : '—') + '</b></div>' +
