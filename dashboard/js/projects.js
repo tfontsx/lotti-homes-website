@@ -19,7 +19,7 @@
     var cur = mine.filter(function (s) { return s.status === 'current'; })[0];
     var nm = (miles || []).filter(function (m) { return m.project_id === r.id; })[0];
     return {
-      mgr: r.project_manager_name || '', nextMile: nm ? nm.title : '', nextMileDate: nm ? nm.due_date : null,
+      created: r.created_at, mgr: r.project_manager_name || '', nextMile: nm ? nm.title : '', nextMileDate: nm ? nm.due_date : null,
       id: r.id, code: r.code, name: r.name, status: r.status, health: r.health, st: LH.projectStatus(r), pct: r.percent_complete || 0, delay: r.delay_days, note: r.client_status_message,
       start: r.start_date, forecastDate: r.forecast_completion_date, completedAt: r.completed_at, street: r.site_street || r.name, suburb: r.site_suburb || '',
       client: cl.name || '', type: ty.name || '', stage: cur ? cur.name : '', stageCount: mine.length, stagePos: cur ? cur.position : 0,
@@ -52,7 +52,7 @@
   async function loadList() {
     var sb = LH.sb;
     var r = await Promise.all([
-      sb.from('projects').select('id,code,name,status,health,percent_complete,delay_days,start_date,forecast_completion_date,completed_at,client_status_message,site_street,site_suburb,project_manager_name,clients(name),project_types(name),project_financials(contract_value_cents,original_budget_cents,forecast_cost_cents,actual_cost_cents)').is('deleted_at', null).order('created_at', { ascending: false }),
+      sb.from('projects').select('id,code,name,status,health,percent_complete,delay_days,start_date,forecast_completion_date,completed_at,created_at,client_status_message,site_street,site_suburb,project_manager_name,clients(name),project_types(name),project_financials(contract_value_cents,original_budget_cents,forecast_cost_cents,actual_cost_cents)').is('deleted_at', null).order('created_at', { ascending: false }),
       sb.from('project_stages').select('project_id,name,status,position'),
       sb.from('project_milestones').select('project_id,title,due_date').is('completed_at', null).order('due_date', { ascending: true }),
     ]);
@@ -130,12 +130,12 @@
     function portfolioCard(act) {
       var sum = function (a, k) { return a.reduce(function (t, p) { return t + p[k]; }, 0); };
       var contract = sum(act, 'contract'), earned = act.reduce(function (t, p) { return t + p.contract * Math.min(100, p.pct) / 100; }, 0);
-      var left = Math.max(0, contract - earned), pct = contract > 0 ? Math.round((earned / contract) * 100) : 0;
       var withC = act.filter(function (p) { return p.contract > 0; }), avg = withC.length ? contract / withC.length : 0;
-      var bp = fmt.moneyParts(left);
-      var sub = contract > 0 ? '<span class="ok">' + pct + '% of contract delivered</span>' : '<span class="faint">Add contract values to see the picture</span>';
+      var year = LH.today().y;
+      var sold = P.filter(function (p) { return p.created && +fmt.dayKey(p.created).slice(0, 4) === year; });
+      var soldValue = sum(sold, 'contract'), bp = fmt.moneyParts(soldValue);
       return '<div class="lh-card lift stat big" style="animation-delay:0ms"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
-        '<span class="faint" style="font-size:11px">still to deliver</span>' + sub + '</div>' +
+        '<span class="faint" style="font-size:11px">sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
         '<div class="mini3">' + [['Contract under way', money(contract)], ['Earned to date', money(earned)], ['Avg. project value', money(avg)]].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
     }
     function draw() {
