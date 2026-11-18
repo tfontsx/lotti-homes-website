@@ -15,6 +15,7 @@
   var ICO = {
     tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2L18.5 7.8"/></svg>',
     cross: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l.8 12.2h8.4L17 7M10.2 10.5v5.5M13.8 10.5v5.5"/></svg>',
   };
   function money(n) { return n ? fmt.money(n) : '—'; }
   function mapProject(r, stages, miles) {
@@ -256,7 +257,8 @@
       var roomName = {}; D.rooms.forEach(function (r) { roomName[r.id] = r.name; });
       box.innerHTML = list.length ? list.slice(0, 12).map(function (p) {
         var src = urls[p.id], cat = roomName[p.room_id] || '';
-        return '<button type="button" class="ph" data-photo="' + p.id + '" aria-label="' + esc((cat ? cat + ' photo' : 'Photo') + (p.caption ? ': ' + p.caption : '')) + '">' + (src ? '<img loading="lazy" alt="" src="' + esc(src) + '">' : '') + (cat ? '<span class="ph-lbl">' + esc(cat) + '</span>' : '') + '</button>';
+        return '<div class="ph-tile"><button type="button" class="ph" data-photo="' + p.id + '" aria-label="' + esc((cat ? cat + ' photo' : 'Photo') + (p.caption ? ': ' + p.caption : '')) + '">' + (src ? '<img loading="lazy" alt="" src="' + esc(src) + '">' : '') + (cat ? '<span class="ph-lbl">' + esc(cat) + '</span>' : '') + '</button>' +
+          '<button type="button" class="ph-del" data-pdel="' + p.id + '" title="Delete photo" aria-label="Delete photo">' + ICO.trash + '</button></div>';
       }).join('') + (list.length > 12 ? '<div class="ph more">+' + (list.length - 12) + ' more</div>' : '') : '<div class="faint ph-empty">No photos here yet. Upload them from the app.</div>';
     }
     function paintWeather() {
@@ -333,7 +335,7 @@
         UI.sect('Media &amp; documents') +
         '<div class="pd-media' + (D.photos.length ? '' : ' no-photos') + '"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Photos</h2><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(D.rooms.map(function (r) { return [r.id, r.name]; })), photoFilter, 'room') + '</div></div><div id="phGrid" class="ph-grid"></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Documents</h2><button type="button" class="lh-link" data-act="upload">Upload</button></div><input type="file" id="docFile" hidden multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.dwg">' +
-        (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc"><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="share-btn' + (d.shared_with_client ? ' on' : '') + '" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '" aria-pressed="' + (d.shared_with_client ? 'true' : 'false') + '" title="' + (d.shared_with_client ? 'Visible to the client. Click to stop sharing.' : 'Share with the client') + '">' + (d.shared_with_client ? '<i></i>Shared' : 'Share') + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
+        (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc"><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="share-btn' + (d.shared_with_client ? ' on' : '') + '" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '" aria-pressed="' + (d.shared_with_client ? 'true' : 'false') + '" title="' + (d.shared_with_client ? 'Visible to the client. Click to stop sharing.' : 'Share with the client') + '">' + (d.shared_with_client ? '<i></i>Shared' : 'Share') + '</button><button type="button" class="icon-del" data-ddel="' + d.id + '" title="Delete document" aria-label="Delete document">' + ICO.trash + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
         '<div style="margin-top:34px"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';
       paintPhotos(); paintWeather(); alignComplete();
       window.scrollTo(0, y);
@@ -360,6 +362,8 @@
     async function onClick(e) {
       if (!D) return;
       var t = e.target, el;
+      if ((el = t.closest('[data-pdel]'))) { deletePhoto(el.getAttribute('data-pdel')); return; }
+      if ((el = t.closest('[data-ddel]'))) { deleteDoc(el.getAttribute('data-ddel')); return; }
       if ((el = t.closest('[data-room]'))) { photoFilter = el.getAttribute('data-room'); draw(); return; }
       if ((el = t.closest('[data-photo]'))) { openPhoto(el.getAttribute('data-photo')); return; }
       if ((el = t.closest('[data-pos]'))) {
@@ -454,6 +458,28 @@
           if (v.vis === '1') await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: row.id, p_visible: true }));
         },
       }).then(function (ok) { if (ok) { UI.toast('Note added.'); refresh(); } });
+    }
+    async function deletePhoto(pid) {
+      var ph = D.photos.filter(function (x) { return x.id === pid; })[0]; if (!ph) return;
+      var ok = await UI.confirm('Delete this photo? It is removed for the client too, and this can\'t be undone.', { title: 'Delete photo', yes: 'Delete', danger: true });
+      if (!ok) return;
+      run(async function () {
+        var orig = one(ph.photo_internal);
+        await sbDo(LH.sb.from('photo_internal').delete().eq('photo_id', pid));
+        await sbDo(LH.sb.from('project_photos').delete().eq('id', pid));
+        if (orig && orig.original_path) await LH.sb.storage.from('photo-originals').remove([orig.original_path]);
+        if (ph.path) await LH.sb.storage.from('project-photos').remove([ph.path]);
+        delete urls[pid];
+      }, 'Photo deleted.');
+    }
+    async function deleteDoc(did) {
+      var d = D.docs.filter(function (x) { return x.id === did; })[0]; if (!d) return;
+      var ok = await UI.confirm('Delete "' + d.title + '"? It is removed for the client too, and this can\'t be undone.', { title: 'Delete document', yes: 'Delete', danger: true });
+      if (!ok) return;
+      run(async function () {
+        await sbDo(LH.sb.from('project_documents').delete().eq('id', did));
+        await LH.sb.storage.from('project-documents').remove([d.storage_path]);
+      }, 'Document deleted.');
     }
     async function openPhoto(pid) {
       var ph = D.photos.filter(function (x) { return x.id === pid; })[0]; if (!ph) return;
