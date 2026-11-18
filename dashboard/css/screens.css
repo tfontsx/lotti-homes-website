@@ -231,7 +231,9 @@
 .pj-row .mile { line-height:1.3; }
 
 /* project progress card: Complete label and stage status block */
-.pg-num .pg-lbl { display:block; margin-top:10px; font:400 14px/1.2 Geist,sans-serif; color:var(--i2); }
+/* number trimmed to its digits (cap-height to baseline) so the gap to "Complete" is exact */
+.pg-num > .serif { text-box:trim-both cap alphabetic; }
+.pg-num .pg-lbl { display:block; margin-top:8px; font:400 10px/1.2 Geist,sans-serif; color:var(--i2); }
 .stage-block { margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
 .stage-block .sb-row { margin-top:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .stage-block .sb-n { font-size:15px; }
