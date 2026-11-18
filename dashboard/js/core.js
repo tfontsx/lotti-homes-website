@@ -262,6 +262,7 @@
     if (!screen) { id = 'overview'; screen = LH.screens.overview; parts = ['overview']; }
     if (current && current.destroy) { try { current.destroy(); } catch (e) { console.error(e); } }
     current = null;
+    if (LH.fx) LH.fx.reset();
     markNav(id);
     document.title = screen.title + ' | Lotti Homes';
     var view = LH.$('#view');
