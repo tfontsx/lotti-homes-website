@@ -227,10 +227,10 @@
         '<div class="ov-hero"><div><div class="cap">Pipeline</div><h1 class="ov-hello">Leads</h1><div class="hero-sub">' + D.leads.length + (D.leads.length === 1 ? ' lead' : ' leads') + ' · synced from website forms and the app</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export CSV</button><button class="lh-btn primary" type="button" data-act="add">+ Add lead</button></div></div>' +
         UI.sect('At a glance') + '<div class="ov-glance">' +
-        UI.stat('New this month', String(st.newN), '', esc(st.delta), st.up ? 'ok' : 'wait', 0) +
-        UI.stat('Consult booking rate', st.cr == null ? '—' : String(st.cr), st.cr == null ? '' : '%', 'enquiry → consultation', 'ok', 60) +
-        UI.stat('Win rate', st.wr == null ? '—' : String(st.wr), st.wr == null ? '' : '%', 'quoted → won', 'steel', 120) +
-        UI.stat('Leads lost', st.lp == null ? '—' : String(st.lp), st.lp == null ? '' : '%', st.lp == null ? 'No leads yet' : st.ln + ' lost · ' + fmt.money(st.lv), st.lp == null ? '' : (st.lp > 50 ? 'halt' : st.lp > 30 ? 'wait' : 'ok'), 180) + '</div>' +
+        UI.stat('New this month', String(st.newN), '', esc(st.delta), st.up ? 'ok' : 'wait', 0, 'steel') +
+        UI.stat('Consult booking rate', st.cr == null ? '—' : String(st.cr), st.cr == null ? '' : '%', 'enquiry → consultation', 'ok', 60, 'ok') +
+        UI.stat('Win rate', st.wr == null ? '—' : String(st.wr), st.wr == null ? '' : '%', 'quoted → won', 'steel', 120, 'wait') +
+        UI.stat('Leads lost', st.lp == null ? '—' : String(st.lp), st.lp == null ? '' : '%', st.lp == null ? 'No leads yet' : st.ln + ' lost · ' + fmt.money(st.lv), st.lp == null ? '' : (st.lp > 50 ? 'halt' : st.lp > 30 ? 'wait' : 'ok'), 180, 'halt') + '</div>' +
         UI.sect('Pipeline') +
         '<div class="chip-row">' + UI.chips([['all', 'All types']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '<span class="chip-sep"></span>' +
         UI.chips([['all', 'All sources']].concat(srcs.map(function (s) { return [s, s === 'website' ? 'Website' : (SRC[s] || s)]; })), S.source, 'source') + '</div>' +

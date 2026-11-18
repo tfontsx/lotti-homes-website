@@ -9,8 +9,8 @@
   UI.sect = function (label, right) {
     return '<div class="lh-sect"><span class="cap">' + label + '</span><span class="rule"></span>' + (right || '') + '</div>';
   };
-  UI.stat = function (label, value, unit, sub, tone, delay) {
-    return '<div class="lh-card lift stat" style="animation-delay:' + (delay || 0) + 'ms"><div class="cap">' + esc(label) + '</div><div class="v">' + value + (unit ? '<small>' + esc(unit) + '</small>' : '') +
+  UI.stat = function (label, value, unit, sub, tone, delay, wash) {
+    return '<div class="lh-card lift stat' + (wash ? ' wash' : '') + '" style="animation-delay:' + (delay || 0) + 'ms' + (wash ? ';--wash:var(--' + wash + ')' : '') + '"><div class="cap">' + esc(label) + '</div><div class="v">' + value + (unit ? '<small>' + esc(unit) + '</small>' : '') +
       '</div><div class="s ' + (tone || '') + '">' + sub + '</div></div>';
   };
   /** Pill-shaped filter chips. items: [[value,label],...]. */

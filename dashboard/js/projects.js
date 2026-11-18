@@ -134,7 +134,7 @@
       var year = LH.today().y;
       var sold = P.filter(function (p) { return p.created && +fmt.dayKey(p.created).slice(0, 4) === year; });
       var soldValue = sum(sold, 'contract'), bp = fmt.moneyParts(soldValue);
-      return '<div class="lh-card lift stat big" style="animation-delay:0ms"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
+      return '<div class="lh-card lift stat big wash" style="animation-delay:0ms;--wash:var(--steel)"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
         '<span class="faint" style="font-size:11px">sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
         '<div class="mini3">' + [['Contract under way', money(contract)], ['Earned to date', money(earned)], ['Avg. project value', money(avg)]].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
     }
@@ -151,9 +151,9 @@
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export Excel</button><button class="lh-btn" type="button" data-act="pdf">PDF report</button><button class="lh-btn primary" type="button" data-act="new">+ New project</button></div></div>' +
         UI.sect('Portfolio') +
         '<div class="pf-grid">' + portfolioCard(act) +
-        UI.stat('On track', onTrack + ' of ' + act.length, '', '', '', 60) +
-        UI.stat('Starting soon', String(soon.length), '', soon.length ? esc('Next: ' + fmt.date(soon[0].start) + ' · ' + soon[0].street) : 'Nothing starts in the next 30 days', soon.length ? 'steel' : '', 120) +
-        UI.stat('Next handover', next ? fmt.date(next.forecastDate) : '—', '', next ? esc(next.street) : 'No forecast dates', '', 180) + '</div>' +
+        UI.stat('On track', onTrack + ' of ' + act.length, '', '', '', 60, 'ok') +
+        UI.stat('Starting soon', String(soon.length), '', soon.length ? esc('Next: ' + fmt.date(soon[0].start) + ' · ' + soon[0].street) : 'Nothing starts in the next 30 days', soon.length ? 'steel' : '', 120, 'wait') +
+        UI.stat('Next handover', next ? fmt.date(next.forecastDate) : '—', '', next ? esc(next.street) : 'No forecast dates', '', 180, 'steel') + '</div>' +
         UI.sect('All projects') +
         '<section class="lh-card"><div class="lh-card-head"><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
         '<div class="chip-row" style="margin:0">' + UI.chips([['active', 'Active'], ['complete', 'Complete']], S.show, 'show') + '</div></div>' +
@@ -291,14 +291,15 @@
         '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
         esc([c.name, p.start ? 'started ' + fmt.date(p.start) : ''].filter(Boolean).join(' · ')) + mgr + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +
+        (p.status !== 'completed' && curI >= 0 && curI < total - 1 ? '<button class="lh-btn" type="button" data-act="advance">Next stage</button>' : '') +
         (p.status !== 'completed' ? '<button class="lh-btn" type="button" data-act="complete">Mark complete</button>' : '') + '<button class="lh-btn primary" type="button" data-act="message">Message client</button></div></div>' +
         UI.sect('Progress &amp; financials') +
         '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="faint tiny">complete' + (total ? ' · stage ' + (curI >= 0 ? curI + 1 : total) + ' of ' + total : '') + '</span></div>' +
         '<div class="pg-side"><div class="segs">' + segs + '</div><div class="pg-facts"><div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div></div>' +
-        '<div><div class="cap">Forecast completion</div><div class="fact"><span class="serif">' + esc(fmt.date(p.forecastDate)) + '</span> ' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div>' +
+        '<div><div class="cap">Forecast completion</div><div class="fact fc"><span class="serif">' + esc(fmt.date(p.forecastDate)) + '</span> ' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div>' +
         '<div><div class="cap">Next milestone</div><div class="serif fact">' + (nextM ? esc(nextM.title) + ' · ' + esc(fmt.date(nextM.due_date)) : '—') + '</div></div></div>' +
-        (p.status !== 'completed' && curI < total - 1 ? '<div style="margin-top:14px"><button type="button" class="lh-btn sm" data-act="advance">Advance to next stage</button></div>' : '') + '</div></div>' +
-        '<div class="pg-split"><div><div class="split-h"><span class="cap">On site this week</span><span class="faint tiny">synced to Google Calendar</span></div>' + weekRows + '</div><div id="wxBox" class="wxbox"></div></div></section>' +
+        '</div></div>' +
+        '<div class="pg-split"><div><div class="split-h"><span class="cap">On site this week</span><span class="faint tiny">Synced to Google Calendar</span></div>' + weekRows + '</div><div id="wxBox" class="wxbox"></div></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Owner view</span></div>' +
         '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget) : '—') + '</b></div>' +
         (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c)) + '</b></div>' : '') +
@@ -315,7 +316,7 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Client notes</h2><button type="button" class="lh-link" data-act="addn">+ Add note</button></div>' +
         (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note"><div class="t">' + esc(n.body) + '<div class="cap" style="margin-top:7px">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">×</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
         UI.sect('Media &amp; documents') +
-        '<div class="pd-media"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Photos</h2><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(D.rooms.map(function (r) { return [r.id, r.name]; })), photoFilter, 'room') + '</div></div><div id="phGrid" class="ph-grid"></div></section>' +
+        '<div class="pd-media' + (D.photos.length ? '' : ' no-photos') + '"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Photos</h2><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(D.rooms.map(function (r) { return [r.id, r.name]; })), photoFilter, 'room') + '</div></div><div id="phGrid" class="ph-grid"></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Documents</h2><button type="button" class="lh-link" data-act="upload">Upload</button></div><input type="file" id="docFile" hidden multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.dwg">' +
         (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc"><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="lh-link" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '">' + (d.shared_with_client ? 'Shared ✓' : 'Share') + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
         '<div style="margin-top:34px"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';

@@ -1,6 +1,6 @@
 /* Leads, Projects, dialogs, and the softer hover + button motion used across the dashboard. */
-:root, :root[data-theme="light"] { --hover:rgba(17,31,46,.045); --danger-fill:#9A4B3C; }
-:root[data-theme="dark"] { --hover:rgba(237,240,239,.055); --danger-fill:#B4634F; }
+:root, :root[data-theme="light"] { --hover:rgba(17,31,46,.045); --danger-fill:#9A4B3C; --wash-amt:10%; --kb-sh:0 1px 2px rgba(17,31,46,.015), 0 16px 32px -26px rgba(17,31,46,.126); --kb-sh-hover:0 1px 2px rgba(17,31,46,.018), 0 24px 44px -26px rgba(17,31,46,.15); }
+:root[data-theme="dark"] { --hover:rgba(237,240,239,.055); --danger-fill:#B4634F; --wash-amt:14%; --kb-sh:0 1px 0 rgba(237,240,239,.015) inset, 0 16px 30px -24px rgba(0,0,0,.225); --kb-sh-hover:0 1px 0 rgba(237,240,239,.02) inset, 0 22px 40px -24px rgba(0,0,0,.255); }
 
 /* ---------- shared bits ---------- */
 .serif { font-family:Spectral,Georgia,serif; }
@@ -72,8 +72,8 @@
 .kb-count { font:400 11px/1 Geist,sans-serif; color:var(--i2); white-space:nowrap; }
 .kb-count b { font-weight:600; color:var(--ink); }
 .kb-body { display:flex; flex-direction:column; gap:9px; min-height:40px; }
-.kb-card { display:block; padding:15px; border-radius:14px; background:var(--s1); box-shadow:var(--card-sh); transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; cursor:grab; }
-.kb-card:hover { transform:translateY(-2px); box-shadow:var(--card-sh-hover); }
+.kb-card { display:block; padding:15px; border-radius:14px; background:var(--s1); box-shadow:var(--kb-sh); transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; cursor:grab; }
+.kb-card:hover { transform:translateY(-2px); box-shadow:var(--kb-sh-hover); }
 .kb-card:active { cursor:grabbing; }
 .kb-card.drag { opacity:.45; transform:scale(.98); }
 .kb-card .nm { font:italic 400 15px/1.2 Spectral,serif; }
@@ -151,6 +151,7 @@
 .seg { flex:1; height:6px; border-radius:3px; border:0; padding:0; background:var(--track); transition:background .25s, transform .2s; min-width:4px; }
 .seg.done { background:var(--ok); } .seg.now { background:var(--steel); } .seg:hover { transform:scaleY(1.8); }
 .pg-facts { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:18px; margin-top:20px; }
+.fact.fc { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:8px; }
 .fact { margin-top:10px; font-size:15px; line-height:1.3; } .fact.serif, .fact .serif { font-family:Spectral,serif; font-size:15px; }
 .pg-split { margin-top:26px; padding-top:22px; border-top:1px solid var(--line); display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; }
 .pg-split > div:first-child { padding-right:6px; }
@@ -172,6 +173,8 @@
 .li .tools { display:flex; gap:2px; opacity:0; transition:opacity .2s; } .li:hover .tools, .li:focus-within .tools { opacity:1; }
 .li .tools button { width:24px; height:24px; border-radius:50%; border:0; background:var(--tint); color:var(--i2); font-size:13px; line-height:1; transition:background .2s, transform .2s; } .li .tools button:hover { background:var(--line2); transform:scale(1.1); }
 .pd-media { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:start; }
+.pd-media.no-photos { align-items:stretch; }
+.pd-media .lh-card-head { align-items:center; min-height:30px; }
 .ph-grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
 .ph { aspect-ratio:1; border:0; padding:0; border-radius:12px; overflow:hidden; background:repeating-linear-gradient(135deg, var(--tint) 0 3px, transparent 3px 8px), var(--faint); transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s; }
 .ph:hover { transform:translateY(-2px) scale(1.02); box-shadow:var(--card-sh-hover); } .ph img { width:100%; height:100%; object-fit:cover; display:block; animation:lhFade .4s both; }
@@ -214,3 +217,7 @@
 @media (max-width:520px) { .pf-grid { grid-template-columns:1fr; } }
 @media print { .lh-back, .lh-toast { display:none !important; } }
 @media (prefers-reduced-motion:reduce) { .lh-btn:hover, .lh-chip:hover, .kb-card:hover, .lh-nav:hover { transform:none !important; } }
+
+/* ---------- soft colour wash on metric cards (Leads, Projects) ---------- */
+.lh-card.wash { background:linear-gradient(135deg, color-mix(in srgb, var(--wash) var(--wash-amt), var(--s1)) 0%, color-mix(in srgb, var(--wash) 3%, var(--s1)) 62%, var(--s1) 100%); box-shadow:var(--card-sh), inset 0 0 0 1px color-mix(in srgb, var(--wash) 14%, transparent); }
+.lh-card.wash .cap { color:color-mix(in srgb, var(--wash) 55%, var(--i3)); }
