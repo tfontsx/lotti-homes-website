@@ -111,6 +111,19 @@
     { id: 'settings', label: 'Settings' },
   ];
 
+  /* ---------- labels: wrap bare text in pills/buttons so it can be trimmed to cap height ---------- */
+  var TIDY = '.lh-btn,.lh-chip,.lh-pill,.lh-seg button,.lh-avatar,.cal-ctl .today,.ov-wx .warn';
+  function tidy() {
+    LH.$$(TIDY).forEach(function (el) {
+      Array.prototype.slice.call(el.childNodes).forEach(function (n) {
+        if (n.nodeType === 3 && n.nodeValue.trim()) {
+          var sp = document.createElement('span'); sp.className = 'tx';
+          el.replaceChild(sp, n); sp.appendChild(n);
+        }
+      });
+    });
+  }
+
   /* ---------- theme ---------- */
   function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
@@ -306,6 +319,7 @@
 
   /* ---------- wire up ---------- */
   LH.boot = async function () {
+    new MutationObserver(tidy).observe(document.body, { childList: true, subtree: true }); tidy();
     LH.$$('[data-mark]').forEach(function (el) { el.innerHTML = window.LH_MARK || ''; });
     drawThemeBtn();
     LH.$('#themeBtn').addEventListener('click', function () {

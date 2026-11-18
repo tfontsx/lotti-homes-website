@@ -45,6 +45,10 @@ a { color:inherit; text-decoration:none; }
 @keyframes lhFade { from{opacity:0} to{opacity:1} }
 @keyframes lhGlow { 0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 55%,transparent)} 50%{box-shadow:0 0 0 6px transparent} }
 
+/* Labels inside pills, buttons, chips and the avatar are trimmed to their letter height
+   (cap-height to baseline), so the space above and below is identical in every font. */
+.tx, .ov-wx > span:not(.cloud):not(.vr):not(.warn), .ov-wx > a { display:block; text-box:trim-both cap alphabetic; }
+
 /* ---------- Sign in ---------- */
 .lh-login { min-height:100%; display:flex; align-items:center; justify-content:center; padding:24px; position:relative; overflow:hidden; }
 .lh-login::before { content:""; position:absolute; left:50%; top:-260px; width:900px; height:620px; margin-left:-450px; background:radial-gradient(closest-side,var(--bloom),transparent); filter:blur(30px); pointer-events:none; }
@@ -86,7 +90,7 @@ a { color:inherit; text-decoration:none; }
 .lh-app { display:flex; min-height:100vh; }
 .lh-rail { width:92px; flex:none; position:sticky; top:0; height:100vh; background:var(--rail); box-shadow:var(--rail-sh); display:flex; flex-direction:column; align-items:center; padding:22px 0; gap:6px; overflow-y:auto; scrollbar-width:none; z-index:20; }
 .lh-rail::-webkit-scrollbar { display:none; }
-.lh-rail-mark { width:23px; height:21px; color:var(--ink); margin:17px 0 43px; flex:none; display:block; }
+.lh-rail-mark { width:25.3px; height:22.7px; color:var(--ink); margin:16px 0 42px; flex:none; display:block; }
 .lh-rail-mark svg { width:100%; height:100%; display:block; }
 .lh-nav { width:64px; padding:8px 0 7px; border-radius:14px; display:flex; flex-direction:column; align-items:center; gap:5px; flex:none; position:relative; }
 .lh-nav:hover { background:var(--faint); }
@@ -148,7 +152,7 @@ a { color:inherit; text-decoration:none; }
 .ov-hero > div:first-child { min-width:0; }
 .ov-hello { margin:12px 0 0; font:300 38px/1 Spectral,serif; letter-spacing:-.04em; }
 .ov-hello em { font-style:italic; }
-.ov-wx { margin-top:14px; display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 14px 8px 12px; border-radius:16px; background:var(--tint); font:400 11.5px/1 Geist,sans-serif; color:var(--i2); max-width:100%; }
+.ov-wx { margin-top:14px; display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; min-height:28px; padding:8px 14px 8px 12px; border-radius:16px; background:var(--tint); font:400 11.5px/1 Geist,sans-serif; color:var(--i2); max-width:100%; }
 .ov-wx .t { color:var(--ink); }
 .ov-wx .vr { width:1px; height:10px; background:var(--line2); }
 .ov-wx .warn { display:inline-flex; align-items:center; gap:6px; }
@@ -284,7 +288,7 @@ a { color:inherit; text-decoration:none; }
 @media (max-width:820px) {
   .lh-app { flex-direction:column; }
   .lh-rail { position:static; width:100%; height:auto; flex-direction:row; padding:10px; overflow-x:auto; justify-content:flex-start; }
-  .lh-rail-mark { width:23px; height:21px; margin:0 12px 0 8px; }
+  .lh-rail-mark { width:25.3px; height:22.7px; margin:0 12px 0 8px; }
   .lh-rail .grow { display:none; }
   .lh-top { padding:0 16px; } .lh-page { padding:24px 16px 40px; } .lh-menu { right:16px; }
   .ov-hello { font-size:32px; }
