@@ -137,6 +137,16 @@
     if (b) b.title = dark ? 'Switch to light' : 'Switch to dark';
   }
 
+  /** 'light', 'dark' or 'system' (follow the device). */
+  LH.themeMode = function () { var t = null; try { t = localStorage.getItem('lh-theme'); } catch (e) { /* ok */ } return t === 'light' || t === 'dark' ? t : 'system'; };
+  LH.setTheme = function (mode) {
+    if (mode === 'system') {
+      try { localStorage.removeItem('lh-theme'); } catch (e) { /* ok */ }
+      var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light'); drawThemeBtn();
+    } else setTheme(mode);
+  };
+
   /* ---------- sync indicator & polling ---------- */
   var lastSync = 0;
   LH.touchSynced = function () { lastSync = Date.now(); drawSync(); };
