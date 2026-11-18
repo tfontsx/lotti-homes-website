@@ -221,3 +221,8 @@
 /* ---------- soft colour wash on metric cards (Leads, Projects) ---------- */
 .lh-card.wash { background:linear-gradient(135deg, color-mix(in srgb, var(--wash) var(--wash-amt), var(--s1)) 0%, color-mix(in srgb, var(--wash) 3%, var(--s1)) 62%, var(--s1) 100%); box-shadow:var(--card-sh), inset 0 0 0 1px color-mix(in srgb, var(--wash) 14%, transparent); }
 .lh-card.wash .cap { color:color-mix(in srgb, var(--wash) 55%, var(--i3)); }
+
+.lh-btn[disabled], .lh-btn[disabled]:hover { opacity:.5; cursor:default; transform:none; background:var(--tint); filter:none; box-shadow:none; }
+/* Overview active projects: breathing room between progress and contract */
+.pj-head, .pj-row { gap:18px; }
+.pj-head > div:nth-child(3), .pj-row > div:nth-child(3) { padding-right:26px; }

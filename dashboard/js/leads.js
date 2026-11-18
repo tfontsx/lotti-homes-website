@@ -318,7 +318,7 @@
     function consultation() {
       var c = D.consults[0]; if (!c) return null;
       var b = one(c.bookings) || {};
-      return { id: c.id, outcome: c.outcome, notes: c.notes || '', start: b.starts_at, end: b.ends_at, place: b.location, cancelled: b.status === 'cancelled' };
+      return { id: c.id, bookingId: c.booking_id, outcome: c.outcome, notes: c.notes || '', start: b.starts_at, end: b.ends_at, place: b.location, cancelled: b.status === 'cancelled' };
     }
     function stepper(l) {
       var steps = [['new', 'New'], ['contacted', 'Contacted'], ['consulted', 'Consulted'], ['quoted', 'Quoted'], ['final', l.status === 'lost' ? 'Lost' : l.status === 'won' ? 'Won' : 'Won / Lost']];
@@ -343,7 +343,9 @@
         var pill = c.cancelled ? ['', 'Cancelled'] : c.outcome === 'completed' ? ['ok', 'Completed'] : c.outcome === 'no_show' ? ['halt', 'No show'] : c.outcome === 'cancelled' ? ['', 'Cancelled'] : ['steel', 'Scheduled'];
         consultText = fmt.wdDM(c.start).replace(',', '') + ' · ' + fmt.time(c.start) + '<div style="margin-top:6px">' + UI.pill(pill[0], pill[1]) + '</div>';
       }
-      var due = dueInfo(l), notesText = c && c.notes ? c.notes : l.notes;
+      var notesText = c && c.notes ? c.notes : l.notes;
+      var hasBooking = !!(c && !c.cancelled && c.outcome !== 'cancelled');
+      var bookBtn = hasBooking ? '<button class="lh-btn" type="button" disabled>Consultation booked</button>' : (OPEN.indexOf(l.status) !== -1 ? '<button class="lh-btn" type="button" data-act="book">Book consultation</button>' : '');
       var activity = D.acts.map(function (a) {
         var text = a.kind === 'status_change' ? 'Moved ' + a.body.replace(/(\w+) → (\w+)/, function (m, f, t) { return 'from ' + (LABEL[f] || f) + ' to ' + (LABEL[t] || t); }) : a.body;
         return '<div class="act"><span class="d">' + fmt.date(fmt.dayKey(a.created_at)) + '</span><i class="' + (a.kind === 'note' ? 'note' : '') + '"></i><span class="t">' + esc(text) + '</span></div>';
@@ -353,7 +355,7 @@
         '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:14px">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
         '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
         esc([l.suburb, 'enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
-        '<div class="ov-actions no-print">' + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
+        '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
         (l.converted ? '<a class="lh-btn primary" href="#/projects/' + l.converted + '">Open project</a>' : (l.status !== 'won' ? '<button class="lh-btn primary" type="button" data-act="convert">Convert to project</button>' : '')) + '</div></div>' +
         UI.sect('Status') + '<section class="lh-card" style="padding:22px 28px">' + stepper(l) +
         (l.status === 'lost' ? '<div class="lostnote">Lost · ' + esc((LOST.filter(function (x) { return x[0] === l.lostReason; })[0] || [0, 'Other'])[1]) + (l.lostNote ? ' — ' + esc(l.lostNote) : '') + '</div>' : '') + '</section>' +
@@ -362,8 +364,7 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Details</h2><button type="button" class="lh-link" data-act="edit">Edit</button></div>' +
         row('Phone', l.phone ? esc(l.phone) : '<span class="faint">—</span>') + row('Email', l.email ? esc(l.email) : '<span class="faint">—</span>') + row('Enquiry type', esc(l.type || '—')) +
         row('Lead source', esc(SRC[l.source] || l.source)) + row('Enquiry received', esc(fmt.dateY(fmt.dayKey(l.created)))) + row('Consultation', consultText) +
-        row('Next follow-up', l.follow ? esc(WD.format(new Date(l.follow + 'T00:00:00Z')) + ' ' + fmt.date(l.follow)) + (due.cls ? ' ' + UI.pill(due.cls, due.text) : '') : '<span class="faint">None set</span>') +
-        '<div class="kvfoot">' + (c && !c.cancelled && c.outcome ? '' : '<button type="button" class="lh-link" data-act="book">Book consultation</button> · ') + '<button type="button" class="lh-link danger" data-act="delete">Delete lead</button></div></section>' +
+        '<div class="kvfoot">' + '<button type="button" class="lh-link danger" data-act="delete">Delete lead</button></div></section>' +
         '<div class="stack"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Consultation notes</h2><button type="button" class="lh-link" data-act="notes">Edit</button></div>' +
         (notesText ? '<p class="notes">' + esc(notesText) + '</p>' : '<p class="faint">No notes yet. Add what you heard on the consultation.</p>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Activity</h2></div>' +
@@ -424,18 +425,32 @@
     view.addEventListener('click', onClick); view.addEventListener('submit', onSubmit);
 
     function editForm() {
-      var l = D.lead;
+      var l = D.lead, ec = consultation(), elen = 60;
+      if (ec && ec.start && ec.end) elen = Math.max(15, Math.round((new Date(ec.end) - new Date(ec.start)) / 60000));
+      var lens = [30, 45, 60, 90, 120]; if (lens.indexOf(elen) === -1) { lens.push(elen); lens.sort(function (a, b) { return a - b; }); }
       UI.form({
         title: 'Edit details', submitLabel: 'Save', wide: true,
-        values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type, follow: l.follow || '' },
+        values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type, follow: l.follow || '',
+          cwhen: ec && ec.start && !ec.cancelled ? LH.toLocalInput(ec.start) : '', clen: String(elen), cplace: ec && ec.place ? ec.place : '' },
         fields: [{ name: 'name', label: 'Name', required: true, span: 2 }, { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'suburb', label: 'Suburb' },
           { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
           { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) },
-          { name: 'newtype', label: 'Or a new type' }, { name: 'follow', label: 'Follow-up date', type: 'date' }],
+          { name: 'newtype', label: 'Or a new type' }, { name: 'follow', label: 'Follow-up date', type: 'date' },
+          { name: 'cwhen', label: 'Consultation date and time (Adelaide)', type: 'datetime-local', span: 2, hint: ec && ec.start && !ec.cancelled ? 'Change this to move the booking. It updates the calendar and the app.' : 'Fill this in to book a consultation.' },
+          { name: 'clen', label: 'Consultation length', type: 'select', options: lens.map(function (m) { return { v: String(m), l: m < 60 ? m + ' minutes' : (m % 60 === 0 ? (m / 60) + (m === 60 ? ' hour' : ' hours') : m + ' minutes') }; }) },
+          { name: 'cplace', label: 'Consultation location' }],
         onSubmit: async function (v) {
           var typeId = await typeIdFor(v.newtype || v.type);
           var r = await LH.sb.from('leads').update({ name: v.name, email: UI.nullIfBlank(v.email), phone: UI.nullIfBlank(v.phone), suburb: UI.nullIfBlank(v.suburb), source: v.source, project_type_id: typeId, follow_up_date: UI.nullIfBlank(v.follow) }).eq('id', id);
           if (r.error) throw r.error;
+          var when = UI.nullIfBlank(v.cwhen);
+          if (when) {
+            var startISO = LH.adelaideToISO(when); if (!startISO) throw new Error('Pick a valid consultation date and time.');
+            var endISO = new Date(new Date(startISO).getTime() + (parseInt(v.clen, 10) || 60) * 60000).toISOString();
+            var booked = ec && ec.start && !ec.cancelled && ec.outcome !== 'cancelled' && ec.bookingId;
+            if (booked) { var ub = await LH.sb.from('bookings').update({ starts_at: startISO, ends_at: endISO, location: UI.nullIfBlank(v.cplace) }).eq('id', ec.bookingId); if (ub.error) throw ub.error; }
+            else { var bk = await LH.sb.rpc('book_consultation', { p_lead_id: id, p_starts: startISO, p_ends: endISO, p_location: UI.nullIfBlank(v.cplace) }); if (bk.error) throw bk.error; }
+          }
         },
       }).then(function (ok) { if (ok) { UI.toast('Saved.'); refresh(); } });
     }
