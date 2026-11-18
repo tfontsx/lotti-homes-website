@@ -289,15 +289,16 @@
 
       view.innerHTML =
         '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:14px">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub hs-row">' +
-        '<span>' + esc(c.name || '') + '</span>' + (p.start ? '<i class="vr"></i><span><span class="cap">Project start date</span><span class="hs-v">' + esc(fmt.dateY(p.start)) + '</span></span>' : '') + '</div></div>' +
+        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
+        esc(c.name || '') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +
         (p.status !== 'completed' && curI >= 0 && curI < total - 1 ? '<button class="lh-btn" type="button" data-act="advance">Next stage</button>' : '') +
         (p.status !== 'completed' ? '<button class="lh-btn" type="button" data-act="complete">Mark complete</button>' : '') + '<button class="lh-btn primary" type="button" data-act="message">Message client</button></div></div>' +
         UI.sect('Progress &amp; financials') +
         '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span></div>' +
-        '<div class="pg-side"><div class="segs">' + segs + '</div><div class="stage-line"><span class="cap">Stage status</span><span class="serif sb-n">' + esc(stageText) + '</span>' + stagePill + '</div></div></div>' +
-        '<div class="pg-strip"><div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div></div>' +
+        '<div class="pg-side"><div class="segs">' + segs + '</div></div></div>' +
+        '<div class="pg-strip"><div><div class="cap">Project start date</div><div class="serif fact">' + esc(p.start ? fmt.dateY(p.start) : '—') + '</div></div>' +
+        '<div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div><div class="faint tiny" style="margin-top:4px">' + esc(stageText) + '</div></div>' +
         '<div><div class="cap">Forecast completion</div><div class="fact fc"><span class="serif">' + esc(fmt.date(p.forecastDate)) + '</span> ' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div>' +
         '<div><div class="cap">Next milestone</div><div class="serif fact">' + (nextM ? esc(nextM.title) + ' · ' + esc(fmt.date(nextM.due_date)) : '—') + '</div></div>' +
         '<div><div class="cap">Project manager</div><div class="serif fact">' + esc(raw.project_manager_name || '—') + '</div></div></div>' +
@@ -322,19 +323,9 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Documents</h2><button type="button" class="lh-link" data-act="upload">Upload</button></div><input type="file" id="docFile" hidden multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.dwg">' +
         (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc"><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="lh-link" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '">' + (d.shared_with_client ? 'Shared ✓' : 'Share') + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
         '<div style="margin-top:34px"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';
-      paintPhotos(); paintWeather(); alignComplete();
+      paintPhotos(); paintWeather();
       window.scrollTo(0, y);
     }
-    /** Lines "Complete" up with the ink of the big number (digits have a little space at their left edge). */
-    function alignComplete() {
-      var num = LH.$('.pg-num > .serif', view), lbl = LH.$('.pg-lbl', view); if (!num || !lbl) return;
-      var cs = getComputedStyle(num), ctx = document.createElement('canvas').getContext('2d');
-      ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-      var m = ctx.measureText(String(num.firstChild ? num.firstChild.textContent : ''));
-      lbl.style.marginLeft = Math.max(0, -m.actualBoundingBoxLeft) + 'px';
-    }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!destroyed && D) alignComplete(); });
-
     /* ---- actions ---- */
     async function run(fn, okMsg) { try { await fn(); if (okMsg) UI.toast(okMsg); await refresh(); } catch (e) { console.error(e); UI.toast(LH.errMsg(e), 'error'); } }
     async function sbDo(promise) { var r = await promise; if (r.error) throw r.error; return r.data; }
