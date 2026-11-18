@@ -15,6 +15,7 @@
 
   function render(view) {
     var D = null, destroyed = false, drawn = false;
+    view.classList.add('fit');
     view.innerHTML = UI.skeleton([[100], [300, 24], [300, 24]]);
 
     async function refresh() {
@@ -49,9 +50,8 @@
       var bizLine = [b.business_name, b.abn ? 'ABN ' + b.abn : ''].filter(Boolean).join(' · ');
       view.innerHTML =
         '<div class="ov-hero"><div><div class="cap">Account</div><h1 class="ov-hello">Settings &amp; integrations</h1></div></div>' +
-        UI.sect('Account &amp; integrations') +
         '<div class="st-grid"><div class="stack">' +
-        '<section class="lh-card"><div class="st-prof"><span class="st-av">' + esc(LH.initials(LH.state.name)) + '</span><div><div class="serif st-name"><em>' + esc(LH.state.name) + '</em></div><div class="faint tiny">Owner · ' + esc(LH.state.email) + '</div></div><button type="button" class="lh-btn sm" data-act="profile" style="margin-left:auto">Edit</button></div>' +
+        '<section class="lh-card"><div class="st-prof"><span class="st-av">' + esc(LH.initials(LH.state.name)) + '</span><div><div class="serif st-name"><em>' + esc(LH.state.name) + '</em></div><div class="faint tiny">Admin · ' + esc(LH.state.email) + '</div></div><button type="button" class="lh-btn sm" data-act="profile" style="margin-left:auto">Edit</button></div>' +
         '<div class="st-bizline faint tiny">' + (bizLine ? esc(bizLine) : 'No business details yet') + '</div></section>' +
         '<section class="lh-card"><h2 class="lh-card-title" style="margin-bottom:12px">Notifications</h2>' + ALERTS.map(function (a) {
           return '<div class="st-row"><div><div>' + esc(a[1]) + '</div><div class="faint tiny">' + esc(a[2]) + '</div></div><button type="button" class="tgl' + (isOn(a[0]) ? ' on' : '') + '" role="switch" aria-checked="' + isOn(a[0]) + '" aria-label="' + esc(a[1]) + '" data-tgl="' + a[0] + '"><i></i></button></div>';
@@ -61,7 +61,7 @@
         '<div class="st-int"><span class="ic">' + LH.icon('schedule') + '</span><div class="tx"><div>Google Calendar</div><div class="faint tiny">Bookings, consultations and site visits push one-way from Lotti</div><div class="st-stat ' + cs.cls + '"><i></i>' + esc(cs.text) + '</div></div><button type="button" class="lh-btn" data-act="cal">Manage</button></div>' +
         '<div class="st-int"><span class="ic">' + LH.icon('compliance') + '</span><div class="tx"><div>Website forms</div><div class="faint tiny">New enquiries create leads automatically. Inductions and check-ins land in Compliance.</div><div class="st-stat ok"><i></i>Live · ' + D.leads + (D.leads === 1 ? ' website lead' : ' website leads') + ' · ' + D.ind + (D.ind === 1 ? ' induction' : ' inductions') + ' · ' + D.chk + (D.chk === 1 ? ' check-in' : ' check-ins') + '</div></div><button type="button" class="lh-btn" data-act="forms">Manage</button></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Business details</h2><button type="button" class="lh-link" data-act="biz">Edit</button></div>' +
-        [['Business name', b.business_name], ['Owner name shown to clients', b.owner_display_name], ['Contact email', b.contact_email], ['Contact phone', b.contact_phone], ['ABN', b.abn], ['Google review link', b.google_review_url], ['Rain warning threshold', b.rain_risk_threshold_pct != null ? b.rain_risk_threshold_pct + '% chance' : ''], ['Quiet hours', b.quiet_hours_start ? String(b.quiet_hours_start).slice(0, 5) + ' – ' + String(b.quiet_hours_end || '').slice(0, 5) : '']].map(function (x) { return '<div class="kv"><span class="k">' + x[0] + '</span><span class="v">' + (x[1] ? esc(x[1]) : '<span class="faint">—</span>') + '</span></div>'; }).join('') + '</section></div></div>';
+        [['Business name', b.business_name], ['Full name', b.owner_display_name], ['Contact email', b.contact_email], ['Contact phone', b.contact_phone], ['ABN', b.abn], ['Google review link', b.google_review_url], ['Rain warning threshold', b.rain_risk_threshold_pct != null ? b.rain_risk_threshold_pct + '% chance' : ''], ['Quiet hours', b.quiet_hours_start ? String(b.quiet_hours_start).slice(0, 5) + ' – ' + String(b.quiet_hours_end || '').slice(0, 5) : '']].map(function (x) { return '<div class="kv"><span class="k">' + x[0] + '</span><span class="v">' + (x[1] ? esc(x[1]) : '<span class="faint">—</span>') + '</span></div>'; }).join('') + '</section></div></div>';
       window.scrollTo(0, y);
     }
 
@@ -87,7 +87,7 @@
         UI.form({
           title: 'Business details', submitLabel: 'Save', wide: true,
           values: { business_name: b.business_name || '', owner_display_name: b.owner_display_name || '', contact_email: b.contact_email || '', contact_phone: b.contact_phone || '', abn: b.abn || '', google_review_url: b.google_review_url || '', rain: b.rain_risk_threshold_pct != null ? b.rain_risk_threshold_pct : 60, qs: b.quiet_hours_start ? String(b.quiet_hours_start).slice(0, 5) : '', qe: b.quiet_hours_end ? String(b.quiet_hours_end).slice(0, 5) : '' },
-          fields: [{ name: 'business_name', label: 'Business name', span: 2 }, { name: 'owner_display_name', label: 'Owner name shown to clients' }, { name: 'abn', label: 'ABN' }, { name: 'contact_email', label: 'Contact email', type: 'email' }, { name: 'contact_phone', label: 'Contact phone', type: 'tel' },
+          fields: [{ name: 'business_name', label: 'Business name', span: 2 }, { name: 'owner_display_name', label: 'Full name' }, { name: 'abn', label: 'ABN' }, { name: 'contact_email', label: 'Contact email', type: 'email' }, { name: 'contact_phone', label: 'Contact phone', type: 'tel' },
             { name: 'google_review_url', label: 'Google review link', span: 2 }, { name: 'rain', label: 'Rain warning at (% chance)', type: 'number', min: 0, max: 100 }, { name: 'qs', label: 'Quiet hours start', type: 'time' }, { name: 'qe', label: 'Quiet hours end', type: 'time' }],
           onSubmit: async function (v) {
             var cols = { business_name: UI.nullIfBlank(v.business_name), owner_display_name: UI.nullIfBlank(v.owner_display_name), contact_email: UI.nullIfBlank(v.contact_email), contact_phone: UI.nullIfBlank(v.contact_phone), abn: UI.nullIfBlank(v.abn), google_review_url: UI.nullIfBlank(v.google_review_url), rain_risk_threshold_pct: Math.max(0, Math.min(100, parseInt(v.rain, 10) || 60)), quiet_hours_start: UI.nullIfBlank(v.qs), quiet_hours_end: UI.nullIfBlank(v.qe) };
@@ -106,7 +106,7 @@
       }
     }
     view.addEventListener('click', onClick);
-    return { watch: ['user_settings', 'business_settings', 'user_calendar_connections', 'admin_profiles'], refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
+    return { watch: ['user_settings', 'business_settings', 'user_calendar_connections', 'admin_profiles'], refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter', 'fit'); view.removeEventListener('click', onClick); } };
   }
 
   LH.screens.settings = { title: 'Settings', render: render };

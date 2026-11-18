@@ -318,7 +318,7 @@
         '<div><div class="cap">Next milestone</div><div class="serif fact">' + (nextM ? esc(nextM.title) + ' · ' + esc(fmt.date(nextM.due_date)) : '—') + '</div></div>' +
         '<div><div class="cap">Project manager</div><div class="serif fact">' + esc(raw.project_manager_name || '—') + '</div></div></div>' +
         '<div class="pg-split"><div><div class="split-h"><span class="cap">On site this week</span><span class="faint tiny">Synced to Google Calendar</span></div>' + weekRows + '</div><div id="wxBox" class="wxbox"></div></div></section>' +
-        '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Owner view</span></div>' +
+        '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Admin view</span></div>' +
         '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget) : '—') + '</b></div>' +
         (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c)) + '</b></div>' : '') +
         '<div><span>Earned to date</span><b>' + (contract ? fmt.moneyFull(earned) + ' · ' + p.pct + '%' : '—') + '</b></div>' +
@@ -412,7 +412,7 @@
     function finForm() {
       var p = D.p;
       UI.form({
-        title: 'Edit financials', intro: 'Owner-only. The contract value and budget drive the earned-to-date figures.', submitLabel: 'Save', wide: true,
+        title: 'Edit financials', intro: 'Admins only. The contract value and budget drive the earned-to-date figures.', submitLabel: 'Save', wide: true,
         values: { contract: p.contract || '', budget: p.budget || '' },
         fields: [{ name: 'contract', label: 'Contract value', type: 'money' }, { name: 'budget', label: 'Original budget', type: 'money' }],
         onSubmit: async function (v) {

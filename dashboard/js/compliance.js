@@ -39,8 +39,9 @@
   }
 
   function render(view) {
-    var S = { tab: 'inductions', range: 'all', search: '', inductions: [], checkins: [], loaded: false };
+    var S = { tab: 'inductions', range: 'all', search: '', inductions: [], checkins: [], loaded: false, page: 0, pageSize: 6 };
     var destroyed = false, drawn = false;
+    view.classList.add('fit');
 
     view.innerHTML = '<div class="lh-skel" style="height:90px;margin-top:10px"></div><div class="lh-skel" style="height:360px;margin-top:20px"></div>';
 
@@ -110,6 +111,8 @@
       S.inductions.forEach(function (r) { var f = flags(r.responses); tFlags += f; if (f && inRange(r.induction_date, 'week')) wFlags += f; });
       S.checkins.forEach(function (r) { var f = flags(r.responses); tFlags += f; if (f && inRange(r.checkin_date, 'week')) wFlags += f; });
       var list = filtered(), total = (S.tab === 'inductions' ? S.inductions : S.checkins).length;
+      var pages = Math.max(1, Math.ceil(list.length / S.pageSize)); S.page = Math.max(0, Math.min(S.page, pages - 1));
+      var from = S.page * S.pageSize, shown = list.slice(from, from + S.pageSize);
       var origin = location.origin;
 
       view.classList.toggle('enter', !drawn); drawn = true;
@@ -127,8 +130,17 @@
         '<div class="cp-tools"><div class="lh-seg">' + [['inductions', 'Site inductions'], ['checkins', 'Daily check-ins']].map(function (t) { return '<button type="button" data-tab="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<div class="lh-seg">' + [['all', 'All time'], ['today', 'Today'], ['week', 'This week'], ['month', 'This month']].map(function (t) { return '<button type="button" data-range="' + t[0] + '" class="' + (S.range === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<input class="lh-input" id="cpSearch" type="search" placeholder="Search by worker, company or site" value="' + esc(S.search) + '" aria-label="Search submissions"></div>' +
-        '<div class="faint" style="font-size:12.5px;margin-bottom:10px">' + list.length + ' of ' + total + ' submission' + (total === 1 ? '' : 's') + '</div>' +
-        (list.length ? list.map(row).join('') : '<div class="lh-card lh-empty">No submissions match these filters.</div>');
+        '<div class="cp-list" id="cpList">' + (shown.length ? shown.map(row).join('') : '<div class="lh-card lh-empty">No submissions match these filters.</div>') + '</div>' +
+        '<div class="cp-pager"><span class="faint">' + (list.length ? (from + 1) + '–' + (from + shown.length) + ' of ' + list.length : '0') + ' submission' + (list.length === 1 ? '' : 's') + (list.length !== total ? ' (filtered from ' + total + ')' : '') + '</span>' +
+        (pages > 1 ? '<div class="cp-pg"><button type="button" class="lh-btn sm" data-pg="-1"' + (S.page === 0 ? ' disabled' : '') + '>Back</button><span class="cp-pn">Page ' + (S.page + 1) + ' of ' + pages + '</span><button type="button" class="lh-btn sm" data-pg="1"' + (S.page >= pages - 1 ? ' disabled' : '') + '>Next</button></div>' : '') + '</div>';
+
+      // Fit as many rows as the screen allows, so the page itself never scrolls.
+      var box = LH.$('#cpList', view), want = 8;
+      if (box && window.innerWidth > 820) {
+        var r0 = LH.$('.cp-row', box), rowH = (r0 ? r0.offsetHeight : 64) + 10;
+        want = Math.max(3, Math.floor(box.clientHeight / rowH));
+      }
+      if (want !== S.pageSize) { var first = S.page * S.pageSize; S.pageSize = want; S.page = Math.floor(first / want); draw(); return; }
 
       openIds.forEach(function (id) { var b = LH.$('[data-del="' + id + '"]', view); if (b) b.closest('details').open = true; });
       window.scrollTo(0, scroll);
@@ -140,10 +152,11 @@
     }
 
     async function onClick(e) {
-      var el = e.target.closest('[data-tab],[data-range],[data-copy],[data-del],#cpCsv');
+      var el = e.target.closest('[data-tab],[data-range],[data-copy],[data-del],[data-pg],#cpCsv');
       if (!el) return;
-      if (el.hasAttribute('data-tab')) { S.tab = el.getAttribute('data-tab'); draw(); }
-      else if (el.hasAttribute('data-range')) { S.range = el.getAttribute('data-range'); draw(); }
+      if (el.hasAttribute('data-pg')) { S.page += Number(el.getAttribute('data-pg')); draw(); }
+      else if (el.hasAttribute('data-tab')) { S.tab = el.getAttribute('data-tab'); S.page = 0; draw(); }
+      else if (el.hasAttribute('data-range')) { S.range = el.getAttribute('data-range'); S.page = 0; draw(); }
       else if (el.hasAttribute('data-copy')) {
         try { await navigator.clipboard.writeText(el.getAttribute('data-copy')); el.textContent = 'Copied'; setTimeout(function () { el.textContent = 'Copy'; }, 1400); }
         catch (x) { el.textContent = 'Press ⌘C'; }
@@ -156,7 +169,10 @@
         refresh();
       } else if (el.id === 'cpCsv') csv();
     }
-    function onInput(e) { if (e.target.id === 'cpSearch') { S.search = e.target.value; draw(); } }
+    function onInput(e) { if (e.target.id === 'cpSearch') { S.search = e.target.value; S.page = 0; draw(); } }
+    var rz = null;
+    function onResize() { clearTimeout(rz); rz = setTimeout(function () { if (!destroyed && S.loaded) draw(); }, 150); }
+    window.addEventListener('resize', onResize);
     view.addEventListener('click', onClick); view.addEventListener('input', onInput);
 
     function csv() {
@@ -174,7 +190,7 @@
     }
 
     refresh().catch(function (e) { console.error(e); view.innerHTML = '<div class="lh-err">Couldn\'t load submissions.</div>'; });
-    return { watch: ['site_inductions', 'daily_checkins'], refresh: refresh, destroy: function () { destroyed = true; view.removeEventListener('click', onClick); view.removeEventListener('input', onInput); } };
+    return { watch: ['site_inductions', 'daily_checkins'], refresh: refresh, destroy: function () { destroyed = true; clearTimeout(rz); window.removeEventListener('resize', onResize); view.classList.remove('fit'); view.removeEventListener('click', onClick); view.removeEventListener('input', onInput); } };
   }
 
   LH.screens.compliance = { title: 'Compliance', render: render };

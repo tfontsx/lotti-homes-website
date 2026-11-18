@@ -96,7 +96,7 @@
       if (!th) { el.head.innerHTML = ''; el.msgs.innerHTML = '<div class="in-empty">Pick a conversation.</div>'; el.side.innerHTML = ''; el.form.hidden = true; return; }
       el.form.hidden = false;
       el.head.innerHTML = '<span class="av lg">' + esc(ini(th.client)) + '</span><div class="hd"><div class="serif nm">' + esc(th.client) + '</div><div class="faint tiny">Client · ' + esc(th.street) + '</div></div>' +
-        (th.mobile ? '<a class="lh-btn" href="tel:' + esc(th.mobile.replace(/\s+/g, '')) + '">Call</a>' : '') + '<button type="button" class="lh-btn" data-act="delete">Delete</button>';
+        '<button type="button" class="lh-btn" data-act="delete">Delete</button>';
       var nearBottom = el.msgs.scrollHeight - el.msgs.scrollTop - el.msgs.clientHeight < 80, first = !el.msgs.dataset.thread || el.msgs.dataset.thread !== th.id;
       var h = '', lastDay = '';
       D.messages.forEach(function (m) {

@@ -142,3 +142,19 @@
   .lh-page.fit > * { flex:none; }
   .lh-page.fit > .in-grid { flex:1 1 auto; height:auto; min-height:440px; }
 }
+
+/* Round 31: paged compliance list */
+@media (min-width:821px) { .lh-page.fit > .cp-list { flex:1 1 auto; min-height:240px; overflow-y:auto; margin:0 -8px; padding:2px 8px 0; } }
+.cp-list .cp-row:last-child { margin-bottom:0; }
+.cp-pager { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:14px; font-size:12.5px; }
+.cp-pg { display:flex; align-items:center; gap:12px; }
+.cp-pn { font-size:12px; color:var(--i3); min-width:84px; text-align:center; }
+
+@media (min-width:821px) {
+  .lh-page.fit { padding-bottom:22px; }
+  .lh-page.fit .ov-hero { margin-bottom:18px; }
+  .lh-page.fit .lh-sect { margin:24px 0 14px; }
+}
+
+.st-grid .st-row { padding:10px 0; } .st-grid .st-row:last-child { padding-bottom:0; }
+.st-grid .kv { padding:10px 0; }
