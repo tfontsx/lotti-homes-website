@@ -14,7 +14,7 @@
 
   /** Plans every stage in order from the project's start date, and lines up what really happened. */
   function plan(project, stages, crews) {
-    var start = numOfKey(project.start_date), today = todayNum(), cum = 0, rows = [];
+    var start = numOfKey(project.start_date), today = todayNum(), cum = 0, chain = start, rows = [];
     stages.slice().sort(function (a, b) { return a.position - b.position; }).forEach(function (s) {
       var crew = crews[s.name] || '';
       if (s.status === 'skipped') { rows.push({ id: s.id, name: s.name, status: 'skipped', crew: crew, slip: 0 }); return; }
@@ -23,7 +23,14 @@
       if ((s.status === 'complete' || s.status === 'current') && s.started_at) aS = numOfInstant(s.started_at);
       if (s.status === 'complete') { if (aS == null) aS = pS; aE = s.completed_at ? Math.max(numOfInstant(s.completed_at), aS) : pE; slip = aE - pE; }
       else if (s.status === 'current') { if (aS == null) aS = pS; aE = Math.max(today, aS); slip = Math.max(0, today - pE); }
-      rows.push({ id: s.id, name: s.name, status: s.status, dur: dur, pS: pS, pE: pE, aS: aS, aE: aE, slip: slip, crew: crew });
+      var bS = chain;
+      if ((s.status === 'complete' || s.status === 'current') && aS != null) bS = aS;
+      var bE = bS + dur - 1;
+      if (s.status === 'complete') bE = Math.max(aE, bS);
+      if (s.status === 'current') bE = Math.max(bE, today);
+      chain = bE + 1;
+      var frac = s.status === 'complete' ? 1 : s.status === 'current' ? Math.max(0, Math.min(1, (today - bS + 1) / (bE - bS + 1))) : 0;
+      rows.push({ id: s.id, name: s.name, status: s.status, dur: dur, pS: pS, pE: pE, aS: aS, aE: aE, bS: bS, bE: bE, frac: frac, slip: slip, crew: crew });
     });
     return { start: start, today: today, rows: rows };
   }
@@ -84,7 +91,7 @@
     function gantt(pl) {
       var rows = pl.rows.filter(function (r) { return r.status !== 'skipped'; });
       var maxDay = pl.today;
-      rows.forEach(function (r) { maxDay = Math.max(maxDay, r.pE, r.aE || 0); });
+      rows.forEach(function (r) { maxDay = Math.max(maxDay, r.bE); });
       var weeks = Math.min(40, Math.max(8, Math.ceil((maxDay - pl.start + 1) / 7) + 1)), total = weeks * 7;
       var pct = function (n) { return ((n - pl.start) / total) * 100; };
       var heads = ''; for (var i = 0; i < weeks; i++) heads += '<span>' + shortDate(pl.start + i * 7) + '</span>';
@@ -102,9 +109,8 @@
       var st = stats(pl, p), g = gantt(pl);
       var slipTxt = st.slip > 0 ? '+' + st.slip + (st.slip === 1 ? ' day' : ' days') : st.slip < 0 ? '−' + (-st.slip) + (st.slip === -1 ? ' day' : ' days') : 'On plan';
       var rowsHtml = pl.rows.filter(function (r) { return r.status !== 'skipped'; }).map(function (r, i) {
-        var bars = '<div class="gt-track" style="--w:' + (100 / g.weeks) + '%"><i class="gt-plan" style="left:' + g.pct(r.pS) + '%;width:' + (r.dur / g.total * 100) + '%"></i>' +
-          (r.aS != null ? '<i class="gt-act ' + (r.slip > 0 ? 'over' : '') + '" style="left:' + g.pct(r.aS) + '%;width:' + Math.max(1.2, (r.aE - r.aS + 1) / g.total * 100) + '%"></i>' : '') +
-          '<i class="gt-today" style="left:' + g.pct(pl.today) + '%"></i></div>';
+        var col = r.slip > 0 ? 'var(--wait)' : (r.status === 'current' && LH.projectStatus(p) === 'halted' ? 'var(--halt)' : r.status === 'current' && LH.projectStatus(p) === 'delayed' ? 'var(--wait)' : 'var(--ok)');
+        var bars = '<div class="gt-track" style="--w:' + (100 / g.weeks) + '%"><i class="gt-bar ' + (r.status === 'upcoming' ? 'up' : 'on') + '" style="left:' + g.pct(r.bS) + '%;width:' + Math.max(1.2, (r.bE - r.bS + 1) / g.total * 100) + '%;--c:' + col + ';--done:' + Math.round(r.frac * 100) + '%"></i><i class="gt-today" style="left:' + g.pct(pl.today) + '%"></i></div>';
         var pill = r.status === 'complete' ? UI.pill('ok', 'Done') : r.status === 'current' ? UI.pill(r.slip > 0 ? 'wait' : 'ok', 'In progress') : (r.crew ? UI.pill('', 'Booked') : UI.pill('', 'Planned'));
         var sub = r.slip > 0 ? '<div class="gt-over">+' + r.slip + (r.slip === 1 ? ' day' : ' days') + ' over</div>' : (r.status === 'complete' && r.slip < 0 ? '<div class="gt-ahead">' + (-r.slip) + ' ' + (r.slip === -1 ? 'day' : 'days') + ' early</div>' : '');
         var action = r.status === 'current' ? '<button type="button" class="lh-btn sm" data-complete="' + r.id + '">Complete stage</button>' : (r.status === 'upcoming' && !r.crew ? '<button type="button" class="lh-btn sm" data-assign="' + esc(r.name) + '">Assign contractor</button>' : '<span class="faint">—</span>');
@@ -116,7 +122,7 @@
         UI.stat('Critical path risk', st.crit ? esc(st.crit.name) : 'None', '', st.crit ? esc(st.crit.sub) : 'Nothing is slipping', st.crit ? 'halt' : 'ok', 120, st.crit ? 'halt' : 'ok') +
         UI.stat('Next action', esc(st.next.title), '', esc(st.next.sub), '', 180, 'steel') + '</div>' +
         UI.sect('Tasks') + '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:980px"><div class="gt-head gt-grid"><div>Task · responsible</div><div>Contractor</div><div class="gt-weeks" style="--n:' + g.weeks + '">' + g.heads + '</div><div>Status</div><div>Next action</div></div>' + rowsHtml + '</div></div>' +
-        '<div class="gt-legend"><span><i class="lg-plan"></i>Planned</span><span><i class="lg-act"></i>Actual</span><span><i class="lg-over"></i>Ran over</span><span><i class="lg-today"></i>Today</span></div></section>';
+        '<div class="gt-legend"><span><i class="lg-done"></i>Complete</span><span><i class="lg-prog"></i>In progress</span><span><i class="lg-up"></i>Up next</span><span><i class="lg-over"></i>Ran over</span><span><i class="lg-today"></i>Today</span></div></section>';
       window.scrollTo(0, y);
     }
 
