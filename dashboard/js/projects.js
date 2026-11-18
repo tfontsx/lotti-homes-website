@@ -270,7 +270,7 @@
       if (wet && D.p.status !== 'completed') {
         var sent = D.told.indexOf(wet.date) !== -1, name = WD.format(new Date(wet.date + 'T00:00:00Z'));
         h += '<div class="wx-note"><span class="dotw"></span><span>' + esc(name + ' ' + wet.chanceOfRain + '% rain may delay ' + (D.p.stage ? D.p.stage.toLowerCase() : 'work on site')) + '</span>' +
-          (sent ? '<span class="lh-pill ok"><i></i>Client told</span>' : '<button type="button" class="lh-btn primary sm" data-act="notify" data-date="' + esc(wet.date) + '" data-pct="' + wet.chanceOfRain + '">Notify client</button>') + '</div>';
+          (sent ? '<span class="lh-pill ok"><i></i>Client notified</span>' : '<button type="button" class="lh-btn primary sm" data-act="notify" data-date="' + esc(wet.date) + '" data-pct="' + wet.chanceOfRain + '">Notify client</button>') + '</div>';
       }
       box.innerHTML = h;
     }
