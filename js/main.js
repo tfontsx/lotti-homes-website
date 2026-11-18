@@ -270,6 +270,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const enquiryForm = document.getElementById('enquiryForm');
   const formNote = document.getElementById('formNote');
 
+  // The same enquiry is also sent to the Lotti Homes app, where it becomes a lead
+  // (Source: Website) and alerts the team. The email through Web3Forms is
+  // unchanged. This never blocks or breaks the form: a failure here is ignored.
+  const LEAD_ENDPOINT = 'https://yxbzvqrfhdpyvnqcybgq.supabase.co/functions/v1/website-lead';
+
+  const sendLeadToApp = (form) => {
+    try {
+      const data = new FormData(form);
+      const field = (name) => String(data.get(name) || '').trim();
+      fetch(LEAD_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          name: field('name'),
+          email: field('email'),
+          phone: field('phone'),
+          project_type: field('project_type'),
+          message: field('message'),
+          botcheck: field('botcheck')
+        })
+      }).catch(() => {});
+    } catch (err) {
+      // Ignore: the enquiry email still goes out.
+    }
+  };
+
   if (enquiryForm) {
     const submitBtn = enquiryForm.querySelector('.form-submit-btn');
     const submitBtnLabel = submitBtn ? submitBtn.querySelector('span') : null;
@@ -295,6 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (submitBtn) submitBtn.disabled = true;
       if (submitBtnLabel) submitBtnLabel.textContent = 'Sending...';
       setNote('Sending your enquiry...', false);
+
+      // Sent alongside the email, so a lead is recorded even if the email step fails.
+      sendLeadToApp(enquiryForm);
 
       try {
         const formData = new FormData(enquiryForm);
