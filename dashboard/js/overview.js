@@ -70,22 +70,21 @@
   function metrics(d) {
     var t = LH.today();
     var active = d.projects.filter(function (p) { return p.status === 'active' || p.status === 'on_hold'; });
-    var contract = 0, added = 0, withCost = { c: 0, f: 0, b: 0, bc: 0 };
+    var contract = 0, added = 0;
     var qStart = utc(t.y, Math.floor(t.m / 3) * 3, 1).getTime();
     active.forEach(function (p) {
       contract += p.contract;
       if (p.createdAt && new Date(p.createdAt).getTime() >= qStart) added += p.contract;
-      if (p.contract > 0 && p.cost > 0) { withCost.c += p.contract; withCost.f += p.cost; }
-      if (p.contract > 0 && p.cost > 0 && p.budget > 0) { withCost.b += p.budget; withCost.bc += p.contract; }
     });
-    var margin = withCost.c > 0 ? ((withCost.c - withCost.f) / withCost.c) * 100 : null;
-    var vsBudget = withCost.bc > 0 ? margin - ((withCost.bc - withCost.b) / withCost.bc) * 100 : null;
     var open = d.leads.filter(function (l) { return l.status !== 'won' && l.status !== 'lost'; });
     var weighted = 0;
     open.forEach(function (l) { weighted += ((l.est_value_cents || 0) / 100) * ((l.probability_pct || 0) / 100); });
     var done = d.projects.filter(function (p) { return p.status === 'completed' && p.completedAt && +fmt.dayKey(p.completedAt).slice(0, 4) === t.y; });
     var delivered = 0; done.forEach(function (p) { delivered += p.contract; });
-    return { active: active, contract: contract, added: added, margin: margin, vsBudget: vsBudget, open: open.length, weighted: weighted, done: done.length, delivered: delivered };
+    var won = d.leads.filter(function (l) { return l.status === 'won'; }), wonValue = 0;
+    won.forEach(function (l) { wonValue += (l.est_value_cents || 0) / 100; });
+    var rate = d.leads.length ? Math.round((won.length / d.leads.length) * 100) : null;
+    return { active: active, contract: contract, added: added, rate: rate, won: won.length, wonValue: wonValue, open: open.length, weighted: weighted, done: done.length, delivered: delivered };
   }
 
   /** Bookings grouped by Adelaide calendar day. */
@@ -319,9 +318,8 @@
       var rain = rainDays(), first = (LH.state.name || '').split(' ')[0] || 'there';
       var c = fmt.moneyParts(M.contract), w = fmt.moneyParts(M.weighted), dl = fmt.moneyParts(M.delivered);
       var added = M.added > 0 ? '+' + fmt.money(M.added) + ' this quarter' : M.active.length + ' active ' + (M.active.length === 1 ? 'project' : 'projects');
-      var mgv = M.margin == null ? '—' : M.margin.toFixed(1);
-      var mgSub = M.margin == null ? 'Add forecast costs to see margin' : M.vsBudget == null ? 'on forecast costs' : (M.vsBudget >= 0 ? '+' : '−') + Math.abs(M.vsBudget).toFixed(1) + ' pts vs budget';
-      var mgTone = M.margin == null ? '' : M.vsBudget != null && M.vsBudget < 0 ? 'wait' : 'ok';
+      var rate = M.rate == null ? '—' : String(M.rate);
+      var rateSub = M.rate == null ? 'No leads yet' : M.won + ' won · ' + fmt.money(M.wonValue);
       var y = window.scrollY;
       view.classList.toggle('enter', !drawn); drawn = true;
 
@@ -331,7 +329,7 @@
         sect('At a glance') +
         '<div class="ov-glance">' +
         stat('Active contract value', c.num, c.unit, added, 'ok', 0) +
-        stat('Gross margin (forecast)', mgv, M.margin == null ? '' : '%', mgSub, mgTone, 60) +
+        stat('Lead conversion', rate, M.rate == null ? '' : '%', rateSub, M.rate == null ? '' : 'ok', 60) +
         stat('Pipeline (weighted)', w.num, w.unit, M.open + ' open ' + (M.open === 1 ? 'lead' : 'leads'), 'ok', 120) +
         stat('Delivered value · ' + t.y, dl.num, dl.unit, M.done + (M.done === 1 ? ' project completed' : ' projects completed'), 'steel', 180) + '</div>' +
         sect('Schedule &amp; attention') +
