@@ -267,7 +267,12 @@ a { color:inherit; text-decoration:none; }
 .cp-body dd { margin:0; font-size:12.5px; }
 .cp-ans { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:8px; }
 .cp-ans > div { padding:9px 12px; border-radius:10px; background:var(--tint); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12px; }
-.cp-ans .no { color:var(--halt); font-weight:500; } .cp-ans .yes { color:var(--ok); }
+.cp-ans > div.good { background:color-mix(in srgb, var(--ok) 10%, transparent); }
+.cp-ans > div.bad { background:color-mix(in srgb, var(--halt) 12%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--halt) 35%, transparent); }
+.cp-ans > div { align-items:center; }
+.cp-ans .mk { display:inline-flex; width:20px; height:20px; flex:none; }
+.cp-ans .mk svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.cp-ans .mk.yes { color:var(--ok); } .cp-ans .mk.no { color:var(--halt); }
 .cp-ans .cm { width:100%; color:var(--i2); }
 .cp-link { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; }
 .soon { padding:60px 24px; text-align:center; }

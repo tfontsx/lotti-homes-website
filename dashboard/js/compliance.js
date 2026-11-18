@@ -75,8 +75,11 @@
       var h = '';
       Object.keys(labels).forEach(function (id) {
         var e = responses && responses[id]; if (!e) return;
-        var no = e.answer === 'no';
-        h += '<div><span>' + esc(labels[id]) + '</span><span class="' + (no ? 'no' : 'yes') + '">' + esc(e.answer || '—') + '</span>' +
+        var a = String(e.answer || '').toLowerCase(), mark;
+        if (a === 'yes') mark = '<span class="mk yes" role="img" aria-label="Yes">' + TICK + '</span>';
+        else if (a === 'no') mark = '<span class="mk no" role="img" aria-label="No">' + CROSS + '</span>';
+        else mark = '<span class="mk">' + esc(e.answer || '—') + '</span>';
+        h += '<div class="' + (a === 'no' ? 'bad' : a === 'yes' ? 'good' : '') + '"><span>' + esc(labels[id]) + '</span>' + mark +
           (e.comment ? '<span class="cm">“' + esc(e.comment) + '”</span>' : '') + '</div>';
       });
       return h;
@@ -132,8 +135,8 @@
     }
     function stat(l, v, s) { return '<div class="lh-card stat"><div class="cap">' + l + '</div><div class="v">' + v + '</div><div class="s">' + esc(s) + '</div></div>'; }
     function link(label, url) {
-      return '<div><div style="margin-bottom:4px">' + esc(label) + '</div><a class="lh-link" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url.replace(/^https?:\/\//, '')) + '</a> ' +
-        '<button type="button" class="lh-link" data-copy="' + esc(url) + '" style="border:0;background:none;margin-left:8px;padding:0">Copy</button></div>';
+      return '<div><div style="margin-bottom:8px">' + esc(label) + '</div><a class="lh-link" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url.replace(/^https?:\/\//, '')) + '</a> ' +
+        '<button type="button" class="lh-btn sm" data-copy="' + esc(url) + '" style="margin-left:10px">Copy</button></div>';
     }
 
     async function onClick(e) {
