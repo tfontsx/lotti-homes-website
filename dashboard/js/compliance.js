@@ -40,7 +40,7 @@
 
   function render(view) {
     var S = { tab: 'inductions', range: 'all', search: '', inductions: [], checkins: [], loaded: false };
-    var destroyed = false;
+    var destroyed = false, drawn = false;
 
     view.innerHTML = '<div class="lh-skel" style="height:90px;margin-top:10px"></div><div class="lh-skel" style="height:360px;margin-top:20px"></div>';
 
@@ -112,6 +112,7 @@
       var list = filtered(), total = (S.tab === 'inductions' ? S.inductions : S.checkins).length;
       var origin = location.origin;
 
+      view.classList.toggle('enter', !drawn); drawn = true;
       var scroll = window.scrollY, hadFocus = document.activeElement && document.activeElement.id === 'cpSearch';
       var openIds = LH.$$('details[open] [data-del]', view).map(function (b) { return b.getAttribute('data-del'); });
 
