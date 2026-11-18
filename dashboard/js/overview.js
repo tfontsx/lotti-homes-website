@@ -5,26 +5,24 @@
   var LH = window.LH, esc = LH.esc, fmt = LH.fmt;
 
   var KIND = {
-    SITE: { label: 'Site', color: 'var(--i3)' },
-    CONSULT: { label: 'Consult', color: 'var(--steel)' },
-    TRADE: { label: 'Contractor', color: 'var(--ok)' },
-    CALL: { label: 'Call', color: 'var(--i2)' },
-    ADMIN: { label: 'Admin', color: 'var(--wait)' },
+    SITE: { label: 'SITE', color: 'var(--i3)' },
+    CONSULT: { label: 'CONSULT', color: 'var(--steel)' },
+    TRADE: { label: 'CONTRACTOR', color: 'var(--ok)' },
+    CALL: { label: 'CALL', color: 'var(--i2)' },
+    ADMIN: { label: 'ADMIN', color: 'var(--wait)' },
   };
-  var STATUS = {
-    ontime: { cls: 'ok', label: 'On time' },
-    delayed: { cls: 'wait', label: 'Delayed' },
-    halted: { cls: 'halt', label: 'Halted' },
-  };
+  var STATUS = { ontime: { cls: 'ok', label: 'On time', c: 'var(--ok)' }, delayed: { cls: 'wait', label: 'Delayed', c: 'var(--wait)' }, halted: { cls: 'halt', label: 'Halted', c: 'var(--halt)' } };
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  var DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  var DOWL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   var DOW3 = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  var DOWN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   /* ---- date helpers on plain y/m/d (no time zones involved) ---- */
   function utc(y, m, d) { return new Date(Date.UTC(y, m, d)); }
   function keyOfDate(dt) { return LH.keyOf(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()); }
   function addDays(dt, n) { return utc(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate() + n); }
   function mondayOf(dt) { return addDays(dt, -((dt.getUTCDay() + 6) % 7)); }
+  function parseKey(k) { var p = k.split('-'); return utc(+p[0], +p[1] - 1, +p[2]); }
 
   function kindOf(b) {
     if (b.lead_id) return 'CONSULT';
@@ -33,8 +31,7 @@
   function one(x) { return Array.isArray(x) ? x[0] : x; }
 
   async function load() {
-    var sb = LH.sb;
-    var today = LH.today();
+    var sb = LH.sb, today = LH.today();
     var from = utc(today.y, today.m - 1, 1).toISOString();
     var to = utc(today.y, today.m + 4, 1).toISOString();
     var r = await Promise.all([
@@ -43,14 +40,14 @@
       sb.from('leads').select('id,name,status,est_value_cents,probability_pct'),
       sb.from('bookings').select('id,project_id,lead_id,kind,title,starts_at,ends_at,status').neq('status', 'cancelled').gte('ends_at', from).lte('starts_at', to).order('starts_at', { ascending: true }),
       sb.from('business_settings').select('rain_risk_threshold_pct').limit(1).maybeSingle(),
+      sb.from('weather_notices').select('project_id,notice_date').gte('notice_date', LH.keyOf(today.y, today.m, today.d)),
     ]);
     for (var i = 0; i < 4; i++) if (r[i].error) throw r[i].error;
 
     var stageBy = {};
     (r[1].data || []).forEach(function (s) { stageBy[s.project_id] = s.name; });
     var projects = (r[0].data || []).map(function (p) {
-      var fin = one(p.project_financials) || {};
-      var cl = one(p.clients) || {}, ty = one(p.project_types) || {};
+      var fin = one(p.project_financials) || {}, cl = one(p.clients) || {}, ty = one(p.project_types) || {};
       return {
         id: p.id, code: p.code, name: p.name, status: p.status, health: p.health, st: LH.projectStatus(p),
         pct: p.percent_complete || 0, delay: p.delay_days, note: p.client_status_message,
@@ -62,8 +59,10 @@
       };
     });
     var byId = {}; projects.forEach(function (p) { byId[p.id] = p; });
+    var notified = {};
+    ((r[5] && r[5].data) || []).forEach(function (n) { notified[n.project_id + '|' + n.notice_date] = true; });
     return {
-      projects: projects, byId: byId, leads: r[2].data || [], bookings: r[3].data || [],
+      projects: projects, byId: byId, leads: r[2].data || [], bookings: r[3].data || [], notified: notified,
       rainThreshold: (r[4].data && r[4].data.rain_risk_threshold_pct) || 60,
     };
   }
@@ -84,9 +83,7 @@
     var open = d.leads.filter(function (l) { return l.status !== 'won' && l.status !== 'lost'; });
     var weighted = 0;
     open.forEach(function (l) { weighted += ((l.est_value_cents || 0) / 100) * ((l.probability_pct || 0) / 100); });
-    var done = d.projects.filter(function (p) {
-      return p.status === 'completed' && p.completedAt && +fmt.dayKey(p.completedAt).slice(0, 4) === t.y;
-    });
+    var done = d.projects.filter(function (p) { return p.status === 'completed' && p.completedAt && +fmt.dayKey(p.completedAt).slice(0, 4) === t.y; });
     var delivered = 0; done.forEach(function (p) { delivered += p.contract; });
     return { active: active, contract: contract, added: added, margin: margin, vsBudget: vsBudget, open: open.length, weighted: weighted, done: done.length, delivered: delivered };
   }
@@ -101,33 +98,32 @@
     return out;
   }
 
-  /** For each active project, the days it has someone on site (site or contractor bookings). */
+  /** For each project, the days it has someone on site (site or contractor bookings). */
   function laneDays(d) {
     var by = {};
     d.bookings.forEach(function (b) {
       if (!b.project_id || (b.kind !== 'site' && b.kind !== 'contractor')) return;
-      var a = fmt.dayKey(b.starts_at), z = fmt.dayKey(new Date(new Date(b.ends_at).getTime() - 1));
-      var cur = utc(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8)); var end = utc(+z.slice(0, 4), +z.slice(5, 7) - 1, +z.slice(8));
+      var a = parseKey(fmt.dayKey(b.starts_at)), end = parseKey(fmt.dayKey(new Date(new Date(b.ends_at).getTime() - 1)));
       by[b.project_id] = by[b.project_id] || {};
-      for (var n = 0; cur <= end && n < 62; n++) { by[b.project_id][keyOfDate(cur)] = true; cur = addDays(cur, 1); }
+      for (var n = 0; a <= end && n < 62; n++) { by[b.project_id][keyOfDate(a)] = true; a = addDays(a, 1); }
     });
     return by;
   }
 
-  /* ================== rendering ================== */
   function greeting() {
     var h = fmt.hour(new Date());
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   }
 
   function render(view) {
-    var data = null, wx = null, destroyed = false;
+    var data = null, wx = null, destroyed = false, M = null, drawn = false;
     var t = LH.today();
     var S = { y: t.y, m: t.m, d: t.d, view: 'Month', filter: 'all' };
+    var todayKey = LH.keyOf(t.y, t.m, t.d);
 
-    view.innerHTML = '<div class="lh-skel" style="height:150px;margin-top:10px"></div>' +
-      '<div class="ov-glance" style="margin-top:22px">' + [1, 2, 3, 4].map(function () { return '<div class="lh-skel" style="height:118px"></div>'; }).join('') + '</div>' +
-      '<div class="lh-skel" style="height:420px;margin-top:22px"></div>';
+    view.innerHTML = '<div class="lh-skel" style="height:130px;margin-bottom:26px"></div>' +
+      '<div class="ov-glance">' + [1, 2, 3, 4].map(function () { return '<div class="lh-skel" style="height:112px"></div>'; }).join('') + '</div>' +
+      '<div class="lh-skel" style="height:420px;margin-top:36px"></div>';
 
     async function refresh() {
       try {
@@ -142,50 +138,40 @@
     LH.weather().then(function (w) { wx = w; if (data && !destroyed) draw(); });
     refresh();
 
-    /* ---------- weather line ---------- */
-    function weatherBlock() {
-      if (!wx || !wx.forecast || !wx.forecast.length) return '';
-      var today = wx.forecast[0];
-      var temp = wx.currentTempC != null ? Math.round(wx.currentTempC) + '°' : (today.maxTempC != null ? today.maxTempC + '°' : '');
-      var warn = '';
+    /* ---------- weather pill + rain risk ---------- */
+    function rainDays() {
+      var out = [];
+      if (!wx || !wx.forecast) return out;
       var ev = eventsByDay(data);
-      for (var i = 0; i < wx.forecast.length; i++) {
-        var day = wx.forecast[i];
-        if (day.chanceOfRain != null && day.chanceOfRain >= data.rainThreshold) {
-          var names = [], seen = {};
-          (ev[day.date] || []).forEach(function (e) {
-            var p = e.project && data.byId[e.project];
-            if (p && !seen[p.id] && (e.k === 'SITE' || e.k === 'TRADE')) { seen[p.id] = 1; names.push(p.street); }
-          });
-          if (names.length) {
-            var lbl = new Date(day.date + 'T00:00:00Z');
-            warn = new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', weekday: 'short' }).format(lbl) + ' ' + day.chanceOfRain + '% rain may affect ' + names.slice(0, 2).join(' and ');
-            break;
-          }
-        }
+      wx.forecast.forEach(function (day) {
+        if (day.chanceOfRain == null || day.chanceOfRain < data.rainThreshold) return;
+        var seen = {}, projects = [];
+        (ev[day.date] || []).forEach(function (e) {
+          var p = e.project && data.byId[e.project];
+          if (p && !seen[p.id] && (e.k === 'SITE' || e.k === 'TRADE') && p.status !== 'completed') { seen[p.id] = 1; projects.push(p); }
+        });
+        if (projects.length) out.push({ date: day.date, pct: day.chanceOfRain, projects: projects });
+      });
+      return out;
+    }
+    function weekdayOf(key) { return DOWN[parseKey(key).getUTCDay()]; }
+
+    function weatherBlock(rain) {
+      if (!wx || !wx.forecast || !wx.forecast.length) return '';
+      var d0 = wx.forecast[0];
+      var temp = wx.currentTempC != null ? Math.round(wx.currentTempC) : d0.maxTempC;
+      var h = '<div class="ov-wx"><span class="cloud" aria-hidden="true"><i></i><i></i></span>' +
+        (temp != null ? '<span class="t">' + esc(temp) + '°</span>' : '') + '<span>' + esc(d0.precis) + '</span>';
+      if (rain.length) {
+        var r0 = rain[0];
+        h += '<span class="vr"></span><span class="warn"><i></i>' + esc(weekdayOf(r0.date).slice(0, 3) + ' ' + r0.pct + '% rain may affect ' + r0.projects[0].street) + '</span><a href="#/schedule">Review</a>';
       }
-      return '<div class="ov-wx"><b>' + esc(temp) + '</b><span>' + esc(today.precis) + '</span>' +
-        (warn ? '<span class="lh-pill wait"><i></i>' + esc(warn) + '</span>' : '') +
-        '<span class="faint" style="font-size:11px">Weather by WeatherAPI.com</span></div>';
+      return h + '</div><div class="ov-credit">Weather by WeatherAPI.com</div>';
     }
 
     /* ---------- schedule card ---------- */
-    function monthCells(ev) {
-      var first = utc(S.y, S.m, 1), lead = (first.getUTCDay() + 6) % 7, days = utc(S.y, S.m + 1, 0).getUTCDate();
-      var h = DOW.map(function (x) { return '<div class="cal-dow">' + x + '</div>'; }).join('');
-      for (var i = 0; i < lead; i++) h += '<div></div>';
-      for (var n = 1; n <= days; n++) {
-        var key = LH.keyOf(S.y, S.m, n), c = (ev[key] || []).length;
-        var cls = 'cal-cell' + (c ? ' has' : '') + (key === LH.keyOf(t.y, t.m, t.d) ? ' today' : '') + (n === S.d ? ' sel' : '');
-        h += '<button type="button" class="' + cls + '" data-day="' + n + '" aria-label="' + n + ' ' + MONTHS[S.m] + (c ? ', ' + c + ' bookings' : '') + '">' + n +
-          '<i style="width:' + (c > 2 ? 14 : c > 1 ? 9 : 4) + 'px;' + (c ? '' : 'background:transparent') + '"></i></button>';
-      }
-      return '<div class="cal-month">' + h + '</div>';
-    }
-
-    function weekHead(ev) {
-      var mon = mondayOf(utc(S.y, S.m, S.d)), todayKey = LH.keyOf(t.y, t.m, t.d), selKey = LH.keyOf(S.y, S.m, S.d);
-      var h = '<div class="week-grid">';
+    function weekStrip(ev, cls) {
+      var mon = mondayOf(utc(S.y, S.m, S.d)), selKey = LH.keyOf(S.y, S.m, S.d), h = '<div class="week-grid ' + (cls || '') + '">';
       for (var i = 0; i < 7; i++) {
         var dt = addDays(mon, i), key = keyOfDate(dt), c = (ev[key] || []).length;
         h += '<button type="button" class="' + (key === selKey ? 'sel ' : '') + (key === todayKey ? 'today' : '') + '" data-pick="' + key + '"><span class="w">' + DOW3[i] + '</span><span class="d">' + dt.getUTCDate() + '</span>' +
@@ -193,137 +179,165 @@
       }
       return h + '</div>';
     }
-
+    function monthGrid(ev) {
+      var first = utc(S.y, S.m, 1), lead = (first.getUTCDay() + 6) % 7, days = utc(S.y, S.m + 1, 0).getUTCDate();
+      var h = '<div class="cal-grid">' + DOWL.map(function (x, i) { return '<div class="cal-dow' + (i > 4 ? ' we' : '') + '">' + x + '</div>'; }).join('');
+      for (var i = 0; i < lead; i++) h += '<div style="height:46px"></div>';
+      for (var n = 1; n <= days; n++) {
+        var key = LH.keyOf(S.y, S.m, n), c = (ev[key] || []).length;
+        var cls = 'cal-cell' + (c ? ' has' : '') + (key === todayKey ? ' today' : '') + (n === S.d ? ' sel' : '');
+        h += '<button type="button" class="' + cls + '" data-day="' + n + '" aria-label="' + n + ' ' + MONTHS[S.m] + (c ? ', ' + c + (c === 1 ? ' booking' : ' bookings') : '') + '"><span>' + n + '</span>' +
+          '<i style="width:' + (c > 2 ? 14 : c > 1 ? 9 : 4) + 'px;background:' + (c ? (n === S.d ? 'var(--onT)' : 'var(--steel)') : 'transparent') + '"></i></button>';
+      }
+      h += '</div><div class="cal-legend">' + [['Site', 'var(--i3)'], ['Consult', 'var(--steel)'], ['Contractor', 'var(--ok)'], ['Admin', 'var(--wait)']].map(function (k) { return '<span><i style="background:' + k[1] + '"></i>' + k[0] + '</span>'; }).join('') + '</div>';
+      return '<div>' + h + '</div>';
+    }
     function lanes() {
-      var mon = mondayOf(utc(S.y, S.m, S.d)), by = laneDays(data), todayKey = LH.keyOf(t.y, t.m, t.d);
-      var rows = metricsCache.active.filter(function (p) { return by[p.id]; });
-      if (!rows.length) return '';
-      var h = '<div class="cap" style="margin:18px 0 4px">On site this week</div><div class="lanes">';
+      var mon = mondayOf(utc(S.y, S.m, S.d)), by = laneDays(data), rows = M.active.filter(function (p) {
+        for (var i = 0; i < 7; i++) if (by[p.id] && by[p.id][keyOfDate(addDays(mon, i))]) return true;
+        return false;
+      });
+      var h = '<div class="lanes"><div class="cap">On site this week</div>';
+      if (!rows.length) return h + '<div class="faint" style="margin-top:-6px">Nobody is booked on site this week.</div></div>';
       rows.forEach(function (p) {
-        h += '<div class="lane"><div class="nm"><div>' + esc(p.street) + '</div><div class="faint" style="font-size:12px">' + esc(p.stage || p.type || '') + '</div></div>';
-        for (var i = 0; i < 7; i++) {
-          var k = keyOfDate(addDays(mon, i)), on = by[p.id][k];
-          h += '<div class="c' + (on ? ' on ' + STATUS[p.st].cls : '') + '" title="' + k + '"></div>';
-        }
-        h += '</div>';
+        var on = [], i; for (i = 0; i < 7; i++) on.push(!!by[p.id][keyOfDate(addDays(mon, i))]);
+        var col = STATUS[p.st].c;
+        h += '<div><div class="lane-top"><span class="dot" style="background:' + col + '"></span><span class="n">' + esc(p.street) + '</span><span class="sub">' + esc(p.stage || p.type || '') + '</span></div><div class="lane-bar" style="--c:' + col + '">';
+        for (i = 0; i < 7; i++) h += '<i class="' + (on[i] ? 'on ' + (on[i - 1] ? '' : 'f ') + (on[i + 1] ? '' : 'l ') + (p.st === 'halted' ? 'halt' : '') : '') + '"></i>';
+        h += '</div></div>';
       });
       return h + '</div>';
     }
-
     function agenda(ev) {
-      var key = LH.keyOf(S.y, S.m, S.d), list = ev[key] || [];
-      var label = key === LH.keyOf(t.y, t.m, t.d) ? 'Today' : fmt.wdDM(new Date(Date.UTC(S.y, S.m, S.d, 3)));
-      var h = '<div class="agenda"><div class="agenda-head"><div class="cap">' + esc(label) + '</div><div class="faint" style="font-size:12px">' +
-        list.length + (list.length === 1 ? ' booking' : ' bookings') + ' · Synced to Google Calendar</div></div>';
-      if (!list.length) h += '<div class="lh-empty" style="padding:18px 0">A clear day — nothing booked.</div>';
+      var key = LH.keyOf(S.y, S.m, S.d), list = ev[key] || [], dt = utc(S.y, S.m, S.d);
+      var label = key === todayKey ? 'Today' : DOWN[dt.getUTCDay()].slice(0, 3) + ' ' + S.d + ' ' + MONTHS[S.m].slice(0, 3);
+      var h = '<div class="agenda"><div class="agenda-top"><div class="agenda-label">' + esc(label) + '</div><div class="cap">' + (list.length ? list.length + ' BOOKED' : '') + '</div></div>' +
+        '<div class="agenda-sub">Synced to Google Calendar</div>';
+      if (!list.length) h += '<div class="agenda-clear">A clear day — nothing on site.</div>';
+      h += '<div class="agenda-list">';
       list.forEach(function (e) {
         var kd = KIND[e.k];
-        h += '<div class="ev"><div class="t">' + esc(e.t) + '</div><div class="bar" style="background:' + kd.color + '"></div><div class="nm"><div>' + esc(e.title) + '</div><div class="faint" style="font-size:12px">' + kd.label + '</div></div></div>';
+        h += '<div class="ev"><div class="t">' + esc(e.t) + '</div><div class="nm"><div class="a">' + esc(e.title) + '</div><div class="kind" style="color:' + kd.color + '">' + kd.label + '</div></div></div>';
       });
-      if (S.view !== 'Day') h += '<div style="margin-top:10px"><button type="button" class="lh-link" data-view="Day" style="border:0;background:none;padding:0">Open day view</button></div>';
+      h += '</div>';
+      if (S.view !== 'Day') h += '<button type="button" class="open-day" data-view="Day">Open day view<i></i></button>';
       return h + '</div>';
     }
-
-    function dayGrid(ev) {
-      var list = ev[LH.keyOf(S.y, S.m, S.d)] || [], startH = 7, endH = 18, px = 48;
-      var h = '<div class="daygrid" style="height:' + (endH - startH + 1) * px + 'px">';
-      for (var hr = startH; hr <= endH; hr++) h += '<div class="dayrow" style="position:absolute;left:0;right:0;top:' + (hr - startH) * px + 'px"><span>' + (hr === 12 ? '12 pm' : hr > 12 ? hr - 12 : hr + (hr === startH ? ' am' : '')) + '</span></div>';
-      list.forEach(function (e) {
+    function dayView(ev) {
+      var list = ev[LH.keyOf(S.y, S.m, S.d)] || [], H = 40, startH = 7, endH = 18;
+      var h = '<div class="dayview" style="height:' + (endH - startH) * H + 'px">';
+      for (var hr = startH; hr < endH; hr++) h += '<div class="hr" style="top:' + (hr - startH) * H + 'px">' + (hr === 12 ? '12 pm' : hr > 12 ? hr - 12 : hr + (hr === startH ? ' am' : '')) + '</div>';
+      list.forEach(function (e, ix) {
         var s = new Date(e.start), en = new Date(e.end);
-        var sh = Math.max(startH, fmt.hour(s) + +fmt.time(s).slice(3) / 60), eh = Math.min(endH + 1, sh + Math.max(0.6, Math.min(8, (en - s) / 3600000)));
-        h += '<div class="dayev" style="top:' + (sh - startH) * px + 'px;height:' + Math.max(28, (eh - sh) * px - 3) + 'px;background:' + KIND[e.k].color + '"><b style="font-weight:500">' + esc(e.title) + '</b><div style="opacity:.85">' + esc(e.t) + ' · ' + KIND[e.k].label + '</div></div>';
+        var st = Math.max(startH, fmt.hour(s) + +fmt.time(s).slice(3) / 60), du = Math.max(0.5, Math.min(8, (en - s) / 3600000));
+        if (st >= endH) return;
+        h += '<div class="de" style="--c:' + KIND[e.k].color + ';top:' + ((st - startH) * H + 1) + 'px;height:' + Math.max(36, du * H - 4) + 'px"><div class="a" style="font:400 13px/1.3 Geist,sans-serif">' + esc(e.title) + '</div>' +
+          '<div class="kind" style="color:' + KIND[e.k].color + '">' + esc(e.t) + ' · ' + KIND[e.k].label + '</div></div>';
       });
+      if (LH.keyOf(S.y, S.m, S.d) === todayKey) {
+        var now = new Date(), nh = fmt.hour(now) + +fmt.time(now).slice(3) / 60;
+        if (nh >= startH && nh < endH) h += '<div class="now" style="top:' + (nh - startH) * H + 'px"></div>';
+      }
+      if (!list.length) h += '<div class="agenda-clear" style="position:absolute;left:60px;top:20px">A clear day — nothing on site.</div>';
       return h + '</div>';
     }
-
     function scheduleCard() {
-      var ev = eventsByDay(data), title, sub = '';
-      if (S.view === 'Month') { title = MONTHS[S.m] + ' ' + S.y; }
+      var ev = eventsByDay(data), sel = utc(S.y, S.m, S.d), title, sub;
+      var wcount = 0, mon = mondayOf(sel), sun = addDays(mon, 6);
+      for (var i = 0; i < 7; i++) wcount += (ev[keyOfDate(addDays(mon, i))] || []).length;
+      var dayCount = (ev[LH.keyOf(S.y, S.m, S.d)] || []).length;
+      if (S.view === 'Month') { title = MONTHS[S.m] + ' ' + S.y; sub = 'Select a day to see bookings'; }
       else if (S.view === 'Week') {
-        var mon = mondayOf(utc(S.y, S.m, S.d)), sun = addDays(mon, 6);
-        title = mon.getUTCDate() + ' – ' + sun.getUTCDate() + ' ' + MONTHS[sun.getUTCMonth()].slice(0, 3);
-      } else { title = new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' }).format(utc(S.y, S.m, S.d)); }
+        title = mon.getUTCMonth() === sun.getUTCMonth() ? mon.getUTCDate() + ' – ' + sun.getUTCDate() + ' ' + MONTHS[sun.getUTCMonth()]
+          : mon.getUTCDate() + ' ' + MONTHS[mon.getUTCMonth()].slice(0, 3) + ' – ' + sun.getUTCDate() + ' ' + MONTHS[sun.getUTCMonth()].slice(0, 3);
+        sub = wcount + (wcount === 1 ? ' booking' : ' bookings') + ' this week · select a day';
+      } else { title = DOWN[sel.getUTCDay()] + ' ' + S.d + ' ' + MONTHS[S.m]; sub = dayCount ? dayCount + ' booked' : 'Nothing booked'; }
 
       var body;
-      if (S.view === 'Month') {
-        body = monthCells(ev) +
-          '<div class="cal-legend">' + ['SITE', 'CONSULT', 'TRADE', 'ADMIN'].map(function (k) { return '<span><i style="background:' + KIND[k].color + '"></i>' + KIND[k].label + '</span>'; }).join('') + '</div>' + agenda(ev);
-      } else if (S.view === 'Week') { body = weekHead(ev) + lanes() + agenda(ev); }
-      else { body = weekHead(ev) + dayGrid(ev) + (((ev[LH.keyOf(S.y, S.m, S.d)] || []).length) ? '' : '<div class="lh-empty">A clear day — nothing booked.</div>'); }
+      if (S.view === 'Month') body = '<div class="cal-body">' + monthGrid(ev) + agenda(ev) + '</div>';
+      else if (S.view === 'Week') body = '<div class="cal-body"><div>' + weekStrip(ev) + lanes() + '</div>' + agenda(ev) + '</div>';
+      else body = '<div style="margin-top:20px">' + weekStrip(ev, 'day') + dayView(ev) + '</div>';
 
-      return '<section class="lh-card" id="ovCal"><div class="cal-head"><div class="cal-nav"><button type="button" data-step="-1" aria-label="Previous">‹</button><div class="cal-title">' + esc(title) + '</div><button type="button" data-step="1" aria-label="Next">›</button></div>' +
-        '<div style="display:flex;gap:10px;align-items:center"><button type="button" class="lh-btn" data-today style="height:30px">Today</button><div class="lh-seg" role="tablist">' +
-        ['Month', 'Week', 'Day'].map(function (v) { return '<button type="button" data-view="' + v + '" class="' + (S.view === v ? 'on' : '') + '">' + v + '</button>'; }).join('') + '</div></div></div>' + body + '</section>';
+      return '<section class="cal-card" id="ovCal"><div class="cal-head"><div class="ttl"><div class="cap">Schedule</div><div class="cal-title">' + esc(title) + '</div><div class="cal-sub">' + esc(sub) + '</div></div>' +
+        '<div class="lh-seg" role="tablist">' + ['Month', 'Week', 'Day'].map(function (v) { return '<button type="button" data-view="' + v + '" class="' + (S.view === v ? 'on' : '') + '">' + v + '</button>'; }).join('') + '</div>' +
+        '<div class="cal-ctl"><button type="button" class="lh-circle prev" data-step="-1" aria-label="Previous"><i></i></button><button type="button" class="today" data-today>Today</button><button type="button" class="lh-circle next" data-step="1" aria-label="Next"><i></i></button></div></div>' + body + '</section>';
     }
 
     /* ---------- needs attention ---------- */
-    function attentionCard() {
+    function attentionCard(rain) {
       var items = [];
-      metricsCache.active.forEach(function (p) {
+      M.active.forEach(function (p) {
         if (p.st === 'ontime') return;
         items.push({
-          halt: p.st === 'halted', tag: p.street.toUpperCase(),
+          halt: p.st === 'halted', tag: p.street,
           title: p.note || (p.st === 'halted' ? 'Work is paused' : 'Behind schedule' + (p.delay ? ' · +' + p.delay + (p.delay === 1 ? ' day' : ' days') : '')),
           sub: [p.stage, p.client].filter(Boolean).join(' · '),
           href: p.st === 'halted' ? '#/inbox' : '#/projects/' + p.id, act: p.st === 'halted' ? 'Message client' : 'Open project',
         });
       });
       items.sort(function (a, b) { return (b.halt ? 1 : 0) - (a.halt ? 1 : 0); });
-      var h = '<section class="lh-card"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px"><h2 class="lh-h2">Needs attention</h2><span class="faint">' + items.length + '</span></div>';
+      rain.slice(0, 3).forEach(function (r) {
+        var p = r.projects[0], more = r.projects.length - 1;
+        var told = r.projects.every(function (q) { return data.notified[q.id + '|' + r.date]; });
+        items.push({ halt: false, tag: p.street + (more > 0 ? ' +' + more + ' more' : ''), title: weekdayOf(r.date) + ' rain · ' + r.pct + '%', sub: (p.stage || 'Work') + ' may pause · client' + (more > 0 ? 's ' : ' ') + (told ? 'notified' : 'not yet notified'), href: '#/projects/' + p.id, act: 'Open project' });
+      });
+      var h = '<section class="lh-card lift" style="animation-delay:240ms"><div class="lh-card-head"><h2 class="lh-card-title">Needs attention</h2><a class="lh-link" href="#/projects">View all</a></div>';
       if (!items.length) h += '<div class="lh-empty">Nothing needs attention. Every active project is on time.</div>';
-      items.forEach(function (i) {
-        h += '<div class="att' + (i.halt ? ' halt' : '') + '"><div style="flex:1;min-width:0"><div class="cap" style="color:' + (i.halt ? 'var(--halt)' : 'var(--wait)') + '">' + esc(i.tag) + '</div><div class="tt">' + esc(i.title) + '</div>' +
-          (i.sub ? '<div class="faint" style="font-size:12.5px">' + esc(i.sub) + '</div>' : '') + '<a class="act" href="' + i.href + '">' + i.act + ' →</a></div></div>';
+      items.slice(0, 8).forEach(function (i) {
+        h += '<div class="att' + (i.halt ? ' halt' : '') + '"><div class="bar"></div><div style="min-width:0"><div class="tg">' + esc(i.tag) + '</div><div class="tt">' + esc(i.title) + '</div>' +
+          (i.sub ? '<div class="sb">' + esc(i.sub) + '</div>' : '') + '</div><a class="lh-btn" href="' + i.href + '">' + i.act + '</a></div>';
       });
       return h + '</section>';
     }
 
     /* ---------- projects table ---------- */
-    function projectsTable() {
-      var rows = metricsCache.active.filter(function (p) {
-        return S.filter === 'all' || (S.filter === 'ontime' ? p.st === 'ontime' : p.st !== 'ontime');
-      });
-      var h = '<section class="lh-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px"><h2 class="lh-h2">Active projects</h2>' +
-        '<div class="lh-seg">' + [['all', 'All'], ['ontime', 'On track'], ['risk', 'At risk']].map(function (f) { return '<button type="button" data-filter="' + f[0] + '" class="' + (S.filter === f[0] ? 'on' : '') + '">' + f[1] + '</button>'; }).join('') + '</div></div>';
+    function projectsCard() {
+      var rows = M.active.filter(function (p) { return S.filter === 'all' || (S.filter === 'ontime' ? p.st === 'ontime' : p.st !== 'ontime'); });
+      var h = '<section class="lh-card lift" style="animation-delay:360ms"><div class="lh-card-head"><h2 class="lh-card-title">Active projects</h2>' +
+        '<div style="display:flex;gap:6px">' + [['all', 'All'], ['ontime', 'On track'], ['risk', 'At risk']].map(function (f) { return '<button type="button" class="lh-chip' + (S.filter === f[0] ? ' on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div></div>';
       if (!rows.length) return h + '<div class="lh-empty">No projects here yet.</div></section>';
-      h += '<div class="tablewrap"><table class="tbl"><thead><tr><th>Project</th><th>Stage</th><th>Progress</th><th class="num">Contract</th><th class="num">Margin</th><th>Completion</th><th>Status</th></tr></thead><tbody>';
+      h += '<div class="pj-scroll"><div class="pj-inner"><div class="pj-head"><div>Project</div><div>Stage</div><div>Progress</div><div>Contract</div><div>Margin</div><div>Completion</div><div>Status</div></div>';
       rows.forEach(function (p) {
         var st = STATUS[p.st], m = p.contract > 0 && p.cost > 0 ? (((p.contract - p.cost) / p.contract) * 100).toFixed(1) + '%' : '—';
         var label = st.label; if (p.st === 'delayed' && p.delay) label = p.delay + (p.delay === 1 ? ' day behind' : ' days behind');
-        h += '<tr class="link" data-open="' + esc(p.id) + '"><td><div class="n">' + esc(p.street) + '</div><div class="faint" style="font-size:12px">' + esc([p.type, p.client].filter(Boolean).join(' · ')) + '</div></td>' +
-          '<td>' + esc(p.stage || '—') + '</td><td><div class="prog"><div class="bar"><i style="width:' + Math.min(100, p.pct) + '%"></i></div><span>' + p.pct + '%</span></div></td>' +
-          '<td class="num">' + (p.contract ? fmt.money(p.contract) : '—') + '</td><td class="num">' + m + '</td><td>' + fmt.date(p.forecast) + '</td>' +
-          '<td><span class="lh-pill ' + st.cls + '"><i></i>' + esc(label) + '</span></td></tr>';
+        h += '<div class="pj-row" data-open="' + esc(p.id) + '"><div><div class="n">' + esc(p.street) + '</div><div class="s">' + esc([p.type, p.client].filter(Boolean).join(' · ')) + '</div></div>' +
+          '<div>' + esc(p.stage || '—') + '</div><div><div class="prog"><div class="bar"><i style="width:' + Math.min(100, p.pct) + '%"></i></div><span>' + p.pct + '%</span></div></div>' +
+          '<div>' + (p.contract ? fmt.money(p.contract) : '—') + '</div><div>' + m + '</div><div>' + fmt.date(p.forecast) + '</div>' +
+          '<div><span class="lh-pill ' + st.cls + '"><i></i>' + esc(label) + '</span></div></div>';
       });
-      return h + '</tbody></table></div></section>';
+      return h + '</div></div></section>';
     }
 
     /* ---------- page ---------- */
-    var metricsCache = null;
+    function stat(label, value, unit, sub, tone, delay) {
+      return '<div class="lh-card lift stat" style="animation-delay:' + delay + 'ms"><div class="cap">' + esc(label) + '</div><div class="v">' + esc(value) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</div><div class="s ' + tone + '">' + esc(sub) + '</div></div>';
+    }
+    function sect(label) { return '<div class="lh-sect"><span class="cap">' + label + '</span><span class="rule"></span></div>'; }
+
     function draw() {
-      metricsCache = metrics(data);
-      var m = metricsCache, first = (LH.state.name || '').split(' ')[0] || 'there';
-      var added = m.added > 0 ? '+' + fmt.money(m.added) + ' this quarter' : m.active.length + ' active ' + (m.active.length === 1 ? 'project' : 'projects');
-      var mg = m.margin == null ? '—' : m.margin.toFixed(1) + '%';
-      var mgSub = m.margin == null ? 'Add forecast costs to see margin' : m.vsBudget == null ? 'on forecast costs' : (m.vsBudget >= 0 ? '+' : '−') + Math.abs(m.vsBudget).toFixed(1) + ' pts vs budget';
-      var keep = { y: window.scrollY };
+      M = metrics(data);
+      var rain = rainDays(), first = (LH.state.name || '').split(' ')[0] || 'there';
+      var c = fmt.moneyParts(M.contract), w = fmt.moneyParts(M.weighted), dl = fmt.moneyParts(M.delivered);
+      var added = M.added > 0 ? '+' + fmt.money(M.added) + ' this quarter' : M.active.length + ' active ' + (M.active.length === 1 ? 'project' : 'projects');
+      var mgv = M.margin == null ? '—' : M.margin.toFixed(1);
+      var mgSub = M.margin == null ? 'Add forecast costs to see margin' : M.vsBudget == null ? 'on forecast costs' : (M.vsBudget >= 0 ? '+' : '−') + Math.abs(M.vsBudget).toFixed(1) + ' pts vs budget';
+      var mgTone = M.margin == null ? '' : M.vsBudget != null && M.vsBudget < 0 ? 'wait' : 'ok';
+      var y = window.scrollY;
+      view.classList.toggle('enter', !drawn); drawn = true;
 
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap ov-date">' + esc(fmt.long(new Date())) + '</div><h1 class="ov-hello">' + greeting() + ', <em>' + esc(first) + '</em></h1>' + weatherBlock() + '</div>' +
+        '<div class="ov-hero"><div><div class="cap">' + esc(fmt.long(new Date())) + '</div><h1 class="ov-hello">' + greeting() + ', <em>' + esc(first) + '</em></h1>' + weatherBlock(rain) + '</div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" id="ovSheet">Export day sheet</button><a class="lh-btn primary" href="#/projects/new">+ New project</a></div></div>' +
-        '<div class="lh-sect"><span class="cap">At a glance</span></div>' +
+        sect('At a glance') +
         '<div class="ov-glance">' +
-        stat('Active contract value', fmt.money(m.contract), added) +
-        stat('Gross margin (forecast)', mg, mgSub) +
-        stat('Pipeline (weighted)', fmt.money(m.weighted), m.open + ' open ' + (m.open === 1 ? 'lead' : 'leads')) +
-        stat('Delivered value · ' + t.y, fmt.money(m.delivered), m.done + (m.done === 1 ? ' project completed' : ' projects completed')) + '</div>' +
-        '<div class="lh-sect"><span class="cap">Schedule &amp; attention</span></div>' +
-        '<div class="ov-grid">' + scheduleCard() + attentionCard() + '</div>' +
-        '<div class="lh-sect"><span class="cap">Active projects</span><a href="#/projects">View all</a></div>' + projectsTable();
-      window.scrollTo(0, keep.y);
-    }
-    function stat(label, value, sub) {
-      return '<div class="lh-card stat"><div class="cap">' + esc(label) + '</div><div class="v">' + esc(value) + '</div><div class="s">' + esc(sub) + '</div></div>';
+        stat('Active contract value', c.num, c.unit, added, 'ok', 0) +
+        stat('Gross margin (forecast)', mgv, M.margin == null ? '' : '%', mgSub, mgTone, 60) +
+        stat('Pipeline (weighted)', w.num, w.unit, M.open + ' open ' + (M.open === 1 ? 'lead' : 'leads'), 'ok', 120) +
+        stat('Delivered value · ' + t.y, dl.num, dl.unit, M.done + (M.done === 1 ? ' project completed' : ' projects completed'), 'steel', 180) + '</div>' +
+        sect('Schedule &amp; attention') +
+        '<div class="ov-grid">' + scheduleCard() + attentionCard(rain) + '</div>' +
+        sect('Active projects') + projectsCard();
+      window.scrollTo(0, y);
     }
 
     /* ---------- events ---------- */
@@ -360,10 +374,7 @@
       w.document.close(); w.focus(); w.print();
     }
 
-    return {
-      refresh: refresh,
-      destroy: function () { destroyed = true; view.removeEventListener('click', onClick); },
-    };
+    return { refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
   }
 
   LH.screens.overview = { title: 'Overview', render: render };

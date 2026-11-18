@@ -55,6 +55,13 @@
       if (n >= 1000) { var k = n / 1000; return '$' + (Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)) + 'k'; }
       return '$' + Math.round(n);
     },
+    /** Same as money(), split so the unit can be set small: {num:'$1.86', unit:'M'}. */
+    moneyParts: function (n) {
+      n = Number(n) || 0;
+      if (n >= 1000000) { var m = n / 1000000; return { num: '$' + (Number.isInteger(m) ? m.toFixed(0) : m.toFixed(2)), unit: 'M' }; }
+      if (n >= 1000) { var k = n / 1000; return { num: '$' + (Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)), unit: 'k' }; }
+      return { num: '$' + Math.round(n), unit: '' };
+    },
     moneyFull: function (n) { return '$' + Math.round(Number(n) || 0).toLocaleString('en-AU'); },
   };
   /** Today in Adelaide as {y, m(0-11), d}. */
@@ -82,7 +89,7 @@
     contractors: '<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L3.8 17.2a1.6 1.6 0 0 0 2.3 2.3l5.4-5.4a4 4 0 0 0 5.3-5.3l-2.4 2.4-2.2-.4-.4-2.2z"/>',
     inbox: '<path d="M4 5.5h16v10H9.5L5 19.5v-4H4z"/>',
     compliance: '<path d="M12 3.5 5 6v5.5c0 4.2 2.8 7.4 7 9 4.2-1.6 7-4.8 7-9V6z"/><path d="m8.8 12.2 2.4 2.4 4-4.4"/>',
-    reports: '<path d="M4.5 20V10M10 20V4.5M15.5 20v-7M21 20H3"/>',
+    reports: '<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M14.5 3.5V7H18M9.5 12h5M9.5 15.5h5"/>',
     settings: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
     moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
@@ -142,14 +149,15 @@
       .then(function (d) { wx.pending = null; return d; });
     return wx.pending;
   };
+  function fmt2(d) { return LH.fmt.wdDM(d).replace(/^(\w+),? /, '$1 '); }
   function drawTopWeather() {
     LH.weather().then(function (w) {
-      var el = LH.$('#topWx'); if (!el) return;
-      if (!w) { el.hidden = true; return; }
+      var el = LH.$('#topWx'), vr = LH.$('#topVr'); if (!el) return;
+      if (!w) { el.hidden = true; vr.hidden = true; return; }
       var t = w.currentTempC != null ? Math.round(w.currentTempC) + '° ' : '';
       var p = w.forecast && w.forecast[0] ? w.forecast[0].precis : '';
-      el.hidden = false;
-      el.innerHTML = LH.fmt.wdDM(new Date()) + ' · ' + LH.esc(t + p.toLowerCase());
+      el.hidden = false; vr.hidden = false;
+      el.textContent = fmt2(new Date()) + ' · ' + t + p.toLowerCase();
     });
   }
 
@@ -204,6 +212,7 @@
   function drawRail() {
     var h = '<span class="lh-rail-mark" aria-label="Lotti Homes">' + (window.LH_MARK || '') + '</span>';
     LH.NAV.forEach(function (n) {
+      if (n.id === 'settings') h += '<div class="grow"></div>';
       h += '<a class="lh-nav" href="#/' + n.id + '" data-nav="' + n.id + '" title="' + n.label + '">' +
         '<span class="ic">' + LH.icon(n.id) + '</span><span class="lb">' + n.label + '</span></a>';
     });
