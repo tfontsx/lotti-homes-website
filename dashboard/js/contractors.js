@@ -83,7 +83,7 @@
         var cells = ''; for (var k = 0; k < 7; k++) cells += '<i class="cw-cell" style="grid-column:' + (k + 1) + ';grid-row:1 / span ' + nl + '"></i>';
         var bars = pl.map(function (p) { return '<button type="button" class="cw-bar' + (rainDays[p.b.s] || false ? ' rain' : '') + '" data-booking="' + p.b.id + '" title="' + esc(p.b.title || '') + '" style="grid-column:' + (p.a + 1) + ' / ' + (p.z + 2) + ';grid-row:' + (p.lane + 1) + '">' + esc(p.b.street) + '</button>'; }).join('');
         var cp = compliance(c, D.certs.filter(function (x) { return x.contractor_id === c.id; }));
-        return '<div class="cw-row cw-grid" style="--i:' + idx + '"><button type="button" class="cw-who" data-manage="' + c.id + '"><span class="tp">' + esc((one(c.contractor_types) || {}).name || '') + '</span><span class="nm">' + esc(c.name) + '</span><span class="ct">' + esc([c.contact_name, c.phone].filter(Boolean).join(' · ')) + '</span></button>' +
+        return '<div class="cw-row cw-grid" style="--i:' + idx + '"><button type="button" class="cw-who" data-manage="' + c.id + '"><span class="tp">' + esc((one(c.contractor_types) || {}).name || '') + '</span><span class="nm">' + esc(c.name) + '</span><span class="ct">' + esc([c.contact_name, fmt.phone(c.phone)].filter(Boolean).join(' · ')) + '</span></button>' +
           '<div class="cw-days" style="--rows:' + nl + '">' + cells + bars + (pl.length ? '' : '<span class="cw-free">Available all week</span>') + '</div><div>' + UI.pill(cp.cls, cp.text) + '</div></div>';
       }).join('');
       var rangeEnd = mon + 6;
@@ -106,10 +106,10 @@
       var checks = c ? (c.verified_checks || []) : [];
       UI.form({
         title: c ? 'Edit contractor' : 'Add contractor', submitLabel: c ? 'Save' : 'Add contractor', wide: true,
-        values: c ? { name: c.name, type: (one(c.contractor_types) || {}).name || '', contact: c.contact_name || '', phone: c.phone || '', email: c.email || '', abn: c.abn || '', notes: c.notes || '', lic: checks.indexOf('licence') !== -1 ? '1' : '0', ins: checks.indexOf('insurance') !== -1 ? '1' : '0', wc: checks.indexOf('white_card') !== -1 ? '1' : '0' } : { lic: '0', ins: '0', wc: '0' },
-        fields: [{ name: 'name', label: 'Company', required: true, span: 2, minlen: 2, maxlen: 120 },
-          { name: 'type', label: 'Trade', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new trade' },
-          { name: 'contact', label: 'Contact name', kind: 'name' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'abn', label: 'ABN', kind: 'abn', placeholder: '11 digits' },
+        values: c ? { name: c.name, type: (one(c.contractor_types) || {}).name || '', contact: c.contact_name || '', phone: fmt.phone(c.phone), email: c.email || '', abn: c.abn || '', notes: c.notes || '', lic: checks.indexOf('licence') !== -1 ? '1' : '0', ins: checks.indexOf('insurance') !== -1 ? '1' : '0', wc: checks.indexOf('white_card') !== -1 ? '1' : '0' } : { lic: '0', ins: '0', wc: '0' },
+        fields: [{ name: 'name', label: 'Company', required: true, span: 2, minlen: 2, maxlen: 100 },
+          { name: 'type', label: 'Trade', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new trade', kind: 'typename', maxlen: 40 },
+          { name: 'contact', label: 'Contact name', kind: 'name', required: true }, { name: 'phone', label: 'Mobile', type: 'tel', required: true }, { name: 'email', label: 'Email', type: 'email' }, { name: 'abn', label: 'ABN', kind: 'abn', placeholder: '11 digits' },
           { name: 'lic', label: 'Licence number verified', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }, { name: 'ins', label: 'Insurance verified', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] },
           { name: 'wc', label: 'White Card on file', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }, { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
         onSubmit: async function (v) {

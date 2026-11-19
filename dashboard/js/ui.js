@@ -66,6 +66,8 @@
       if (/^0\d/.test(s)) s = '+61' + s.slice(1); else if (/^61\d/.test(s)) s = '+' + s;
       return /^\+61(4\d{8}|[2378]\d{8})$/.test(s) ? s : null;
     },
+    place: function (v) { v = String(v || '').trim(); if (!v) return ''; return v.length >= 2 && v.length <= 60 && /^[\p{L} '’.-]+$/u.test(v) ? v : null; },
+    typeName: function (v) { v = String(v || '').trim(); if (!v) return ''; return v.length >= 2 && v.length <= 40 && /^[\p{L}\p{N} '’&\/-]+$/u.test(v) ? v : null; },
     name: function (v) { v = String(v || '').trim(); if (!v) return ''; return v.length <= 80 && /^[\p{L} '’&-]+$/u.test(v) && /\p{L}/u.test(v) ? v : null; },
     abn: function (v) {
       var s = String(v || '').replace(/\s/g, ''); if (!s) return ''; if (!/^\d{11}$/.test(s)) return null;
@@ -186,11 +188,15 @@
             if (f.type === 'email') { c = UI.val.email(v); if (c === null) bad = f.label + ' must be a valid email address.'; else v = c; }
             else if (f.type === 'tel') { c = UI.val.phone(v); if (c === null) bad = f.label + ' must be an Australian phone number, like 0412 345 678.'; else v = c; }
             else if (f.kind === 'name') { if (UI.val.name(v) === null) bad = f.label + ' can only use letters, spaces, apostrophes, hyphens and &.'; }
+            else if (f.kind === 'place') { if (UI.val.place(v) === null) bad = f.label + ' can only use letters, spaces and the characters \' - . (2 to 60 characters).'; }
+            else if (f.kind === 'typename') { if (UI.val.typeName(v) === null) bad = f.label + ' can use letters, numbers and spaces only (2 to 40 characters).'; }
             else if (f.kind === 'abn') { c = UI.val.abn(v); if (c === null) bad = f.label + ' must be a valid 11-digit ABN.'; else v = c; }
             else if (f.kind === 'url') { c = UI.val.url(v); if (c === null) bad = f.label + ' must start with https://'; else v = c; }
             else if (f.type === 'money' || f.type === 'number') {
-              var n = Number(v), lo = f.type === 'money' ? 0 : f.min, hi = f.type === 'money' ? 99999999 : f.max;
+              var n = Number(String(v).replace(/[$,\s]/g, '')), lo = f.type === 'money' ? (f.positive ? 1 : 0) : f.min, hi = f.type === 'money' ? 99999999 : f.max;
               if (!isFinite(n)) bad = f.label + ' must be a number.';
+              else if (!Number.isInteger(n)) bad = f.label + (f.type === 'money' ? ' must be a whole number of dollars.' : ' must be a whole number.');
+              else if (f.positive && n < 1) bad = f.label + ' must be more than $0.';
               else if (lo != null && n < lo) bad = f.label + ' can\'t be less than ' + lo + '.';
               else if (hi != null && n > hi) bad = f.label + ' can\'t be more than ' + hi.toLocaleString('en-AU') + '.';
             }
@@ -292,7 +298,7 @@
   };
 
   /** Whole dollars from a money field value, or null. */
-  UI.dollars = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
+  UI.dollars = function (v) { var s = String(v == null ? '' : v).replace(/[$,\s]/g, ''); return /^\d+$/.test(s) ? parseInt(s, 10) : null; };
   UI.cents = function (v) { var n = UI.dollars(v); return n == null ? null : n * 100; };
   UI.nullIfBlank = function (v) { v = (v == null ? '' : String(v)).trim(); return v === '' ? null : v; };
 

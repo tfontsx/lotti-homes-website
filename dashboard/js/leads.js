@@ -46,7 +46,7 @@
     return UI.form({
       title: 'Mark ' + lead.name + ' as lost', intro: 'Pick the main reason. You can reopen the lead later.', submitLabel: 'Mark lost', danger: true,
       fields: [{ name: 'reason', label: 'Reason', type: 'select', options: LOST.map(function (x) { return { v: x[0], l: x[1] }; }), required: true },
-        { name: 'note', label: 'Note (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
+        { name: 'note', label: 'Note (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 500 }],
       onSubmit: async function (v) { await markLost(lead.id, v.reason, v.note); }
     }).then(function (ok) { if (ok) { UI.toast('Marked as lost.'); if (after) after(); } return ok; });
   }
@@ -56,23 +56,23 @@
     var def = templates.filter(function (t) { return t.is_default; })[0] || templates[0];
     return UI.form({
       title: 'Convert to project', intro: lead.name + ' becomes a client with a new project, and the lead is marked won.', submitLabel: 'Create project', wide: true,
-      values: { name: lead.name + (lead.type ? ' — ' + lead.type : ''), type: lead.typeId || '', template: def ? def.id : '', state: 'SA', suburb: lead.suburb, contract: lead.value || '', cname: lead.name, cemail: lead.email, cmobile: lead.phone },
+      values: { name: lead.name + (lead.type ? ' — ' + lead.type : ''), type: lead.typeId || '', template: def ? def.id : '', state: 'SA', suburb: lead.suburb, contract: lead.value || '', cname: lead.name, cemail: lead.email, cmobile: fmt.phone(lead.phone) },
       fields: [
         { name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(types.map(function (t) { return { v: t.id, l: t.name }; })), required: true },
         { name: 'template', label: 'Stage template', type: 'select', options: templates.map(function (t) { return { v: t.id, l: t.name }; }) },
         { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 },
-        { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
+        { name: 'suburb', label: 'Suburb', required: true, kind: 'place', maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
         { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) },
-        { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
-        { name: 'contract', label: 'Contract value', type: 'money', required: true }, { name: 'budget', label: 'Original budget', type: 'money' },
+        { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date' },
+        { name: 'contract', label: 'Contract value', type: 'money', required: true, positive: true }, { name: 'budget', label: 'Original budget', type: 'money' },
         { name: 'cname', label: 'Client name', required: true, kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email', required: true }, { name: 'cmobile', label: 'Client mobile', type: 'tel', required: true }],
-      validate: function (v) { return v.finish < v.start ? 'The forecast completion can\'t be before the start date.' : ''; },
+      validate: function (v) { return v.finish && v.finish < v.start ? 'The forecast completion can\'t be before the start date.' : ''; },
       onSubmit: async function (v) {
         var res = await LH.sb.rpc('convert_lead_to_project', {
           p_lead_id: lead.id, p_name: v.name, p_project_type_id: v.type, p_custom_type_name: null,
           p_site: { street: v.street, suburb: v.suburb, state: v.state, postcode: v.postcode },
-          p_template_id: UI.nullIfBlank(v.template), p_start_date: v.start, p_forecast_completion: v.finish,
+          p_template_id: UI.nullIfBlank(v.template), p_start_date: v.start, p_forecast_completion: UI.nullIfBlank(v.finish),
           p_contract_value_cents: UI.cents(v.contract), p_original_budget_cents: UI.cents(v.budget),
           p_client_overrides: { name: v.cname, email: UI.nullIfBlank(v.cemail), mobile: UI.nullIfBlank(v.cmobile), second_contact_name: null, second_contact_phone: null, notes: null },
         });
@@ -87,10 +87,10 @@
       fields: [
         { name: 'name', label: 'Name', required: true, span: 2, kind: 'name' },
         { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' },
-        { name: 'suburb', label: 'Suburb', minlen: 2, maxlen: 60 },
+        { name: 'suburb', label: 'Suburb', kind: 'place', maxlen: 60 },
         { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) },
-        { name: 'newtype', label: 'Or a new type', placeholder: 'e.g. Extension' },
+        { name: 'newtype', label: 'Or a new type', placeholder: 'e.g. Extension', kind: 'typename', maxlen: 40 },
         { name: 'value', label: 'Estimated value', type: 'money' },
         { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
       onSubmit: async function (v) {
@@ -346,7 +346,7 @@
         UI.sect('Client &amp; consultation') +
         '<div class="ld-detail">' +
         '<div class="stack"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Details</h2><button type="button" class="lh-link" data-act="edit">Edit</button></div>' +
-        row('Phone', l.phone ? esc(l.phone) : '<span class="faint">—</span>') + row('Email', l.email ? esc(l.email) : '<span class="faint">—</span>') + row('Enquiry type', esc(l.type || '—')) +
+        row('Phone', l.phone ? esc(fmt.phone(l.phone)) : '<span class="faint">—</span>') + row('Email', l.email ? esc(l.email) : '<span class="faint">—</span>') + row('Enquiry type', esc(l.type || '—')) +
         row('Lead source', esc(SRC[l.source] || l.source)) + row('Enquiry received', esc(fmt.dateY(fmt.dayKey(l.created)))) + row('Consultation', consultText) +
         '<div class="kvfoot">' + '<button type="button" class="lh-link danger" data-act="delete">Delete lead</button></div></section>' +
         '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:0.75rem"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
@@ -416,12 +416,12 @@
       UI.form({
         title: 'Edit details', submitLabel: 'Save', wide: true,
         validate: function (v) { return !v.email && !v.phone ? 'Add an email address or a phone number.' : ''; },
-        values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type,
+        values: { name: l.name, email: l.email, phone: fmt.phone(l.phone), suburb: l.suburb, source: l.source, type: l.type,
           cwhen: ec && ec.start && !ec.cancelled ? LH.toLocalInput(ec.start) : '', clen: String(elen), cplace: ec && ec.place ? ec.place : '' },
         fields: [{ name: 'name', label: 'Name', required: true, span: 2, kind: 'name' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'suburb', label: 'Suburb', minlen: 2, maxlen: 60 },
           { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
           { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) },
-          { name: 'newtype', label: 'Or a new type' },
+          { name: 'newtype', label: 'Or a new type', kind: 'typename', maxlen: 40 },
           { name: 'cwhen', label: 'Consultation date and time (Adelaide)', type: 'datetime-local', span: 2, hint: ec && ec.start && !ec.cancelled ? 'Change this to move the booking. It updates the calendar and the app.' : 'Fill this in to book a consultation.' },
           { name: 'clen', label: 'Consultation length', type: 'select', options: lens.map(function (m) { return { v: String(m), l: m < 60 ? m + ' minutes' : (m % 60 === 0 ? (m / 60) + (m === 60 ? ' hour' : ' hours') : m + ' minutes') }; }) },
           { name: 'cplace', label: 'Consultation location', maxlen: 200 }],
@@ -491,6 +491,18 @@
         onOpen: function (el) {
           el.querySelector('#estAdd').addEventListener('click', function () { el.querySelector('#estRows').insertAdjacentHTML('beforeend', rowHtml({ label: '', amount: '' })); });
           el.addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (b) b.closest('.est-row').remove(); });
+        },
+        validate: function (v, form) {
+          var rows = LH.$$('.est-row', form).map(function (r) { return { label: r.querySelector('[data-l]').value.trim(), raw: r.querySelector('[data-a]').value.trim() }; }).filter(function (r) { return r.label || r.raw; });
+          for (var i = 0; i < rows.length; i++) {
+            var n = i + 1, amt = UI.dollars(rows[i].raw);
+            if (rows[i].label.length < 2 || rows[i].label.length > 120) return 'Item ' + n + ': the name needs 2 to 120 characters.';
+            if (rows[i].raw === '') return 'Item ' + n + ': enter an amount.';
+            if (amt == null) return 'Item ' + n + ': enter a whole number of dollars.';
+            if (amt < 1) return 'Item ' + n + ': the amount must be more than $0.';
+            if (amt > 99999999) return 'Item ' + n + ': that amount is too large.';
+          }
+          return '';
         },
         onSubmit: async function (v, form) {
           var items = LH.$$('.est-row', form).map(function (r) { return { label: r.querySelector('[data-l]').value.trim(), amount: UI.dollars(r.querySelector('[data-a]').value) }; }).filter(function (i) { return i.label && i.amount; });

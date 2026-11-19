@@ -63,6 +63,13 @@
     money: function (n) { var p = moneyParts(n); return p.num + p.unit; },
     /** Same as money(), split so the unit can be set small: {num:'$1.86', unit:'M'}. */
     moneyParts: moneyParts,
+    /** How the app shows a stored number: +61412555231 -> 0412 555 231. Anything unrecognised is shown as it is. */
+    phone: function (stored) {
+      if (!stored) return '';
+      var n = String(stored); if (n.indexOf('+61') === 0) n = '0' + n.slice(3);
+      if (!/^0\d{9}$/.test(n)) return String(stored);
+      return n.indexOf('04') === 0 ? n.slice(0, 4) + ' ' + n.slice(4, 7) + ' ' + n.slice(7) : n.slice(0, 2) + ' ' + n.slice(2, 6) + ' ' + n.slice(6);
+    },
     moneyFull: function (n) { n = Math.round(Number(n) || 0); return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-AU'); },
   };
   /** Today in Adelaide as {y, m(0-11), d}. */
@@ -334,9 +341,9 @@
     ]);
     var out = [];
     (r[0].data || []).forEach(function (p) { out.push({ k: 'Project', t: p.name, s: [p.code, p.site_street, p.site_suburb].filter(Boolean).join(' · '), h: '#/projects/' + p.id }); });
-    (r[1].data || []).forEach(function (l) { out.push({ k: 'Lead', t: l.name, s: [l.suburb, l.email, l.phone].filter(Boolean).join(' · '), h: '#/leads/' + l.id }); });
-    (r[2].data || []).forEach(function (c) { out.push({ k: 'Client', t: c.name, s: [c.email, c.mobile].filter(Boolean).join(' · '), h: '#/projects' }); });
-    (r[3].data || []).forEach(function (c) { out.push({ k: 'Contractor', t: c.name, s: [c.contact_name, c.phone].filter(Boolean).join(' · '), h: '#/contractors/' + c.id }); });
+    (r[1].data || []).forEach(function (l) { out.push({ k: 'Lead', t: l.name, s: [l.suburb, l.email, LH.fmt.phone(l.phone)].filter(Boolean).join(' · '), h: '#/leads/' + l.id }); });
+    (r[2].data || []).forEach(function (c) { out.push({ k: 'Client', t: c.name, s: [c.email, LH.fmt.phone(c.mobile)].filter(Boolean).join(' · '), h: '#/projects' }); });
+    (r[3].data || []).forEach(function (c) { out.push({ k: 'Contractor', t: c.name, s: [c.contact_name, LH.fmt.phone(c.phone)].filter(Boolean).join(' · '), h: '#/contractors/' + c.id }); });
     index = out; indexAt = Date.now();
   }
   function bindSearch() {

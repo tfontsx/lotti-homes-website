@@ -73,19 +73,19 @@
     var def = templates.filter(function (t) { return t.is_default; })[0] || templates[0];
     return UI.form({
       title: 'New project', submitLabel: 'Create project', wide: true,
-      validate: function (v) { if (v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.client && !v.cemail) return 'Client email is required for a new client.'; if (!v.client && !v.cmobile) return 'Client mobile is required for a new client.'; return ''; },
+      validate: function (v) { if (v.finish && v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.client && !v.cemail) return 'Client email is required for a new client.'; if (!v.client && !v.cmobile) return 'Client mobile is required for a new client.'; return ''; },
       values: { template: def ? def.id : '', state: 'SA', client: '', manager: managers[0] ? managers[0].user_id : '' },
       fields: [
         { name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 },
         { name: 'client', label: 'Client', type: 'select', options: [{ v: '', l: 'New client…' }].concat(clients.map(function (c) { return { v: c.id, l: c.name + (c.email ? ' · ' + c.email : '') }; })), span: 2 },
         { name: 'cname', label: 'Client name', kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' },
-        { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new type' },
+        { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new type', kind: 'typename', maxlen: 40 },
         { name: 'template', label: 'Stage template', type: 'select', options: templates.map(function (t) { return { v: t.id, l: t.name }; }) },
         { name: 'manager', label: 'Project manager', type: 'select', options: managers.length ? managers.map(function (m) { return { v: m.user_id, l: m.display_name }; }) : [{ v: '', l: 'No admin has set a full name yet' }], required: true },
-        { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
+        { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, kind: 'place', maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
         { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) },
-        { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
-        { name: 'contract', label: 'Contract value', type: 'money', required: true }, { name: 'budget', label: 'Original budget', type: 'money' }],
+        { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date' },
+        { name: 'contract', label: 'Contract value', type: 'money', required: true, positive: true }, { name: 'budget', label: 'Original budget', type: 'money' }],
       onOpen: function (el) {
         var sel = el.querySelector('[name=client]');
         function toggle() { var isNew = sel.value === ''; ['cname', 'cemail', 'cmobile'].forEach(function (n) { el.querySelector('[name=' + n + ']').closest('.lh-field-wrap').style.display = isNew ? '' : 'none'; }); }
@@ -108,7 +108,7 @@
         var res = await sb.rpc('create_project', {
           p_name: v.name, p_client_id: clientId, p_new_client: newClient, p_project_type_id: tid.data, p_custom_type_name: null,
           p_site: { street: v.street, suburb: v.suburb, state: v.state, postcode: v.postcode }, p_template_id: UI.nullIfBlank(v.template),
-          p_start_date: v.start, p_forecast_completion: v.finish, p_contract_value_cents: UI.cents(v.contract), p_original_budget_cents: UI.cents(v.budget), p_project_manager: null,
+          p_start_date: v.start, p_forecast_completion: UI.nullIfBlank(v.finish), p_contract_value_cents: UI.cents(v.contract), p_original_budget_cents: UI.cents(v.budget), p_project_manager: null,
         });
         if (res.error) throw res.error;
         var mg = await sb.rpc('set_project_manager', { p_project_id: res.data, p_user_id: v.manager }); if (mg.error) throw mg.error;
@@ -406,7 +406,8 @@
         title: 'Project status', intro: 'The client sees this on their app.', submitLabel: 'Save',
         values: { state: p.st === 'ontime' ? 'on_time' : p.st, reason: p.note || '', days: p.delay || '' },
         fields: [{ name: 'state', label: 'Status', type: 'select', options: [{ v: 'on_time', l: 'On time' }, { v: 'delayed', l: 'Delayed' }, { v: 'halted', l: 'Halted' }], required: true },
-          { name: 'days', label: 'Days behind (if delayed)', type: 'number', min: 0 }, { name: 'reason', label: 'Message for the client', type: 'textarea', rows: 3, span: 2, placeholder: 'e.g. Tile delivery delayed by the supplier' }],
+          { name: 'days', label: 'Days behind (if delayed)', type: 'number', min: 1, max: 365 }, { name: 'reason', label: 'Message for the client', type: 'textarea', rows: 3, span: 2, maxlen: 500, placeholder: 'e.g. Tile delivery delayed by the supplier' }],
+        validate: function (v) { if (v.state !== 'on_time' && (v.reason || '').length < 3) return 'Add a short message for the client (at least 3 characters).'; if (v.state === 'delayed' && !/^\d+$/.test(v.days || '')) return 'Enter how many days behind, from 1 to 365.'; return ''; },
         onSubmit: async function (v) { await sbDo(LH.sb.rpc('set_project_status', { p_project_id: id, p_state: v.state, p_reason: UI.nullIfBlank(v.reason), p_delay_days: v.state === 'delayed' ? (parseInt(v.days, 10) || null) : null })); },
       }).then(function (ok) { if (ok) { UI.toast('Status updated.'); refresh(); } });
     }
@@ -415,7 +416,7 @@
       UI.form({
         title: 'Edit financials', intro: 'Admins only. The contract value and budget drive the earned-to-date figures.', submitLabel: 'Save', wide: true,
         values: { contract: p.contract || '', budget: p.budget || '' },
-        fields: [{ name: 'contract', label: 'Contract value', type: 'money' }, { name: 'budget', label: 'Original budget', type: 'money' }],
+        fields: [{ name: 'contract', label: 'Contract value', type: 'money', positive: true }, { name: 'budget', label: 'Original budget', type: 'money' }],
         onSubmit: async function (v) {
           var cols = {}; ['contract:contract_value_cents', 'budget:original_budget_cents'].forEach(function (m) { var k = m.split(':'); var c = UI.cents(v[k[0]]); if (c != null) cols[k[1]] = c; });
           await sbDo(LH.sb.from('project_financials').update(cols).eq('project_id', id));
@@ -427,14 +428,14 @@
       var mg = await LH.sb.rpc('list_project_managers'), managers = mg.data || [];
       UI.form({
         title: 'Edit project', submitLabel: 'Save', wide: true,
-        validate: function (v) { if (v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.cemail) return 'Client email is required.'; if (!v.cmobile) return 'Client mobile is required.'; return ''; },
-        values: { name: raw.name, street: raw.site_street || '', suburb: raw.site_suburb || '', postcode: raw.site_postcode || '', state: raw.site_state || 'SA', start: raw.start_date || '', finish: raw.forecast_completion_date || '', manager: raw.project_manager_id || '', cname: c.name || '', cemail: c.email || '', cmobile: c.mobile || '' },
-        fields: [{ name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
+        validate: function (v) { if (v.finish && v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.cemail) return 'Client email is required.'; if (!v.cmobile) return 'Client mobile is required.'; return ''; },
+        values: { name: raw.name, street: raw.site_street || '', suburb: raw.site_suburb || '', postcode: raw.site_postcode || '', state: raw.site_state || 'SA', start: raw.start_date || '', finish: raw.forecast_completion_date || '', manager: raw.project_manager_id || '', cname: c.name || '', cemail: c.email || '', cmobile: fmt.phone(c.mobile) },
+        fields: [{ name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, kind: 'place', maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
           { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) }, { name: 'manager', label: 'Project manager', type: 'select', options: [{ v: '', l: 'Keep as is' }].concat(managers.map(function (m) { return { v: m.user_id, l: m.display_name }; })) },
-          { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
+          { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date' },
           { name: 'cname', label: 'Client name', required: true, kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' }],
         onSubmit: async function (v) {
-          await sbDo(LH.sb.from('projects').update({ name: v.name, site_street: v.street, site_suburb: v.suburb, site_postcode: v.postcode, site_state: v.state, start_date: v.start, forecast_completion_date: v.finish }).eq('id', id));
+          await sbDo(LH.sb.from('projects').update({ name: v.name, site_street: v.street, site_suburb: v.suburb, site_postcode: v.postcode, site_state: v.state, start_date: v.start, forecast_completion_date: UI.nullIfBlank(v.finish) }).eq('id', id));
           if (raw.client_id) await sbDo(LH.sb.from('clients').update({ name: v.cname, email: UI.nullIfBlank(v.cemail), mobile: UI.nullIfBlank(v.cmobile) }).eq('id', raw.client_id));
           if (v.manager && v.manager !== raw.project_manager_id) await sbDo(LH.sb.rpc('set_project_manager', { p_project_id: id, p_user_id: v.manager }));
         },
@@ -461,7 +462,7 @@
       var n = D.notes.filter(function (x) { return x.id === nid; })[0]; if (!n) return;
       UI.form({
         title: 'Edit note', submitLabel: 'Save', values: { body: n.body, vis: n.visible_to_client ? '1' : '0' },
-        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 5000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
+        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 2000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
         onSubmit: async function (v) {
           await sbDo(LH.sb.from('project_notes').update({ body: v.body }).eq('id', nid));
           if ((v.vis === '1') !== !!n.visible_to_client) await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: nid, p_visible: v.vis === '1' }));
@@ -487,7 +488,7 @@
     function noteForm() {
       UI.form({
         title: 'Add note', submitLabel: 'Add note', values: { vis: '0' },
-        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 5000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
+        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 2000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
         onSubmit: async function (v) {
           var row = await sbDo(LH.sb.from('project_notes').insert({ project_id: id, body: v.body }).select('id').single());
           if (v.vis === '1') await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: row.id, p_visible: true }));
