@@ -156,9 +156,14 @@
       else if (el.hasAttribute('data-type')) S.type = el.getAttribute('data-type');
       else if (el.hasAttribute('data-manage')) {
         var c = D.cons.filter(function (x) { return x.id === el.getAttribute('data-manage'); })[0]; if (!c) return;
-        var pick = await UI.choose(c.name, 'What would you like to do?', [{ key: 'edit', label: 'Edit details', primary: true }, { key: 'certs', label: 'Certificates and compliance' }, { key: 'active', label: c.is_active ? 'Deactivate (hide from lists)' : 'Reactivate', danger: c.is_active }]);
+        var pick = await UI.choose(c.name, 'What would you like to do?', [{ key: 'edit', label: 'Edit details', primary: true }, { key: 'certs', label: 'Certificates and compliance' }, { key: 'delete', label: 'Delete contractor', danger: true }]);
         if (pick === 'edit') contractorForm(c); else if (pick === 'certs') certsForm(c);
-        else if (pick === 'active') { var r = await LH.sb.from('contractors').update({ is_active: !c.is_active }).eq('id', c.id); if (r.error) UI.toast(LH.errMsg(r.error), 'error'); else { UI.toast(c.is_active ? 'Deactivated.' : 'Reactivated.'); refresh(); } }
+        else if (pick === 'delete') {
+          var nb = D.bookings.filter(function (b) { return b.contractor === c.id && b.e >= todayNum(); }).length;
+          if (!(await UI.confirm('Delete ' + c.name + '? They disappear from the contractor lists here and in the app.' + (nb ? ' They have ' + nb + (nb === 1 ? ' upcoming booking' : ' upcoming bookings') + ', which stay on the schedule.' : '') + ' Past bookings are kept for your records.', { title: 'Delete contractor', yes: 'Delete', danger: true }))) return;
+          var r = await LH.sb.from('contractors').update({ is_active: false }).eq('id', c.id);
+          if (r.error) UI.toast(LH.errMsg(r.error), 'error'); else { UI.toast('Contractor deleted.'); refresh(); }
+        }
         return;
       } else if (el.hasAttribute('data-booking')) {
         var b = D.bookings.filter(function (x) { return x.id === el.getAttribute('data-booking'); })[0]; if (!b) return;

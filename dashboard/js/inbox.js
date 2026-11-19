@@ -27,18 +27,18 @@
 
   function render(view, args) {
     var D = { threads: [], messages: [], docs: [], urls: {} }, destroyed = false, drawn = false;
-    var S = { sel: args && args[0] ? args[0] : null, filter: 'all', q: '' };
+    var S = { sel: args && args[0] ? args[0] : null, filter: 'all', q: '', pick: false, picked: {} };
 
     view.innerHTML =
       '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Synced with the app</div></div>' +
-      '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="new">+ New conversation</button><button class="lh-btn" type="button" data-act="readall">Mark all read</button></div></div>' +
+      '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="new">+ New conversation</button><button class="lh-btn" type="button" data-act="readall">Mark all read</button><button class="lh-btn" type="button" data-act="pick">Select</button></div></div>' +
       UI.sect('Conversations') +
-      '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:0.75rem 0 0.625rem"></div><div id="inThreads" class="in-threads"></div></section>' +
+      '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:0.75rem 0 0.625rem"></div><div id="inThreads" class="in-threads"></div><div id="inBar" class="in-bar" hidden></div></section>' +
       '<section class="in-chat lh-card"><div id="inHead" class="in-head"></div><div id="inMsgs" class="in-msgs"></div>' +
       '<form id="inForm" class="in-compose" autocomplete="off"><button type="button" class="in-plus" id="inAttach" aria-label="Attach a file">+</button><input type="file" id="inFile" hidden accept=".pdf,.jpg,.jpeg,.png,.webp"><input class="lh-input" id="inText" placeholder="Write a message" aria-label="Message" maxlength="2000"><button class="lh-btn primary" type="submit" id="inSend">Send</button></form></section>' +
       '<aside class="in-side lh-card" id="inSide"></aside></div>';
     view.classList.add('fit');
-    var el = { q: LH.$('#inQ', view), chips: LH.$('#inChips', view), threads: LH.$('#inThreads', view), head: LH.$('#inHead', view), msgs: LH.$('#inMsgs', view), side: LH.$('#inSide', view), text: LH.$('#inText', view), form: LH.$('#inForm', view), file: LH.$('#inFile', view) };
+    var el = { q: LH.$('#inQ', view), chips: LH.$('#inChips', view), threads: LH.$('#inThreads', view), bar: LH.$('#inBar', view), head: LH.$('#inHead', view), msgs: LH.$('#inMsgs', view), side: LH.$('#inSide', view), text: LH.$('#inText', view), form: LH.$('#inForm', view), file: LH.$('#inFile', view) };
     el.threads.innerHTML = UI.skeleton([[60], [60, 10], [60, 10]]);
 
     async function load() {
@@ -89,9 +89,13 @@
       var listTop = el.threads.scrollTop;
       el.chips.innerHTML = UI.chips([['all', 'All'], ['unread', 'Unread']], S.filter, 'filter');
       el.threads.innerHTML = list.length ? list.map(function (t) {
-        return '<button type="button" class="in-t' + (t.id === S.sel ? ' on' : '') + '" data-thread="' + t.id + '"><span class="av">' + esc(ini(t.client)) + '</span><span class="tb"><span class="r1"><b>' + esc(t.client) + '</b><i>' + esc(when(t.last)) + '</i></span><span class="r2">' + esc(t.street) + '</span><span class="r3"><span>' + esc(t.preview) + '</span>' + (t.unread ? '<em>' + t.unread + '</em>' : '') + '</span></span></button>';
+        return '<button type="button" class="in-t' + (t.id === S.sel && !S.pick ? ' on' : '') + (S.pick ? ' pk' + (S.picked[t.id] ? ' ck' : '') : '') + '" data-thread="' + t.id + '"' + (S.pick ? ' role="checkbox" aria-checked="' + (S.picked[t.id] ? 'true' : 'false') + '"' : '') + '>' + (S.pick ? '<span class="in-ck" aria-hidden="true"></span>' : '') + '<span class="av">' + esc(ini(t.client)) + '</span><span class="tb"><span class="r1"><b>' + esc(t.client) + '</b><i>' + esc(when(t.last)) + '</i></span><span class="r2">' + esc(t.street) + '</span><span class="r3"><span>' + esc(t.preview) + '</span>' + (t.unread ? '<em>' + t.unread + '</em>' : '') + '</span></span></button>';
       }).join('') : '<div class="faint" style="padding:1.125rem 0.375rem">' + (D.threads.length ? 'No conversations match.' : 'No conversations yet. Start one with + New conversation.') + '</div>';
       el.threads.scrollTop = listTop;
+      var pickBtn = LH.$('[data-act="pick"]', view); if (pickBtn) pickBtn.textContent = S.pick ? 'Cancel' : 'Select';
+      var n = Object.keys(S.picked).length;
+      el.bar.hidden = !S.pick;
+      if (S.pick) el.bar.innerHTML = '<button type="button" class="lh-link" data-act="pickall">' + (list.length && list.every(function (t) { return S.picked[t.id]; }) ? 'Clear' : 'Select all') + '</button><button type="button" class="lh-btn danger" data-act="deletesel"' + (n ? '' : ' disabled') + '>Delete' + (n ? ' (' + n + ')' : '') + '</button>';
       var th = D.threads.filter(function (t) { return t.id === S.sel; })[0];
       if (!th) { el.head.innerHTML = ''; el.msgs.innerHTML = '<div class="in-empty">Pick a conversation.</div>'; el.side.innerHTML = ''; el.form.hidden = true; return; }
       el.form.hidden = false;
@@ -145,6 +149,7 @@
       if (t.hasAttribute('data-sf-open')) { sharedFile(t.getAttribute('data-sf-open'), false); return; }
       if (t.hasAttribute('data-sf-dl')) { sharedFile(t.getAttribute('data-sf-dl'), true); return; }
       if (t.id === 'inAttach') { el.file.click(); return; }
+      if (t.hasAttribute('data-thread') && S.pick) { var pid = t.getAttribute('data-thread'); if (S.picked[pid]) delete S.picked[pid]; else S.picked[pid] = true; paint(); return; }
       if (t.hasAttribute('data-thread')) { S.sel = t.getAttribute('data-thread'); history.replaceState(null, '', '#/inbox/' + S.sel); refresh(); return; }
       if (t.hasAttribute('data-filter')) { S.filter = t.getAttribute('data-filter'); paint(); return; }
       var a = t.getAttribute('data-act');
@@ -153,6 +158,20 @@
         if (!un.length) { UI.toast('Everything is already read.'); return; }
         await Promise.all(un.map(function (x) { return LH.sb.rpc('mark_thread_read', { p_thread_id: x.id }); }));
         un.forEach(function (x) { x.unread = 0; }); paint(); UI.toast('All read.'); return;
+      }
+      if (a === 'pick') { S.pick = !S.pick; S.picked = {}; paint(); return; }
+      if (a === 'pickall') {
+        var q2 = S.q.trim().toLowerCase(), vis = D.threads.filter(function (x) { return (S.filter === 'all' || x.unread > 0) && (!q2 || (x.client + ' ' + x.street + ' ' + x.suburb).toLowerCase().indexOf(q2) !== -1); });
+        var all = vis.length && vis.every(function (x) { return S.picked[x.id]; });
+        vis.forEach(function (x) { if (all) delete S.picked[x.id]; else S.picked[x.id] = true; }); paint(); return;
+      }
+      if (a === 'deletesel') {
+        var ids = Object.keys(S.picked); if (!ids.length) return;
+        if (!(await UI.confirm('Delete ' + (ids.length === 1 ? '1 conversation' : ids.length + ' conversations') + '? They disappear from the app for the clients too, and new messages start a fresh one.', { title: 'Delete conversations', yes: 'Delete', danger: true }))) return;
+        var dr = await LH.sb.rpc('delete_conversations', { p_thread_ids: ids });
+        if (dr.error) { UI.toast(LH.errMsg(dr.error), 'error'); return; }
+        if (S.sel && S.picked[S.sel]) { S.sel = null; history.replaceState(null, '', '#/inbox'); }
+        S.pick = false; S.picked = {}; UI.toast(ids.length === 1 ? 'Conversation deleted.' : ids.length + ' conversations deleted.'); refresh(); return;
       }
       if (a === 'delete') {
         var th = D.threads.filter(function (x) { return x.id === S.sel; })[0]; if (!th) return;
