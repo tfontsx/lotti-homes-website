@@ -84,7 +84,7 @@
         var bars = pl.map(function (p) { return '<button type="button" class="cw-bar' + (rainDays[p.b.s] || false ? ' rain' : '') + '" data-booking="' + p.b.id + '" title="' + esc(p.b.title || '') + '" style="grid-column:' + (p.a + 1) + ' / ' + (p.z + 2) + ';grid-row:' + (p.lane + 1) + '">' + esc(p.b.street) + '</button>'; }).join('');
         var cp = compliance(c, D.certs.filter(function (x) { return x.contractor_id === c.id; }));
         return '<div class="cw-row cw-grid" style="--i:' + idx + '"><button type="button" class="cw-who" data-manage="' + c.id + '"><span class="tp">' + esc((one(c.contractor_types) || {}).name || '') + '</span><span class="nm">' + esc(c.name) + '</span><span class="ct">' + esc([c.contact_name, fmt.phone(c.phone)].filter(Boolean).join(' · ')) + '</span></button>' +
-          '<div class="cw-days" style="--rows:' + nl + '">' + cells + bars + (pl.length ? '' : '<span class="cw-free">Available all week</span>') + '</div><div>' + UI.pill(cp.cls, cp.text) + '</div></div>';
+          '<div class="cw-days" style="--rows:' + nl + '">' + cells + bars + '' + '</div><div>' + UI.pill(cp.cls, cp.text) + '</div></div>';
       }).join('');
       var rangeEnd = mon + 6;
       view.innerHTML =
