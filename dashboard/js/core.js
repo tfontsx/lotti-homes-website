@@ -114,6 +114,8 @@
   /* ---------- labels: wrap bare text in pills/buttons so it can be trimmed to cap height ---------- */
   var TIDY = '.lh-btn,.lh-chip,.lh-pill,.lh-seg button,.lh-avatar,.cal-ctl .today,.ov-wx .warn';
   function tidy() {
+    // Anything truncated with an ellipsis shows its full text on hover.
+    LH.$$('.li .nb, .li .t, .doc .n, .in-t .r3 > span, .in-t .r2').forEach(function (el) { if (!el.title && el.textContent.trim()) el.title = el.textContent.trim(); });
     LH.$$(TIDY).forEach(function (el) {
       Array.prototype.slice.call(el.childNodes).forEach(function (n) {
         if (n.nodeType === 3 && n.nodeValue.trim()) {
@@ -346,7 +348,7 @@
       shown = index.filter(function (e) { return (e.t + ' ' + e.s).toLowerCase().indexOf(term) !== -1; }).slice(0, 12);
       box.hidden = false;
       box.innerHTML = shown.length
-        ? shown.map(function (e, i) { return '<a href="' + e.h + '" data-i="' + i + '"><span class="k">' + e.k + '</span><span><div>' + LH.esc(e.t) + '</div><div class="faint" style="font-size:12px">' + LH.esc(e.s) + '</div></span></a>'; }).join('')
+        ? shown.map(function (e, i) { return '<a href="' + e.h + '" data-i="' + i + '"><span class="k">' + e.k + '</span><span><div>' + LH.esc(e.t) + '</div><div class="faint" style="font-size:max(11.04px, 0.75rem)">' + LH.esc(e.s) + '</div></span></a>'; }).join('')
         : '<div class="empty">Nothing matches “' + LH.esc(input.value.trim()) + '”.</div>';
     }
     input.addEventListener('focus', function () { if (!index) buildIndex().then(draw).catch(function (e) { console.error(e); index = []; }); });

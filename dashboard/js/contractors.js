@@ -91,7 +91,7 @@
         '<div class="ov-hero"><div><div class="cap">Contacts &amp; bookings</div><h1 class="ov-hello">Contractors</h1><div class="hero-sub">' + D.cons.filter(function (c) { return c.is_active; }).length + ' contractors · Bookings appear on Google Calendar</div></div>' +
         '<div class="ov-actions no-print"><div class="chip-row" style="margin:0">' + UI.chips([['0', 'This week'], ['1', 'Next week']], String(S.week), 'week') + '</div><button class="lh-btn" type="button" data-act="csv">Export</button><button class="lh-btn primary" type="button" data-act="add">+ Add contractor</button></div></div>' +
         '<div class="lh-sect"><span class="cap">' + (S.week ? 'Next week' : 'This week') + '</span><span class="sect-sub">' + esc(fmt.date(keyOfNum(mon)) + ' – ' + fmt.date(keyOfNum(rangeEnd))) + '</span><span class="rule"></span></div>' + '<div class="chip-row">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
-        '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:980px"><div class="cw-head cw-grid"><div>Contractor</div><div class="cw-days-head">' + head + '</div><div>Compliance</div></div>' +
+        '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:52rem"><div class="cw-head cw-grid"><div>Contractor</div><div class="cw-days-head">' + head + '</div><div>Compliance</div></div>' +
         (rows || '<div class="lh-empty">No contractors here yet. Add one to start booking them.</div>') + '</div></div></section>';
       window.scrollTo(0, y);
     }
@@ -127,7 +127,7 @@
       UI.form({
         title: c.name + ' — certificates', submitLabel: 'Add certificate', wide: true,
         fields: [{ name: 'kind', label: 'Type', type: 'select', options: KINDS.concat([['other', 'Other']]).map(function (k) { return { v: k[0], l: k[1] }; }) }, { name: 'title', label: 'Title', placeholder: 'e.g. Electrical licence' }, { name: 'number', label: 'Number' }, { name: 'expiry', label: 'Expiry date', type: 'date' }],
-        extra: '<div class="cert-list">' + list + '</div><label class="lh-flabel" style="margin-top:14px">File (PDF, JPG or PNG, optional)</label><input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png">',
+        extra: '<div class="cert-list">' + list + '</div><label class="lh-flabel" style="margin-top:0.875rem">File (PDF, JPG or PNG, optional)</label><input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png">',
         onOpen: function (el) {
           el.addEventListener('click', async function (e) {
             var del = e.target.closest('[data-cdel]'), view = e.target.closest('[data-cview]');

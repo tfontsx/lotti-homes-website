@@ -100,7 +100,7 @@
 
     function draw() {
       var y = window.scrollY; view.classList.toggle('enter', !drawn); drawn = true;
-      if (!D.projects.length) { view.innerHTML = '<div class="lh-card soon"><div class="cap" style="margin-bottom:14px">Schedule</div><h2>No active projects</h2><p class="muted">Create a project and its stages will appear here.</p><a class="lh-btn primary" href="#/projects/new">+ New project</a></div>'; return; }
+      if (!D.projects.length) { view.innerHTML = '<div class="lh-card soon"><div class="cap" style="margin-bottom:0.875rem">Schedule</div><h2>No active projects</h2><p class="muted">Create a project and its stages will appear here.</p><a class="lh-btn primary" href="#/projects/new">+ New project</a></div>'; return; }
       var p = D.project, pl = D.plan;
       var head = '<div class="ov-hero"><div><div class="cap">Schedule · ' + esc(p.site_street || p.name) + '</div><h1 class="ov-hello">Schedule</h1><div class="hero-sub">Actual progress by stage · Contractor bookings push to Google Calendar</div></div>' +
         '<div class="ov-actions no-print"><label class="proj-pick"><span class="cap">Project</span><select id="schProject" class="pick-sel">' + D.projects.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === p.id ? ' selected' : '') + '>' + esc(x.site_street || x.name) + '</option>'; }).join('') + '</select></label>' +
@@ -121,9 +121,10 @@
         UI.stat('Days ahead / behind', slipTxt, '', st.slipRow ? esc(st.slipRow.name + (st.slipRow.slip > 0 ? ' ran over' : ' finished early')) : 'Right on plan', st.slip > 0 ? 'wait' : 'ok', 60, st.slip > 0 ? 'wait' : 'steel') +
         UI.stat('Critical path risk', st.crit ? esc(st.crit.name) : 'None', '', st.crit ? esc(st.crit.sub) : 'Nothing is slipping', st.crit ? 'halt' : 'ok', 120, st.crit ? 'halt' : 'ok') +
         UI.stat('Next action', esc(st.next.title), '', esc(st.next.sub), '', 180, 'steel') + '</div>' +
-        UI.sect('Tasks') + '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:980px"><div class="gt-head gt-grid"><div>Task · responsible</div><div>Contractor</div><div class="gt-weeks" style="--n:' + g.weeks + '">' + g.heads + '</div><div>Status</div><div>Next action</div></div>' + rowsHtml + '</div></div>' +
+        UI.sect('Tasks') + '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:52rem"><div class="gt-head gt-grid"><div>Task · responsible</div><div>Contractor</div><div class="gt-weeks" style="--n:' + g.weeks + '">' + g.heads + '</div><div>Status</div><div>Next action</div></div>' + rowsHtml + '</div></div>' +
         '<div class="gt-legend"><span><i class="lg-done"></i>Complete</span><span><i class="lg-prog"></i>In progress</span><span><i class="lg-up"></i>Up next</span><span><i class="lg-over"></i>Ran over</span><span><i class="lg-today"></i>Today</span></div></section>';
       window.scrollTo(0, y);
+      fitWeeks();
     }
 
     function assignForm(stageName) {
@@ -161,8 +162,20 @@
       }
     }
     function onChange(e) { if (e.target.id === 'schProject') { selected = e.target.value; history.replaceState(null, '', '#/schedule/' + selected); refresh(); } }
+    // Show a week label only as often as the chart is wide enough to hold one.
+    function fitWeeks() {
+      var box = LH.$('.gt-weeks', view); if (!box) return;
+      var spans = box.children, n = spans.length; if (!n) return;
+      var need = parseFloat(getComputedStyle(document.documentElement).fontSize) * 3.6;
+      var step = Math.max(1, Math.ceil(need / (box.clientWidth / n)));
+      var colW = box.clientWidth / n;
+      for (var i = 0; i < n; i++) spans[i].classList.toggle('skip', i % step !== 0 || (n - i) * colW < need * 0.9);
+    }
+    var rz = null;
+    function onResize() { clearTimeout(rz); rz = setTimeout(fitWeeks, 120); }
+    window.addEventListener('resize', onResize);
     view.addEventListener('click', onClick); view.addEventListener('change', onChange);
-    return { watch: ['projects', 'project_stages', 'bookings', 'booking_internal', 'contractors'], refresh: refresh, destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); view.removeEventListener('change', onChange); } };
+    return { watch: ['projects', 'project_stages', 'bookings', 'booking_internal', 'contractors'], refresh: refresh, destroy: function () { destroyed = true; clearTimeout(rz); window.removeEventListener('resize', onResize); view.classList.remove('enter'); view.removeEventListener('click', onClick); view.removeEventListener('change', onChange); } };
   }
 
   LH.screens.schedule = { title: 'Schedule', render: render };

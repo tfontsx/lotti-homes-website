@@ -43,7 +43,7 @@
     var destroyed = false, drawn = false;
     view.classList.add('fit');
 
-    view.innerHTML = '<div class="lh-skel" style="height:90px;margin-top:10px"></div><div class="lh-skel" style="height:360px;margin-top:20px"></div>';
+    view.innerHTML = '<div class="lh-skel" style="height:5.625rem;margin-top:0.625rem"></div><div class="lh-skel" style="height:22.5rem;margin-top:1.25rem"></div>';
 
     async function refresh() {
       var sb = LH.sb;
@@ -98,10 +98,10 @@
       if (!ind && r.incidents_near_misses) dl += '<div><dt>Incidents / near misses</dt><dd>' + esc(r.incidents_near_misses) + '</dd></div>';
       if (!ind && r.additional_notes) dl += '<div><dt>Additional notes</dt><dd>' + esc(r.additional_notes) + '</dd></div>';
       return '<details class="cp-row"><summary><span class="st ' + (f ? 'bad' : 'ok') + '" aria-label="' + (f ? f + ' flagged' : 'All clear') + '">' + (f ? CROSS : TICK) + '</span>' +
-        '<div class="main"><div class="n">' + esc(r.worker_name) + '</div><div class="faint" style="font-size:12.5px">' + esc(meta.filter(Boolean).join(' · ')) + '</div></div>' +
+        '<div class="main"><div class="n">' + esc(r.worker_name) + '</div><div class="faint" style="font-size:max(11.5px, 0.7812rem)">' + esc(meta.filter(Boolean).join(' · ')) + '</div></div>' +
         (f ? '<span class="lh-pill halt"><i></i>' + f + ' flagged</span>' : '') + CHEV + '</summary>' +
         '<div class="cp-body"><dl>' + dl + '</dl><div class="cp-ans">' + answers(r.responses, ind ? INDUCTION : CHECKIN) + '</div>' +
-        '<div style="margin-top:14px"><button type="button" class="lh-btn" data-del="' + esc(r.id) + '" style="height:32px;color:var(--halt)">Delete submission</button></div></div></details>';
+        '<div style="margin-top:0.875rem"><button type="button" class="lh-btn" data-del="' + esc(r.id) + '" style="height:2rem;color:var(--halt)">Delete submission</button></div></div></details>';
     }
 
     function draw() {
@@ -120,12 +120,12 @@
       var openIds = LH.$$('details[open] [data-del]', view).map(function (b) { return b.getAttribute('data-del'); });
 
       view.innerHTML =
-        '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:10px"><div><div class="cap" style="margin-bottom:10px">Compliance</div>' +
-        '<h1 class="ov-hello" style="font-size:38px">Site <em>safety</em></h1><div class="muted" style="margin-top:8px;max-width:620px">Inductions and daily check-ins submitted by contractors from the website forms.</div></div>' +
-        '<div class="no-print" style="display:flex;gap:10px"><button class="lh-btn" type="button" id="cpCsv">Export CSV</button></div></div>' +
-        '<div class="cp-stats" style="margin-top:22px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;margin-top:0.625rem"><div><div class="cap" style="margin-bottom:0.625rem">Compliance</div>' +
+        '<h1 class="ov-hello" style="font-size:max(34.96px, 2.375rem)">Site <em>safety</em></h1><div class="muted" style="margin-top:0.5rem;max-width:38.75rem">Inductions and daily check-ins submitted by contractors from the website forms.</div></div>' +
+        '<div class="no-print" style="display:flex;gap:0.625rem"><button class="lh-btn" type="button" id="cpCsv">Export CSV</button></div></div>' +
+        '<div class="cp-stats" style="margin-top:1.375rem">' +
         UI.stat('Total inductions', String(S.inductions.length), '', esc(tIn + ' today'), 'steel', 0, 'steel') + UI.stat('Total check-ins', String(S.checkins.length), '', esc(tCk + ' today'), 'ok', 60, 'ok') + UI.stat('Flagged answers', String(tFlags), '', esc(wFlags + ' this week'), tFlags ? 'halt' : 'ok', 120, tFlags ? 'halt' : 'wait') + '</div>' +
-        '<div class="lh-card" style="margin-bottom:18px"><div class="cap" style="margin-bottom:14px">Form links — print these as QR codes for site</div><div class="cp-link">' +
+        '<div class="lh-card" style="margin-bottom:1.125rem"><div class="cap" style="margin-bottom:0.875rem">Form links — print these as QR codes for site</div><div class="cp-link">' +
         link('Site induction', origin + '/site-induction.html') + link('Daily check-in', origin + '/daily-checkin.html') + '</div></div>' +
         '<div class="cp-tools"><div class="lh-seg">' + [['inductions', 'Site inductions'], ['checkins', 'Daily check-ins']].map(function (t) { return '<button type="button" data-tab="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
         '<div class="lh-seg">' + [['all', 'All time'], ['today', 'Today'], ['week', 'This week'], ['month', 'This month']].map(function (t) { return '<button type="button" data-range="' + t[0] + '" class="' + (S.range === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +

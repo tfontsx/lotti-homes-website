@@ -11,7 +11,7 @@
     LH.screens[id] = {
       title: COMING[id],
       render: function (view) {
-        view.innerHTML = '<div class="lh-card soon"><div class="cap" style="margin-bottom:14px">Coming next</div><h2>' + COMING[id] + '</h2>' +
+        view.innerHTML = '<div class="lh-card soon"><div class="cap" style="margin-bottom:0.875rem">Coming next</div><h2>' + COMING[id] + '</h2>' +
           '<p class="muted">This screen is being built. For now, use the app for ' + COMING[id].toLowerCase() + '.</p></div>';
       },
     };

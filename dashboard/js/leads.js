@@ -324,7 +324,7 @@
       var consultText = '<span class="muted">Not booked</span>';
       if (c && c.start) {
         var pill = c.cancelled ? ['', 'Cancelled'] : c.outcome === 'completed' ? ['ok', 'Completed'] : c.outcome === 'no_show' ? ['halt', 'No show'] : c.outcome === 'cancelled' ? ['', 'Cancelled'] : ['steel', 'Scheduled'];
-        consultText = fmt.wdDM(c.start).replace(',', '') + ' · ' + fmt.time(c.start) + '<div style="margin-top:6px">' + UI.pill(pill[0], pill[1]) + '</div>';
+        consultText = fmt.wdDM(c.start).replace(',', '') + ' · ' + fmt.time(c.start) + '<div style="margin-top:0.375rem">' + UI.pill(pill[0], pill[1]) + '</div>';
       }
       var notesText = c && c.notes ? c.notes : l.notes;
       var hasBooking = !!(c && !c.cancelled && c.outcome !== 'cancelled');
@@ -335,12 +335,12 @@
       }).join('') || '<div class="faint">No activity yet.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:16px">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
-        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
+        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:1rem">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
+        '<div class="ov-hero" style="margin-top:0.75rem;margin-bottom:1.625rem"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
         esc([l.suburb, 'Enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
         '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
         (l.converted ? '<a class="lh-btn primary" href="#/projects/' + l.converted + '">Open project</a>' : (l.status !== 'won' ? '<button class="lh-btn primary" type="button" data-act="convert">Convert to project</button>' : '')) + '</div></div>' +
-        UI.sect('Status') + '<section class="lh-card" style="padding:22px 28px">' + stepper(l) +
+        UI.sect('Status') + '<section class="lh-card" style="padding:1.375rem 1.75rem">' + stepper(l) +
         (l.status === 'lost' ? '<div class="lostnote">Lost · ' + esc((LOST.filter(function (x) { return x[0] === l.lostReason; })[0] || [0, 'Other'])[1]) + (l.lostNote ? ' — ' + esc(l.lostNote) : '') + '</div>' : '') + '</section>' +
         UI.sect('Client &amp; consultation') +
         '<div class="ld-detail">' +
@@ -357,9 +357,9 @@
         '<div class="faint tiny">Range ' + fmt.money(lo) + ' – ' + fmt.money(hi) + '</div>' +
         '<div class="est-items">' + (D.items.length ? D.items.map(function (i) {
           var a = i.amount_cents / 100; return '<div class="ei"><div class="el"><span>' + esc(i.label) + '</span><span>' + fmt.money(a) + '</span></div><div class="bar"><i style="width:' + (total ? Math.min(100, (a / total) * 100) : 0) + '%"></i></div></div>';
-        }).join('') : '<div class="faint tiny" style="margin-top:14px">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
+        }).join('') : '<div class="faint tiny" style="margin-top:0.875rem">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
         '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section>' +
-        '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:12px"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
+        '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:0.75rem"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
         '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">Weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section></div></div>';
       window.scrollTo(0, y);
     }
@@ -484,7 +484,7 @@
         title: 'Edit estimate', submitLabel: 'Save estimate', wide: true, intro: 'Itemise the quote. The estimated value becomes the total of the items.',
         values: { value: D.items.length ? '' : (D.lead.value || '') },
         fields: [{ name: 'value', label: 'Estimated value (used when there are no items)', type: 'money', span: 2 }],
-        extra: '<div class="cap" style="margin:18px 0 10px">Line items</div><div id="estRows">' + rows.map(rowHtml).join('') + '</div><button type="button" class="lh-link" id="estAdd" style="margin-top:10px">+ Add item</button>',
+        extra: '<div class="cap" style="margin:1.125rem 0 0.625rem">Line items</div><div id="estRows">' + rows.map(rowHtml).join('') + '</div><button type="button" class="lh-link" id="estAdd" style="margin-top:0.625rem">+ Add item</button>',
         onOpen: function (el) {
           el.querySelector('#estAdd').addEventListener('click', function () { el.querySelector('#estRows').insertAdjacentHTML('beforeend', rowHtml({ label: '', amount: '' })); });
           el.addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (b) b.closest('.est-row').remove(); });

@@ -124,9 +124,9 @@
     var S = { y: t.y, m: t.m, d: t.d, view: 'Month', filter: 'all' };
     var todayKey = LH.keyOf(t.y, t.m, t.d);
 
-    view.innerHTML = '<div class="lh-skel" style="height:130px;margin-bottom:26px"></div>' +
-      '<div class="ov-glance">' + [1, 2, 3, 4].map(function () { return '<div class="lh-skel" style="height:112px"></div>'; }).join('') + '</div>' +
-      '<div class="lh-skel" style="height:420px;margin-top:36px"></div>';
+    view.innerHTML = '<div class="lh-skel" style="height:8.125rem;margin-bottom:1.625rem"></div>' +
+      '<div class="ov-glance">' + [1, 2, 3, 4].map(function () { return '<div class="lh-skel" style="height:7rem"></div>'; }).join('') + '</div>' +
+      '<div class="lh-skel" style="height:26.25rem;margin-top:2.25rem"></div>';
 
     async function refresh() {
       try {
@@ -178,14 +178,14 @@
       for (var i = 0; i < 7; i++) {
         var dt = addDays(mon, i), key = keyOfDate(dt), c = (ev[key] || []).length;
         h += '<button type="button" class="' + (key === selKey ? 'sel ' : '') + (key === todayKey ? 'today' : '') + '" data-pick="' + key + '"><span class="w">' + DOW3[i] + '</span><span class="d">' + dt.getUTCDate() + '</span>' +
-          '<i style="display:block;height:3px;border-radius:2px;width:' + (c > 1 ? 9 : 4) + 'px;background:' + (c ? 'currentColor' : 'transparent') + '"></i></button>';
+          '<i style="display:block;height:0.1875rem;border-radius:2px;width:' + (c > 1 ? 9 : 4) + 'px;background:' + (c ? 'currentColor' : 'transparent') + '"></i></button>';
       }
       return h + '</div>';
     }
     function monthGrid(ev) {
       var first = utc(S.y, S.m, 1), lead = (first.getUTCDay() + 6) % 7, days = utc(S.y, S.m + 1, 0).getUTCDate();
       var h = '<div class="cal-grid">' + DOWL.map(function (x, i) { return '<div class="cal-dow' + (i > 4 ? ' we' : '') + '">' + x + '</div>'; }).join('');
-      for (var i = 0; i < lead; i++) h += '<div style="height:46px"></div>';
+      for (var i = 0; i < lead; i++) h += '<div style="height:2.875rem"></div>';
       for (var n = 1; n <= days; n++) {
         var key = LH.keyOf(S.y, S.m, n), c = (ev[key] || []).length;
         var cls = 'cal-cell' + (c ? ' has' : '') + (key === todayKey ? ' today' : '') + (n === S.d ? ' sel' : '');
@@ -201,7 +201,7 @@
         return false;
       });
       var h = '<div class="lanes"><div class="cap">On site this week</div>';
-      if (!rows.length) return h + '<div class="faint" style="margin-top:-6px">Nobody is booked on site this week.</div></div>';
+      if (!rows.length) return h + '<div class="faint" style="margin-top:-0.375rem">Nobody is booked on site this week.</div></div>';
       rows.forEach(function (p) {
         var on = [], i; for (i = 0; i < 7; i++) on.push(!!by[p.id][keyOfDate(addDays(mon, i))]);
         var col = STATUS[p.st].c;
@@ -234,14 +234,14 @@
         var s = new Date(e.start), en = new Date(e.end);
         var st = Math.max(startH, fmt.hour(s) + +fmt.time(s).slice(3) / 60), du = Math.max(0.5, Math.min(8, (en - s) / 3600000));
         if (st >= endH) return;
-        h += '<div class="de" style="--c:' + KIND[e.k].color + ';top:' + ((st - startH) * H + 1) + 'px;height:' + Math.max(36, du * H - 4) + 'px"><div class="a" style="font:400 13px/1.3 Geist,sans-serif">' + esc(e.title) + '</div>' +
+        h += '<div class="de" style="--c:' + KIND[e.k].color + ';top:' + ((st - startH) * H + 1) + 'px;height:' + Math.max(36, du * H - 4) + 'px"><div class="a" style="font:400 max(11.96px, 0.8125rem)/1.3 Geist,sans-serif">' + esc(e.title) + '</div>' +
           '<div class="kind" style="color:' + KIND[e.k].color + '">' + esc(e.t) + ' · ' + KIND[e.k].label + '</div></div>';
       });
       if (LH.keyOf(S.y, S.m, S.d) === todayKey) {
         var now = new Date(), nh = fmt.hour(now) + +fmt.time(now).slice(3) / 60;
         if (nh >= startH && nh < endH) h += '<div class="now" style="top:' + (nh - startH) * H + 'px"></div>';
       }
-      if (!list.length) h += '<div class="agenda-clear" style="position:absolute;left:60px;top:20px">A clear day — nothing on site.</div>';
+      if (!list.length) h += '<div class="agenda-clear" style="position:absolute;left:3.75rem;top:1.25rem">A clear day — nothing on site.</div>';
       return h + '</div>';
     }
     function scheduleCard() {
@@ -259,7 +259,7 @@
       var body;
       if (S.view === 'Month') body = '<div class="cal-body">' + monthGrid(ev) + agenda(ev) + '</div>';
       else if (S.view === 'Week') body = '<div class="cal-body"><div>' + weekStrip(ev) + lanes() + '</div>' + agenda(ev) + '</div>';
-      else body = '<div style="margin-top:20px">' + weekStrip(ev, 'day') + dayView(ev) + '</div>';
+      else body = '<div style="margin-top:1.25rem">' + weekStrip(ev, 'day') + dayView(ev) + '</div>';
 
       return '<section class="cal-card" id="ovCal"><div class="cal-head"><div class="ttl"><div class="cap">Schedule</div><div class="cal-title">' + esc(title) + '</div><div class="cal-sub">' + esc(sub) + '</div></div>' +
         '<div class="lh-seg" role="tablist">' + ['Month', 'Week', 'Day'].map(function (v) { return '<button type="button" data-view="' + v + '" class="' + (S.view === v ? 'on' : '') + '">' + v + '</button>'; }).join('') + '</div>' +
@@ -297,7 +297,7 @@
     function projectsCard() {
       var rows = M.active.filter(function (p) { return S.filter === 'all' || (S.filter === 'ontime' ? p.st === 'ontime' : p.st !== 'ontime'); });
       var h = '<section class="lh-card lift" style="animation-delay:360ms"><div class="lh-card-head"><h2 class="lh-card-title">Active projects</h2>' +
-        '<div style="display:flex;gap:6px">' + [['all', 'All'], ['ontime', 'On track'], ['risk', 'At risk']].map(function (f) { return '<button type="button" class="lh-chip' + (S.filter === f[0] ? ' on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div></div>';
+        '<div style="display:flex;gap:0.375rem">' + [['all', 'All'], ['ontime', 'On track'], ['risk', 'At risk']].map(function (f) { return '<button type="button" class="lh-chip' + (S.filter === f[0] ? ' on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div></div>';
       if (!rows.length) return h + '<div class="lh-empty">No projects here yet.</div></section>';
       h += '<div class="pj-scroll"><div class="pj-inner"><div class="pj-head"><div>Project</div><div>Stage</div><div>Progress</div><div>Contract</div><div>Next milestone</div><div>Completion</div><div>Status</div></div>';
       rows.forEach(function (p) {

@@ -33,7 +33,7 @@
       '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Same threads as the app · Clients get a push notification</div></div>' +
       '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="new">+ New conversation</button><button class="lh-btn" type="button" data-act="readall">Mark all read</button></div></div>' +
       UI.sect('Conversations') +
-      '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:12px 0 10px"></div><div id="inThreads" class="in-threads"></div></section>' +
+      '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:0.75rem 0 0.625rem"></div><div id="inThreads" class="in-threads"></div></section>' +
       '<section class="in-chat lh-card"><div id="inHead" class="in-head"></div><div id="inMsgs" class="in-msgs"></div>' +
       '<form id="inForm" class="in-compose" autocomplete="off"><button type="button" class="in-plus" id="inAttach" aria-label="Attach a file">+</button><input type="file" id="inFile" hidden accept=".pdf,.jpg,.jpeg,.png,.webp"><input class="lh-input" id="inText" placeholder="Write a message" aria-label="Message"><button class="lh-btn primary" type="submit" id="inSend">Send</button></form></section>' +
       '<aside class="in-side lh-card" id="inSide"></aside></div>';
@@ -90,7 +90,7 @@
       el.chips.innerHTML = UI.chips([['all', 'All'], ['unread', 'Unread']], S.filter, 'filter');
       el.threads.innerHTML = list.length ? list.map(function (t) {
         return '<button type="button" class="in-t' + (t.id === S.sel ? ' on' : '') + '" data-thread="' + t.id + '"><span class="av">' + esc(ini(t.client)) + '</span><span class="tb"><span class="r1"><b>' + esc(t.client) + '</b><i>' + esc(when(t.last)) + '</i></span><span class="r2">' + esc(t.street) + '</span><span class="r3"><span>' + esc(t.preview) + '</span>' + (t.unread ? '<em>' + t.unread + '</em>' : '') + '</span></span></button>';
-      }).join('') : '<div class="faint" style="padding:18px 6px">' + (D.threads.length ? 'No conversations match.' : 'No conversations yet. Start one with + New conversation.') + '</div>';
+      }).join('') : '<div class="faint" style="padding:1.125rem 0.375rem">' + (D.threads.length ? 'No conversations match.' : 'No conversations yet. Start one with + New conversation.') + '</div>';
       el.threads.scrollTop = listTop;
       var th = D.threads.filter(function (t) { return t.id === S.sel; })[0];
       if (!th) { el.head.innerHTML = ''; el.msgs.innerHTML = '<div class="in-empty">Pick a conversation.</div>'; el.side.innerHTML = ''; el.form.hidden = true; return; }
@@ -110,9 +110,9 @@
       el.msgs.innerHTML = h || '<div class="in-empty">No messages yet. Say hello.</div>';
       el.msgs.dataset.thread = th.id;
       if (first || nearBottom) el.msgs.scrollTop = el.msgs.scrollHeight;
-      el.side.innerHTML = '<h3 class="lh-card-title">Project</h3><div class="serif" style="font-size:16px;margin-top:14px">' + esc(th.street) + '</div><div class="faint tiny" style="margin-top:4px">' + esc([th.stage, th.pct + '%'].filter(Boolean).join(' · ')) + '</div><div class="bar" style="margin-top:12px"><i style="width:' + Math.min(100, th.pct) + '%"></i></div>' +
-        '<div class="cap" style="margin:22px 0 4px">Shared files</div>' + (D.docs.length ? D.docs.map(function (d) { var ext = DOC_EXT[d.mime_type] || (String(d.title).split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="sf-card"><div class="sf-top"><span class="ico">' + esc(ext) + '</span><div class="sf-tx"><span class="n" title="' + esc(d.title) + '">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + (d.size_bytes >= 1048576 ? (d.size_bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB') : '') + '</span></div></div><div class="sf-act"><button type="button" class="lh-btn sm" data-sf-open="' + d.id + '">Open</button><button type="button" class="lh-btn sm" data-sf-dl="' + d.id + '">Download</button></div></div>'; }).join('') : '<div class="faint tiny" style="padding:8px 0">Nothing shared yet.</div>') +
-        '<a class="lh-btn" style="margin-top:18px;width:100%" href="#/projects/' + th.project + '">Open project</a>';
+      el.side.innerHTML = '<h3 class="lh-card-title">Project</h3><div class="serif" style="font-size:max(14.72px, 1rem);margin-top:0.875rem">' + esc(th.street) + '</div><div class="faint tiny" style="margin-top:0.25rem">' + esc([th.stage, th.pct + '%'].filter(Boolean).join(' · ')) + '</div><div class="bar" style="margin-top:0.75rem"><i style="width:' + Math.min(100, th.pct) + '%"></i></div>' +
+        '<div class="cap" style="margin:1.375rem 0 0.25rem">Shared files</div>' + (D.docs.length ? D.docs.map(function (d) { var ext = DOC_EXT[d.mime_type] || (String(d.title).split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="sf-card"><div class="sf-top"><span class="ico">' + esc(ext) + '</span><div class="sf-tx"><span class="n" title="' + esc(d.title) + '">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + (d.size_bytes >= 1048576 ? (d.size_bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB') : '') + '</span></div></div><div class="sf-act"><button type="button" class="lh-btn sm" data-sf-open="' + d.id + '">Open</button><button type="button" class="lh-btn sm" data-sf-dl="' + d.id + '">Download</button></div></div>'; }).join('') : '<div class="faint tiny" style="padding:0.5rem 0">Nothing shared yet.</div>') +
+        '<a class="lh-btn" style="margin-top:1.125rem;width:100%" href="#/projects/' + th.project + '">Open project</a>';
     }
 
     async function send(text, file) {

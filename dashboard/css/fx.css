@@ -12,10 +12,10 @@
 
 /* ---------- Ambient light behind the glass ---------- */
 .lh-app::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:radial-gradient(640px 460px at 80% 16%, var(--blob-a), transparent 70%), radial-gradient(560px 560px at 24% 86%, var(--blob-b), transparent 70%); }
+  background:radial-gradient(40rem 28.75rem at 80% 16%, var(--blob-a), transparent 70%), radial-gradient(35rem 35rem at 24% 86%, var(--blob-b), transparent 70%); }
 
 /* ---------- Glass cards ---------- */
-.lh-card, .cal-card { -webkit-backdrop-filter:blur(18px) saturate(150%); backdrop-filter:blur(18px) saturate(150%); }
+.lh-card, .cal-card { -webkit-backdrop-filter:blur(1.125rem) saturate(150%); backdrop-filter:blur(1.125rem) saturate(150%); }
 .lh-card { background:var(--glass); box-shadow:var(--card-sh), var(--glass-hi); }
 .cal-card { background:color-mix(in srgb, var(--cal) 74%, transparent); box-shadow:var(--cal-sh), var(--glass-hi); }
 .lh-card.wash {
@@ -42,12 +42,12 @@
 html.intro-on .intro { display:flex; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; flex-direction:column; cursor:pointer;
   background:radial-gradient(ellipse 120% 80% at 50% 42%, var(--sp-a) 0%, var(--sp-b) 62%); }
 .intro-in { display:flex; flex-direction:column; align-items:center; margin-top:-2vh; transition:opacity .5s ease, transform 1s cubic-bezier(.2,.8,.2,1); }
-.intro-logo { width:230px; height:230px; }
-.intro-word { margin-top:18px; padding-left:.42em; font:600 9px/1 Archivo,sans-serif; letter-spacing:.42em; color:color-mix(in srgb, var(--ink) 72%, transparent); }
-.intro-bar { position:relative; margin-top:30px; width:132px; height:1px; background:color-mix(in srgb, var(--i3) 15%, transparent); }
+.intro-logo { width:14.375rem; height:14.375rem; }
+.intro-word { margin-top:1.125rem; padding-left:.42em; font:600 max(8.28px, 0.5625rem)/1 Archivo,sans-serif; letter-spacing:.42em; color:color-mix(in srgb, var(--ink) 72%, transparent); }
+.intro-bar { position:relative; margin-top:1.875rem; width:8.25rem; height:1px; background:color-mix(in srgb, var(--i3) 15%, transparent); }
 .intro-bar i { position:absolute; left:0; top:0; height:1px; background:var(--steel); animation:introBar 2.4s ease-in-out infinite alternate; }
 @keyframes introBar { from { width:8%; } to { width:96%; } }
-.intro-tag { position:absolute; left:0; right:0; bottom:56px; text-align:center; font:600 8.5px/1 Archivo,sans-serif; letter-spacing:.2em; color:color-mix(in srgb, var(--ink) 28%, transparent); transition:opacity .4s ease; }
+.intro-tag { position:absolute; left:0; right:0; bottom:3.5rem; text-align:center; font:600 max(7.82px, 0.5312rem)/1 Archivo,sans-serif; letter-spacing:.2em; color:color-mix(in srgb, var(--ink) 28%, transparent); transition:opacity .4s ease; }
 .intro.out .intro-in { opacity:0; transform:scale(1.04); }
 .intro.out .intro-tag { opacity:0; }
 

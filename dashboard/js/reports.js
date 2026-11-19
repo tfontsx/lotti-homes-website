@@ -83,10 +83,10 @@
         '<div class="ov-hero"><div><div class="cap">Exports</div><h1 class="ov-hello">Reports</h1><div class="hero-sub">Every field captured in the app, ready to export</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn primary" type="button" data-act="custom">Custom export</button></div></div>' +
         UI.sect('Latest') +
-        '<section class="lh-card lift rp-latest"><div><div class="cap">Live snapshot · ' + esc(month) + ' portfolio summary</div><div class="rp-big serif">' + (snap ? esc(snap) : '<span class="faint">Loading…</span>') + '</div><div class="faint tiny" style="margin-top:10px">Built from the app\'s data the moment you export it</div></div>' +
+        '<section class="lh-card lift rp-latest"><div><div class="cap">Live snapshot · ' + esc(month) + ' portfolio summary</div><div class="rp-big serif">' + (snap ? esc(snap) : '<span class="faint">Loading…</span>') + '</div><div class="faint tiny" style="margin-top:0.625rem">Built from the app\'s data the moment you export it</div></div>' +
         '<div class="rp-btns"><button class="lh-btn" type="button" data-card="portfolio" data-as="csv">Excel</button><button class="lh-btn primary" type="button" data-card="portfolio" data-as="pdf">Download PDF</button></div></section>' +
         UI.sect('All reports') + '<div class="rp-grid">' + CARDS.map(function (c, i) {
-          return '<section class="lh-card lift rp-card" style="animation-delay:' + i * 60 + 'ms"><h2 class="lh-card-title">' + esc(c.name) + '</h2><p class="faint" style="margin:8px 0 0;font-size:12px;line-height:1.5">' + esc(c.desc) + '</p><div class="rp-foot"><div><div class="cap">On demand</div><div class="rp-fmt">' + esc(c.formats) + '</div></div><button type="button" class="lh-btn" data-card="' + c.id + '" data-pdf="' + (c.pdf ? 1 : 0) + '">Export</button></div></section>';
+          return '<section class="lh-card lift rp-card" style="animation-delay:' + i * 60 + 'ms"><h2 class="lh-card-title">' + esc(c.name) + '</h2><p class="faint" style="margin:0.5rem 0 0;font-size:max(11.04px, 0.75rem);line-height:1.5">' + esc(c.desc) + '</p><div class="rp-foot"><div><div class="cap">On demand</div><div class="rp-fmt">' + esc(c.formats) + '</div></div><button type="button" class="lh-btn" data-card="' + c.id + '" data-pdf="' + (c.pdf ? 1 : 0) + '">Export</button></div></section>';
         }).join('') + '</div>';
     }
     paint();

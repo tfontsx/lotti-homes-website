@@ -141,7 +141,7 @@
       var sold = P.filter(function (p) { return p.created && +fmt.dayKey(p.created).slice(0, 4) === year; });
       var soldValue = sum(sold, 'contract'), bp = fmt.moneyParts(soldValue);
       return '<div class="lh-card lift stat big wash" style="animation-delay:0ms;--wash:var(--steel)"><div class="cap">Money picture</div><div class="bigrow"><span class="bigv">' + esc(bp.num) + (bp.unit ? '<small>' + bp.unit + '</small>' : '') + '</span>' +
-        '<span class="faint" style="font-size:11px">Sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
+        '<span class="faint" style="font-size:max(10.12px, 0.6875rem)">Sold in ' + year + ' · ' + sold.length + (sold.length === 1 ? ' project' : ' projects') + '</span></div>' +
         '<div class="mini3">' + [['Contract under way', money(contract)], ['Earned to date', money(earned)], ['Avg. project value', money(avg)]].map(function (x) { return '<div><div class="faint tiny">' + x[0] + '</div><div class="serif">' + x[1] + '</div></div>'; }).join('') + '</div></div>';
     }
     function draw() {
@@ -269,7 +269,7 @@
       var d0 = w.forecast[0], temp = w.currentTempC != null ? Math.round(w.currentTempC) : d0.maxTempC;
       var wet = w.forecast.filter(function (d) { return d.chanceOfRain != null && d.chanceOfRain >= D.rain; })[0];
       var h = '<div class="wx-top"><span class="cloud" aria-hidden="true"><i></i><i></i></span><span class="serif wx-t">' + esc(temp) + '°</span><span class="faint tiny">Adelaide · today</span></div>' +
-        '<div class="faint tiny" style="margin:6px 0 14px">' + esc(d0.precis) + (wet ? '' : ' · No impact on site') + '</div><div class="wx-days">';
+        '<div class="faint tiny" style="margin:0.375rem 0 0.875rem">' + esc(d0.precis) + (wet ? '' : ' · No impact on site') + '</div><div class="wx-days">';
       w.forecast.forEach(function (d) {
         var pct = d.chanceOfRain || 0, hot = pct >= D.rain;
         h += '<div class="wx-d' + (hot ? ' hot' : '') + '"><span class="w">' + WD.format(new Date(d.date + 'T00:00:00Z')).toUpperCase() + '</span><span class="g"><i style="height:' + Math.max(8, pct) + '%"></i></span><span class="p">' + pct + '%</span></div>';
@@ -300,11 +300,11 @@
       var weekRows = D.week.map(function (b) {
         var col = b.kind === 'contractor' ? 'var(--ok)' : b.kind === 'admin' ? 'var(--wait)' : 'var(--steel)';
         return '<div class="wk"><span class="d">' + WD.format(new Date(fmt.dayKey(b.starts_at) + 'T00:00:00Z')) + ' ' + new Date(fmt.dayKey(b.starts_at) + 'T00:00:00Z').getUTCDate() + '</span><i style="background:' + col + '"></i><span class="t">' + esc(b.title) + '</span></div>';
-      }).join('') || '<div class="faint" style="padding:6px 0">Nothing booked on site this week.</div>';
+      }).join('') || '<div class="faint" style="padding:0.375rem 0">Nothing booked on site this week.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:16px">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="ov-hero" style="margin-top:12px;margin-bottom:26px"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
+        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:1rem">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="ov-hero" style="margin-top:0.75rem;margin-bottom:1.625rem"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
         esc(c.name || '') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +
         (p.status !== 'completed' && curI >= 0 && curI < total - 1 ? '<button class="lh-btn" type="button" data-act="advance">Next stage</button>' : '') +
@@ -313,7 +313,7 @@
         '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span></div>' +
         '<div class="pg-side"><div class="segs">' + segs + '</div></div></div>' +
         '<div class="pg-strip"><div><div class="cap">Project start date</div><div class="serif fact">' + esc(p.start ? fmt.dateY(p.start) : '—') + '</div></div>' +
-        '<div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div><div class="faint tiny" style="margin-top:4px">' + esc(stageText) + '</div></div>' +
+        '<div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div><div class="faint tiny" style="margin-top:0.25rem">' + esc(stageText) + '</div></div>' +
         '<div><div class="cap">Forecast completion</div><div class="fact fc"><span class="serif">' + esc(fmt.date(p.forecastDate)) + '</span> ' + (sl.cls ? UI.pill(sl.cls, sl.text) : '<span class="lh-pill"><i></i>' + esc(sl.text) + '</span>') + '</div></div>' +
         '<div><div class="cap">Next milestone</div><div class="serif fact">' + (nextM ? esc(nextM.title) + ' · ' + esc(fmt.date(nextM.due_date)) : '—') + '</div></div>' +
         '<div><div class="cap">Project manager</div><div class="serif fact">' + esc(raw.project_manager_name || '—') + '</div></div></div>' +
@@ -323,7 +323,7 @@
         (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c)) + '</b></div>' : '') +
         '<div><span>Earned to date</span><b>' + (contract ? fmt.moneyFull(earned) + ' · ' + p.pct + '%' : '—') + '</b></div>' +
         '<div><span>Day count</span><b class="' + dayCls + '">' + esc(dayCount) + '</b></div><div><span>Days left</span><b class="' + dl.cls + '">' + esc(dl.text) + '</b></div></div>' +
-        (contract ? '<div class="faint tiny" style="margin:18px 0 8px">Earned to date · ' + p.pct + '%</div><div class="bar fat"><i style="width:' + Math.min(100, p.pct) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:18px">Add a contract value to see what has been earned.</div>') +
+        (contract ? '<div class="faint tiny" style="margin:1.125rem 0 0.5rem">Earned to date · ' + p.pct + '%</div><div class="bar fat"><i style="width:' + Math.min(100, p.pct) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:1.125rem">Add a contract value to see what has been earned.</div>') +
         '<div class="card-foot"><button type="button" class="lh-btn sm" data-act="fin">Edit financials</button></div></section></div>' +
         UI.sect('Delivery') +
         '<div class="pd-three">' +
@@ -332,12 +332,12 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Risks &amp; issues</h2><button type="button" class="lh-link" data-act="addr">+ Add</button></div>' +
         (D.risks.length ? D.risks.map(function (k) { var sv = SEV[k.severity] || SEV.low, col = k.severity === 'high' ? 'var(--halt)' : k.severity === 'medium' ? 'var(--wait)' : 'var(--steel)'; return '<div class="li risk" style="--c:' + col + '"><i class="rbar"></i><div class="t"><div class="rt">' + esc(k.title) + '</div>' + '<div class="rm">' + esc(k.kind) + ' · ' + sv[1] + '</div></div><span class="tools"><button type="button" data-redit="' + k.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-rclose="' + k.id + '" title="Resolve" aria-label="Resolve">' + ICO.tick + '</button><button type="button" data-rdel="' + k.id + '" title="Delete" aria-label="Delete">' + ICO.trash + '</button></span></div>'; }).join('') : '<div class="faint">No open risks or issues.</div>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Client notes</h2><button type="button" class="lh-link" data-act="addn">+ Add</button></div>' +
-        (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note" style="--c:' + (n.visible_to_client ? 'var(--ok)' : 'var(--i3)') + '"><i class="rbar"></i><div class="t"><div class="nb">' + esc(n.body) + '</div><div class="cap" style="margin-top:7px">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-nedit="' + n.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">' + ICO.trash + '</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
+        (D.notes.length ? D.notes.slice(0, 6).map(function (n) { return '<div class="li note" style="--c:' + (n.visible_to_client ? 'var(--ok)' : 'var(--i3)') + '"><i class="rbar"></i><div class="t"><div class="nb">' + esc(n.body) + '</div><div class="cap" style="margin-top:0.4375rem">' + (n.visible_to_client ? 'Visible to client' : 'Team only') + ' · <button type="button" class="lh-link" data-nvis="' + n.id + '" data-v="' + (n.visible_to_client ? 0 : 1) + '">' + (n.visible_to_client ? 'Hide' : 'Share') + '</button></div></div><span class="tools"><button type="button" data-nedit="' + n.id + '" title="Edit" aria-label="Edit">' + ICO.edit + '</button><button type="button" data-ndel="' + n.id + '" title="Delete" aria-label="Delete">' + ICO.trash + '</button></span></div>'; }).join('') : '<div class="faint">No notes yet.</div>') + '</section></div>' +
         UI.sect('Media &amp; documents') +
         '<div class="pd-media' + (D.photos.length ? '' : ' no-photos') + '"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Photos</h2><div class="chip-row" style="margin:0">' + UI.chips([['all', 'All']].concat(D.rooms.map(function (r) { return [r.id, r.name]; })), photoFilter, 'room') + '</div></div><div id="phGrid" class="ph-grid"></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Documents</h2><button type="button" class="lh-link" data-act="upload">Upload</button></div><input type="file" id="docFile" hidden multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.dwg">' +
         (D.docs.length ? D.docs.map(function (d) { var ext = DOC_ICON[d.mime_type] || (d.title.split('.').pop() || 'FILE').slice(0, 4).toUpperCase(); return '<div class="doc" style="--c:' + (d.shared_with_client ? 'var(--ok)' : 'var(--i3)') + '"><i class="rbar"></i><span class="ico">' + esc(ext) + '</span><button type="button" class="dt" data-open-doc="' + d.id + '"><span class="n">' + esc(d.title) + '</span><span class="faint tiny">' + esc(fmt.date(fmt.dayKey(d.created_at))) + (d.size_bytes ? ' · ' + Math.max(1, Math.round(d.size_bytes / 1024)) + ' KB' : '') + '</span></button><button type="button" class="share-btn' + (d.shared_with_client ? ' on' : '') + '" data-share="' + d.id + '" data-v="' + (d.shared_with_client ? 0 : 1) + '" aria-pressed="' + (d.shared_with_client ? 'true' : 'false') + '" title="' + (d.shared_with_client ? 'Visible to the client. Click to stop sharing.' : 'Share with the client') + '">' + (d.shared_with_client ? '<i></i>Shared' : 'Share') + '</button><button type="button" class="icon-del" data-ddel="' + d.id + '" title="Delete document" aria-label="Delete document">' + ICO.trash + '</button></div>'; }).join('') : '<div class="faint">No documents yet.</div>') + '</section></div>' +
-        '<div style="margin-top:34px"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';
+        '<div style="margin-top:2.125rem"><button type="button" class="lh-link danger" data-act="delete">Delete project</button></div>';
       paintPhotos(); paintWeather(); alignComplete();
       window.scrollTo(0, y);
     }
