@@ -204,8 +204,8 @@
 /* Report cards are told apart by colour alone: a solid colour edge and a stronger wash */
 :root, :root[data-theme="light"] { --plum:#7A5C80; }
 :root[data-theme="dark"] { --plum:#BB9BC0; }
-.lh-card.wash.rp-card { --wash-amt:17%; box-shadow:var(--card-sh), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 18%, transparent), inset 0 0.25rem 0 var(--wash); }
-.lh-card.wash.rp-card:hover { box-shadow:var(--card-sh-hover), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 26%, transparent), inset 0 0.25rem 0 var(--wash); }
+.lh-card.wash.rp-card { --wash-amt:17%; box-shadow:var(--card-sh), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 18%, transparent), inset 0 0.125rem 0 var(--wash); }
+.lh-card.wash.rp-card:hover { box-shadow:var(--card-sh-hover), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 26%, transparent), inset 0 0.125rem 0 var(--wash); }
 .rp-top { margin-bottom:0.875rem; }
 .rp-card .cap { color:var(--wash) !important; }
 
