@@ -193,9 +193,6 @@
 .rp-grid { grid-template-columns:repeat(auto-fill, minmax(max(17rem, 21vw), 1fr)); }
 .rp-card { min-height:12.5rem; }
 .rp-top { display:flex; align-items:center; gap:0.625rem; margin-bottom:1rem; }
-.rp-ic { width:2.125rem; height:2.125rem; border-radius:0.75rem; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--wash) 14%, transparent); color:var(--wash); flex:none; transition:transform .35s cubic-bezier(.2,.8,.2,1); }
-.rp-ic svg { width:1.0625rem; height:1.0625rem; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-.rp-card:hover .rp-ic { transform:scale(1.08) rotate(-4deg); }
 .rp-desc { margin:0.5rem 0 0; font-size:max(11.04px, 0.75rem); line-height:1.5; color:var(--i3); min-height:2.25rem; }
 .rp-foot { margin-top:auto; padding-top:1.125rem; }
 .rp-card .rp-fmt { margin-top:0.4375rem; font:300 max(18.4px, 1.25rem)/1 Spectral,serif; color:var(--ink); }
@@ -203,3 +200,11 @@
 @media (max-width:1100px) { .rp-two { grid-template-columns:1fr; } }
 @media (max-width:520px) { .rp-figs { grid-template-columns:1fr; gap:0.875rem; } .rp-btns { width:100%; } .rp-btns .lh-btn { flex:1; } }
 @media print { .rp-card, .rp-feature { break-inside:avoid; } }
+
+/* Report cards are told apart by colour alone: a solid colour edge and a stronger wash */
+:root, :root[data-theme="light"] { --plum:#7A5C80; }
+:root[data-theme="dark"] { --plum:#BB9BC0; }
+.lh-card.wash.rp-card { --wash-amt:17%; box-shadow:var(--card-sh), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 18%, transparent), inset 0 0.25rem 0 var(--wash); }
+.lh-card.wash.rp-card:hover { box-shadow:var(--card-sh-hover), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 26%, transparent), inset 0 0.25rem 0 var(--wash); }
+.rp-top { margin-bottom:0.875rem; }
+.rp-card .cap { color:var(--wash) !important; }

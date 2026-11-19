@@ -204,6 +204,18 @@
     w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250);
   };
 
+  /** One print view holding several reports, each starting on its own page. */
+  UI.printSheets = function (title, subtitle, sections) {
+    var w = window.open('', '_blank');
+    if (!w) { UI.toast('Allow pop-ups for this site to open the reports.', 'error'); return; }
+    w.document.write('<!doctype html><title>' + esc(title) + '</title><style>body{font:13px/1.45 system-ui,sans-serif;margin:32px;color:#111F2E}h1{font:300 28px Georgia,serif;margin:0 0 4px}p{color:#4F5B66;margin:0 0 22px}section+section{break-before:page;margin-top:48px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:8px 8px;border-bottom:1px solid #ccd;vertical-align:top}th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#4F5B66}</style>' +
+      sections.map(function (s) {
+        return '<section><h1>' + esc(s.title) + '</h1><p>' + esc(subtitle) + '</p><table><thead><tr>' + s.headings.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          s.rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></section>';
+      }).join(''));
+    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 400);
+  };
+
   /** Whole dollars from a money field value, or null. */
   UI.dollars = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
   UI.cents = function (v) { var n = UI.dollars(v); return n == null ? null : n * 100; };

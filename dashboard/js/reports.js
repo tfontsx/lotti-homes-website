@@ -87,7 +87,7 @@
 
   /* ---------- the library ---------- */
   var CATS = [['all', 'All'], ['financial', 'Financial'], ['sales', 'Sales'], ['delivery', 'Delivery'], ['contractors', 'Contractors']];
-  var CAT = { financial: { name: 'Financial', icon: 'reports', c: 'steel' }, sales: { name: 'Sales', icon: 'leads', c: 'ok' }, delivery: { name: 'Delivery', icon: 'schedule', c: 'wait' }, contractors: { name: 'Contractors', icon: 'contractors', c: 'steel' } };
+  var CAT = { financial: { name: 'Financial', icon: 'reports', c: 'steel' }, sales: { name: 'Sales', icon: 'leads', c: 'ok' }, delivery: { name: 'Delivery', icon: 'schedule', c: 'wait' }, contractors: { name: 'Contractors', icon: 'contractors', c: 'plum' } };
   var CARDS = [
     { id: 'portfolio', cat: 'financial', name: 'Portfolio financial summary', desc: 'Contract, budget and budgeted margin across every project.' },
     { id: 'delivered', cat: 'financial', name: 'Delivered projects', desc: 'Completed projects with the days taken and how they ran against forecast.' },
@@ -175,7 +175,7 @@
 
       view.innerHTML =
         '<div class="ov-hero"><div><div class="cap">Exports &amp; insight</div><h1 class="ov-hello">Reports</h1><div class="hero-sub">Live figures from the app · Export any report as Excel or PDF</div></div>' +
-        '<div class="ov-actions no-print"><button class="lh-btn primary" type="button" data-act="custom">Custom export</button></div></div>' +
+        '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="custom">Custom export</button><button class="lh-btn primary" type="button" data-act="all">Export all</button></div></div>' +
         UI.sect('At a glance') + '<div class="ov-glance">' +
         UI.stat('Active contract value', av.num, av.unit, K.activeN + (K.activeN === 1 ? ' live project' : ' live projects'), 'steel', 0, 'steel') +
         UI.stat('Delivered · ' + t.y, dv.num, dv.unit, K.doneN + (K.doneN === 1 ? ' project completed' : ' projects completed'), 'ok', 60, 'ok') +
@@ -195,7 +195,7 @@
         '<div class="rp-grid">' + CARDS.map(function (c, i) {
           var cat = CAT[c.cat], n = D.sets[c.id].rows.length;
           return '<section class="lh-card lift wash rp-card" data-cat="' + c.cat + '"' + (S.cat !== 'all' && S.cat !== c.cat ? ' hidden' : '') + ' style="--wash:var(--' + cat.c + ');animation-delay:' + Math.min(i * 45, 400) + 'ms">' +
-            '<div class="rp-top"><span class="rp-ic">' + LH.icon(cat.icon) + '</span><span class="cap">' + cat.name + '</span></div>' +
+            '<div class="rp-top"><span class="cap">' + cat.name + '</span></div>' +
             '<h2 class="lh-card-title">' + esc(c.name) + '</h2><p class="rp-desc">' + esc(c.desc) + '</p>' +
             '<div class="rp-foot"><div><div class="cap">' + (n === 1 ? 'Row' : 'Rows') + '</div><div class="rp-fmt rp-n">' + n + '</div></div>' +
             '<div class="rp-acts no-print"><button type="button" class="lh-btn sm" data-card="' + c.id + '" data-as="csv">Excel</button><button type="button" class="lh-btn sm primary" data-card="' + c.id + '" data-as="pdf">PDF</button></div></div></section>';
@@ -212,6 +212,17 @@
         return;
       }
       if (el.hasAttribute('data-card')) { exportSet(D, el.getAttribute('data-card'), el.getAttribute('data-as')); return; }
+      if (el.getAttribute('data-act') === 'all') {
+        if (!D) { UI.toast('Still loading. Try again in a moment.'); return; }
+        var ids = CARDS.map(function (c) { return c.id; }).filter(function (id) { return D.sets[id].rows.length; });
+        if (!ids.length) { UI.toast('Nothing to export yet.'); return; }
+        var as = await UI.choose('Export all reports', ids.length + ' reports with data.', [{ key: 'csv', label: 'Excel (one file per report)', primary: true }, { key: 'pdf', label: 'PDF (one combined document)' }]);
+        if (!as) return;
+        if (as === 'pdf') { UI.printSheets('Lotti Homes — All reports', 'Generated ' + fmt.dateTime(new Date()), ids.map(function (id) { return D.sets[id]; })); return; }
+        UI.toast('Downloading ' + ids.length + ' files…');
+        ids.forEach(function (id, i) { setTimeout(function () { exportSet(D, id, 'csv'); }, i * 450); });
+        return;
+      }
       if (el.getAttribute('data-act') === 'custom') {
         UI.form({
           title: 'Custom export', intro: 'Every column of a table, as a spreadsheet.', submitLabel: 'Download',
