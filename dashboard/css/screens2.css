@@ -236,5 +236,5 @@
 
 /* Pipeline cards: a subtle strip in the colour of their stage */
 .kb-card { position:relative; }
-.kb-card::before { content:""; position:absolute; left:0; top:0.875rem; bottom:0.875rem; width:0.1875rem; border-radius:0 0.125rem 0.125rem 0; background:var(--c, var(--steel)); opacity:.5; transition:opacity .25s; }
-.kb-card:hover::before { opacity:.85; }
+.kb-card::before { content:""; position:absolute; left:0; top:0.5rem; bottom:0.5rem; width:0.09375rem; background:linear-gradient(to bottom, transparent, var(--c, var(--steel)) 28%, var(--c, var(--steel)) 72%, transparent); opacity:.7; transition:opacity .25s; }
+.kb-card:hover::before { opacity:1; }

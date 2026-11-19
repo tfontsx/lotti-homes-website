@@ -182,9 +182,6 @@
       var total = list.reduce(function (a, l) { return a + l.value; }, 0), collapsed = (stage === 'won' && !S.showWon) || (stage === 'lost' && !S.showLost);
       var head = '<div class="kb-head"><span class="kb-name"><i style="background:' + DOT[stage] + '"></i>' + LABEL[stage] + '</span><span class="kb-count"><b>' + list.length + '</b>' + (total ? ' · ' + fmt.money(total) : '') + '</span></div>';
       var body = '';
-      if (stage === 'won' || stage === 'lost') {
-        body += '<button type="button" class="kb-toggle" data-toggle="' + stage + '"><span>' + (collapsed ? 'Show ' + list.length + ' ' + stage : 'Hide ' + stage) + '</span><i class="' + (collapsed ? '' : 'up') + '"></i></button>';
-      }
       if (!collapsed) body += list.slice().sort(function (a, b) { return b.created < a.created ? -1 : 1; }).map(function (l, i) { return card(l, i); }).join('');
       if (!list.length && !(stage === 'won' || stage === 'lost')) body += '<div class="kb-empty">No leads</div>';
       return '<div class="kb-col" data-stage="' + stage + '">' + head + '<div class="kb-body">' + body + '</div></div>';
@@ -217,7 +214,8 @@
         UI.stat('Leads lost', st.lp == null ? '—' : String(st.lp), st.lp == null ? '' : '%', st.lp == null ? 'No leads yet' : st.ln + ' lost · ' + fmt.money(st.lv), st.lp == null ? '' : (st.lp > 50 ? 'halt' : st.lp > 30 ? 'wait' : 'ok'), 180, 'halt') + '</div>' +
         UI.sect('Pipeline') +
         '<div class="chip-row">' + UI.chips([['all', 'All types']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '<span class="chip-sep"></span>' +
-        UI.chips([['all', 'All sources']].concat(srcs.map(function (s) { return [s, s === 'website' ? 'Website' : (SRC[s] || s)]; })), S.source, 'source') + '</div>' +
+        UI.chips([['all', 'All sources']].concat(srcs.map(function (s) { return [s, s === 'website' ? 'Website' : (SRC[s] || s)]; })), S.source, 'source') + '<span class="chip-sep"></span>' +
+          ['won', 'lost'].map(function (k) { var n = L.filter(function (l) { return l.status === k; }).length, on = k === 'won' ? S.showWon : S.showLost; return '<button type="button" class="lh-chip' + (on ? ' on' : '') + '" data-toggle="' + k + '" aria-pressed="' + on + '">' + (on ? 'Hide ' : 'Show ') + k + ' · ' + n + '</button>'; }).join('') + '</div>' +
         '<div class="kb">' + STAGES.map(function (s) { return column(s, L.filter(function (l) { return l.status === s; })); }).join('') + '</div>' +
         UI.sect('All open leads') +
         '<section class="lh-card"><div class="sort-row left">' + UI.chips([['next', 'Next action'], ['value', 'Value'], ['newest', 'Newest'], ['status', 'Status']], S.sort, 'sort') + '</div>' +
