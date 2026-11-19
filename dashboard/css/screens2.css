@@ -165,7 +165,7 @@
 
 /* Fluid tables: columns tighten as the window narrows instead of cutting anything off. */
 @media (max-width:1280px) { .pr-grid, .ld-grid, .gt-grid { gap:0.5rem; } .pr-grid > div, .ld-grid > div { min-width:0; } }
-.pr-grid { grid-template-columns:.9fr minmax(0,1.8fr) .9fr .8fr .8fr .8fr minmax(0,1.5fr) 1.2fr 1fr 1.1fr minmax(max-content,1fr); }
+.pr-grid { grid-template-columns:minmax(0,.9fr) minmax(0,1.8fr) minmax(0,.9fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.5fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr) minmax(8.5rem,1fr); }
 .gt-weeks span { overflow:visible; } .gt-weeks span.skip { visibility:hidden; overflow:hidden; }
 .cp-linkcard .lh-link { white-space:normal; overflow-wrap:anywhere; }
 
