@@ -344,10 +344,12 @@
         (l.status === 'lost' ? '<div class="lostnote">Lost · ' + esc((LOST.filter(function (x) { return x[0] === l.lostReason; })[0] || [0, 'Other'])[1]) + (l.lostNote ? ' — ' + esc(l.lostNote) : '') + '</div>' : '') + '</section>' +
         UI.sect('Client &amp; consultation') +
         '<div class="ld-detail">' +
-        '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Details</h2><button type="button" class="lh-link" data-act="edit">Edit</button></div>' +
+        '<div class="stack"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Details</h2><button type="button" class="lh-link" data-act="edit">Edit</button></div>' +
         row('Phone', l.phone ? esc(l.phone) : '<span class="faint">—</span>') + row('Email', l.email ? esc(l.email) : '<span class="faint">—</span>') + row('Enquiry type', esc(l.type || '—')) +
         row('Lead source', esc(SRC[l.source] || l.source)) + row('Enquiry received', esc(fmt.dateY(fmt.dayKey(l.created)))) + row('Consultation', consultText) +
         '<div class="kvfoot">' + '<button type="button" class="lh-link danger" data-act="delete">Delete lead</button></div></section>' +
+        '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:0.75rem"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
+        '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">Weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section>' + '</div>' +
         '<div class="stack"><section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Consultation notes</h2><button type="button" class="lh-link" data-act="notes">Edit</button></div>' +
         (notesText ? '<p class="notes">' + esc(notesText) + '</p>' : '<p class="faint">No notes yet. Add what you heard on the consultation.</p>') + '</section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Activity</h2></div>' +
@@ -358,9 +360,7 @@
         '<div class="est-items">' + (D.items.length ? D.items.map(function (i) {
           var a = i.amount_cents / 100; return '<div class="ei"><div class="el"><span>' + esc(i.label) + '</span><span>' + fmt.money(a) + '</span></div><div class="bar"><i style="width:' + (total ? Math.min(100, (a / total) * 100) : 0) + '%"></i></div></div>';
         }).join('') : '<div class="faint tiny" style="margin-top:0.875rem">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
-        '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section>' +
-        '<section class="lh-card"><div class="lh-card-head" style="margin-bottom:0.75rem"><div class="cap">Probability</div><button type="button" class="lh-link" data-act="prob">Edit</button></div>' +
-        '<div class="prob"><span class="serif">' + l.prob + '<small>%</small></span><span class="faint tiny">Weighted ' + fmt.money(total * l.prob / 100) + '</span></div><div class="bar fat"><i style="width:' + l.prob + '%"></i></div></section></div></div>';
+        '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section></div></div>';
       window.scrollTo(0, y);
     }
 

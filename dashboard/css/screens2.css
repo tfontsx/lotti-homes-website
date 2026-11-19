@@ -218,13 +218,5 @@
 /* Project progress card: labels stay neutral while the card takes the project's health colour */
 .lh-card.wash.pg-card .cap { color:var(--i3); }
 
-/* Lead details: every card in a row is the same height and the Details card spans both rows */
-@media (min-width:1281px) {
-  .ld-detail { grid-template-rows:auto 1fr; align-items:stretch; }
-  .ld-detail > .stack { display:contents; }
-  .ld-detail > section:first-child { grid-column:1; grid-row:1 / span 2; }
-  .ld-detail > .stack:nth-child(2) > section:nth-child(1) { grid-column:2; grid-row:1; }
-  .ld-detail > .stack:nth-child(2) > section:nth-child(2) { grid-column:2; grid-row:2; }
-  .ld-detail > .stack:nth-child(3) > section:nth-child(1) { grid-column:3; grid-row:1; }
-  .ld-detail > .stack:nth-child(3) > section:nth-child(2) { grid-column:3; grid-row:2; }
-}
+/* Lead details: columns size to their own content; Activity shows about five entries and scrolls for more */
+.acts { max-height:13rem; }
