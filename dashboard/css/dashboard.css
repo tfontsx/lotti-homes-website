@@ -31,10 +31,8 @@
   color-scheme: dark;
 }
 * { box-sizing:border-box; }
-/* One fluid unit drives the whole interface: 1rem is 16px at a 1440px-wide window and scales smoothly
-   with the screen (never below 85% or above 140%), so type, cards and spacing all grow and shrink together. */
-html { font-size:clamp(13.6px, 1.1111vw, 22.4px); }
-@media (max-width:820px) { html { font-size:14px; } }
+/* 1rem is fixed at 16px, so every size matches the original design at any screen width. */
+html { font-size:16px; }
 html, body { margin:0; height:100%; }
 body { background:var(--bg); color:var(--ink); font:400 max(11.5px, 0.7812rem)/1.4 Geist,system-ui,sans-serif; font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased; }
 button, input, select, textarea { font:inherit; color:inherit; }
