@@ -23,11 +23,60 @@
   };
 
   /** Friendly text for a database error. */
+  /* Friendly wording for the database's own rules, so nobody sees raw SQL errors. */
+  var CHECKS = [
+    [/leads_phone_check|clients_mobile_valid|contractors_phone_check|contact_phone_check|second_phone/i, 'That phone number isn\'t valid. Use an Australian number like 0412 345 678.'],
+    [/email_check|email_valid|contact_email_check/i, 'That email address isn\'t valid.'],
+    [/leads_contactable/i, 'Add an email address or a phone number.'],
+    [/name_check|name_valid|second_name_valid|display_name/i, 'Names can only use letters, spaces, apostrophes, hyphens and &.'],
+    [/abn_check/i, 'That ABN isn\'t valid.'],
+    [/postcode_valid|postal_valid/i, 'That postcode doesn\'t match the state.'],
+    [/dates_ordered|time_order/i, 'The finish date can\'t be before the start date.'],
+    [/bookings_max_len/i, 'A booking can\'t run longer than 120 days.'],
+    [/google_review_url_check/i, 'The review link must start with https://'],
+    [/cents_check|is_valid_cents|_cents_check/i, 'That amount is outside the allowed range.'],
+    [/clients_required_unless_anonymised/i, 'A client needs a name, email address and mobile number.'],
+    [/budget_variations_nonzero/i, 'Enter a budget or contract change that isn\'t zero.'],
+    [/_(title|body|description|label|detail|notes|message|location)_check/i, 'That text is too short or too long.'],
+    [/documents_(size|mime)/i, 'That file type or size isn\'t allowed.'],
+  ];
   LH.errMsg = function (e) {
     var m = (e && (e.message || e.error_description)) || String(e || 'Something went wrong');
     if (e && e.code === '42501') return 'You don\'t have permission to do that.';
+    if (/jwt (is )?expired|invalid jwt|refresh_token|not authenticated|jwt expired/i.test(m) || (e && e.status === 401)) return 'Your session has expired. Please sign in again.';
+    if (/failed to fetch|networkerror|network request failed|load failed/i.test(m)) return 'Can\'t reach the server. Check your connection and try again.';
     if (/duplicate key/i.test(m)) return 'That already exists.';
+    if (/violates foreign key/i.test(m)) return 'That is still in use, so it can\'t be removed.';
+    if (/violates check constraint|violates not-null/i.test(m)) {
+      for (var i = 0; i < CHECKS.length; i++) if (CHECKS[i][0].test(m)) return CHECKS[i][1];
+      return 'One of the values isn\'t allowed. Check the fields and try again.';
+    }
     return m;
+  };
+
+  /* The same rules the database enforces, checked before saving. Each returns the cleaned value,
+     '' for blank, or null when the value isn't acceptable. */
+  UI.val = {
+    email: function (v) {
+      v = String(v || '').trim().toLowerCase(); if (!v) return '';
+      return v.length <= 254 && /^[a-z0-9.!#$%&'*+\/=?^_`{|}~-]{1,64}@[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/.test(v) && !/\.\./.test(v) && !/^\./.test(v) && !/\.@/.test(v) ? v : null;
+    },
+    phone: function (v) {
+      var s = String(v || '').replace(/[\s().-]/g, ''); if (!s) return '';
+      if (/^0\d/.test(s)) s = '+61' + s.slice(1); else if (/^61\d/.test(s)) s = '+' + s;
+      return /^\+61(4\d{8}|[2378]\d{8})$/.test(s) ? s : null;
+    },
+    name: function (v) { v = String(v || '').trim(); if (!v) return ''; return v.length <= 80 && /^[\p{L} '’&-]+$/u.test(v) && /\p{L}/u.test(v) ? v : null; },
+    abn: function (v) {
+      var s = String(v || '').replace(/\s/g, ''); if (!s) return ''; if (!/^\d{11}$/.test(s)) return null;
+      var w = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19], sum = 0; for (var i = 0; i < 11; i++) sum += (+s[i] - (i === 0 ? 1 : 0)) * w[i];
+      return sum % 89 === 0 ? s : null;
+    },
+    url: function (v) { v = String(v || '').trim(); if (!v) return ''; return /^https:\/\/\S+$/.test(v) && v.length <= 500 ? v : null; },
+    postcode: function (pc, st) {
+      if (!/^\d{4}$/.test(pc || '')) return false; var n = +pc, R = { ACT: [[200, 299], [2600, 2618], [2900, 2920]], NSW: [[1000, 2599], [2619, 2898], [2921, 2999]], NT: [[800, 999]], QLD: [[4000, 4999], [9000, 9999]], SA: [[5000, 5999]], TAS: [[7000, 7999]], VIC: [[3000, 3999], [8000, 8999]], WA: [[6000, 6797], [6800, 6999]] }[st];
+      return !!R && R.some(function (r) { return n >= r[0] && n <= r[1]; });
+    },
   };
 
   /* ---------- time zone: "2026-11-20T09:30" typed in Adelaide time -> ISO ---------- */
@@ -93,13 +142,14 @@
         return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(v) ? ' selected' : '') + '>' + esc(o.l) + '</option>';
       }).join('') + '</select>';
     } else if (f.type === 'textarea') {
-      input = '<textarea class="lh-input area" id="' + id + '" name="' + f.name + '" rows="' + (f.rows || 4) + '"' + req + ph + '>' + esc(v) + '</textarea>';
+      input = '<textarea class="lh-input area" id="' + id + '" name="' + f.name + '" rows="' + (f.rows || 4) + '"' + req + ph + (f.maxlen ? ' maxlength="' + f.maxlen + '"' : '') + '>' + esc(v) + '</textarea>';
     } else if (f.type === 'money') {
       input = '<div class="lh-money"><span>$</span><input class="lh-input" id="' + id + '" name="' + f.name + '" type="number" inputmode="numeric" min="0" step="1"' + req + ph + ' value="' + esc(v) + '"></div>';
     } else if (f.type === 'number') {
       input = '<input class="lh-input" id="' + id + '" name="' + f.name + '" type="number" inputmode="numeric"' + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + ' step="' + (f.step || 1) + '"' + req + ph + ' value="' + esc(v) + '">';
     } else {
-      input = '<input class="lh-input" id="' + id + '" name="' + f.name + '" type="' + (f.type || 'text') + '"' + req + ph + ' value="' + esc(v) + '" autocomplete="off">';
+      if (f.type === 'tel' && !ph) ph = ' placeholder="0412 345 678"';
+      input = '<input class="lh-input" id="' + id + '" name="' + f.name + '" type="' + (f.type || 'text') + '"' + req + ph + (f.maxlen ? ' maxlength="' + f.maxlen + '"' : '') + ' value="' + esc(v) + '" autocomplete="off">';
     }
     return '<div class="lh-field-wrap' + span + '">' + label + input + hint + '</div>';
   }
@@ -128,9 +178,34 @@
         (opts.fields || []).forEach(function (f) {
           var el = form.elements[f.name]; if (!el) return;
           var v = el.value; if (typeof v === 'string') v = v.trim();
+          var wrap = el.closest && el.closest('.lh-field-wrap'), hidden = wrap && wrap.style.display === 'none';
+          if (hidden) { out[f.name] = v; return; }
           if (f.required && v === '' && !bad) bad = f.label + ' is required.';
+          if (v !== '' && !bad) {
+            var c;
+            if (f.type === 'email') { c = UI.val.email(v); if (c === null) bad = f.label + ' must be a valid email address.'; else v = c; }
+            else if (f.type === 'tel') { c = UI.val.phone(v); if (c === null) bad = f.label + ' must be an Australian phone number, like 0412 345 678.'; else v = c; }
+            else if (f.kind === 'name') { if (UI.val.name(v) === null) bad = f.label + ' can only use letters, spaces, apostrophes, hyphens and &.'; }
+            else if (f.kind === 'abn') { c = UI.val.abn(v); if (c === null) bad = f.label + ' must be a valid 11-digit ABN.'; else v = c; }
+            else if (f.kind === 'url') { c = UI.val.url(v); if (c === null) bad = f.label + ' must start with https://'; else v = c; }
+            else if (f.type === 'money' || f.type === 'number') {
+              var n = Number(v), lo = f.type === 'money' ? 0 : f.min, hi = f.type === 'money' ? 99999999 : f.max;
+              if (!isFinite(n)) bad = f.label + ' must be a number.';
+              else if (lo != null && n < lo) bad = f.label + ' can\'t be less than ' + lo + '.';
+              else if (hi != null && n > hi) bad = f.label + ' can\'t be more than ' + hi.toLocaleString('en-AU') + '.';
+            }
+            if (!bad && f.minlen && v.length < f.minlen) bad = f.label + ' must be at least ' + f.minlen + ' characters.';
+            if (!bad && f.maxlen && v.length > f.maxlen) bad = f.label + ' must be ' + f.maxlen + ' characters or fewer.';
+          }
           out[f.name] = v;
         });
+        (opts.fields || []).forEach(function (f) {
+          if (f.kind !== 'postcode' || bad || !form.elements[f.name]) return;
+          var wrap = form.elements[f.name].closest('.lh-field-wrap'); if (wrap && wrap.style.display === 'none') return;
+          var st = out[f.state || 'state'];
+          if (out[f.name] !== '' && !UI.val.postcode(out[f.name], st)) bad = f.label + ' must be four digits and match the state' + (st ? ' (' + st + ')' : '') + '.';
+        });
+        if (!bad && opts.validate) { try { bad = opts.validate(out, form) || null; } catch (ex) { bad = null; } }
         (form.querySelectorAll('[data-collect]') || []).forEach(function () { /* extras gathered by onSubmit */ });
         if (bad) { errEl.textContent = bad; return; }
         var btn = form.querySelector('[type=submit]'); btn.disabled = true;

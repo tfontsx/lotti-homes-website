@@ -74,13 +74,14 @@
         ]);
         for (var i = 0; i < 3; i++) if (r[i].error) throw r[i].error;
         var names = {}; (r[2].data || []).forEach(function (c) { names[c.id] = c.name; });
-        var crews = {};
+        var crews = {}, bks = {};
         (r[1].data || []).forEach(function (b) {
           var title = String(b.title || ''), cut = title.lastIndexOf(' — '), stage = cut > 0 ? title.slice(0, cut) : '', bi = one(b.booking_internal), who = (bi && names[bi.contractor_id]) || (cut > 0 ? title.slice(cut + 3) : '');
           if (!stage || !who) return;
+          (bks[stage] = bks[stage] || []).push({ id: b.id, who: who });
           crews[stage] = crews[stage] && crews[stage].indexOf(who) === -1 ? crews[stage] + ', ' + who : (crews[stage] || who);
         });
-        D = { projects: projects, project: project, stages: r[0].data || [], contractors: r[2].data || [], crews: crews };
+        D = { projects: projects, project: project, stages: r[0].data || [], contractors: r[2].data || [], crews: crews, bks: bks };
         D.plan = project.start_date ? plan(project, D.stages, crews) : null;
         LH.touchSynced();
         if (!destroyed) draw();
@@ -114,7 +115,7 @@
         var pill = r.status === 'complete' ? UI.pill('ok', 'Done') : r.status === 'current' ? UI.pill(r.slip > 0 ? 'wait' : 'ok', 'In progress') : (r.crew ? UI.pill('', 'Booked') : UI.pill('', 'Planned'));
         var sub = r.slip > 0 ? '<div class="gt-over">+' + r.slip + (r.slip === 1 ? ' day' : ' days') + ' over</div>' : (r.status === 'complete' && r.slip < 0 ? '<div class="gt-ahead">' + (-r.slip) + ' ' + (r.slip === -1 ? 'day' : 'days') + ' early</div>' : '');
         var action = r.status === 'current' ? '<button type="button" class="lh-btn sm" data-complete="' + r.id + '">Complete stage</button>' : (r.status === 'upcoming' && !r.crew ? '<button type="button" class="lh-btn sm" data-assign="' + esc(r.name) + '">Assign contractor</button>' : '<span class="faint">—</span>');
-        return '<div class="gt-row gt-grid" style="--i:' + i + '"><div><div class="n">' + esc(r.name) + '</div><div class="s">' + esc(p.project_manager_name || '') + '</div></div><div>' + (r.crew ? esc(r.crew) : '<span class="faint">Not assigned</span>') + '</div><div>' + bars + '</div><div>' + pill + sub + '</div><div>' + action + '</div></div>';
+        return '<div class="gt-row gt-grid" style="--i:' + i + '"><div><div class="n">' + esc(r.name) + '</div><div class="s">' + esc(p.project_manager_name || '') + '</div></div><div>' + crewCell(r) + '</div><div>' + bars + '</div><div>' + pill + sub + '</div><div>' + action + '</div></div>';
       }).join('');
       view.innerHTML = head + UI.sect('At a glance') + '<div class="ov-glance">' +
         UI.stat('Tasks on time', st.onTime + ' of ' + st.total, '', '', '', 0, 'ok') +
@@ -127,18 +128,27 @@
       fitWeeks();
     }
 
+    /* Contractor names for a stage; unfinished stages get an x on each to remove them. */
+    function crewCell(r) {
+      if (!r.crew) return '<span class="faint">Not assigned</span>';
+      var list = (D.bks && D.bks[r.name]) || [];
+      if (r.status === 'complete' || !list.length) return esc(r.crew);
+      return '<span class="gt-crews">' + list.map(function (b) {
+        return '<span class="gt-crew"><span class="tx">' + esc(b.who) + '</span><button type="button" class="gt-x" data-unassign="' + esc(b.id) + '" data-who="' + esc(b.who) + '" data-stage="' + esc(r.name) + '" title="Remove ' + esc(b.who) + '" aria-label="Remove ' + esc(b.who) + ' from ' + esc(r.name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></button></span>';
+      }).join('') + '</span>';
+    }
     function assignForm(stageName) {
       var open = D.stages.filter(function (s) { return s.status !== 'complete' && s.status !== 'skipped'; });
       if (!open.length) { UI.toast('Every stage is finished.', 'error'); return; }
       if (!D.contractors.length) { UI.toast('Add a contractor first.', 'error'); LH.go('contractors'); return; }
       var pr = D.plan && D.plan.rows.filter(function (r) { return r.name === (stageName || open[0].name); })[0];
       UI.form({
-        title: 'Assign a contractor', intro: 'They are booked for those days and it lands on the Google Calendar.', submitLabel: 'Assign',
+        title: 'Assign a contractor', validate: function (v) { if (v.end < v.start) return 'The last day can\'t be before the first day.'; if ((Date.parse(v.end) - Date.parse(v.start)) / 86400000 > 120) return 'A booking can\'t run longer than 120 days.'; return ''; }, intro: 'They are booked for those days and it lands on the Google Calendar.', submitLabel: 'Assign',
         values: { stage: stageName || open[0].name, start: pr && pr.pS ? keyOfNum(pr.pS) : '', end: pr && pr.pE ? keyOfNum(pr.pE) : '' },
         fields: [{ name: 'stage', label: 'Stage', type: 'select', options: open.map(function (s) { return { v: s.name, l: s.name }; }), required: true },
           { name: 'contractor', label: 'Contractor', type: 'select', options: D.contractors.map(function (c) { return { v: c.id, l: c.name }; }), required: true },
           { name: 'start', label: 'First day', type: 'date', required: true }, { name: 'end', label: 'Last day', type: 'date', required: true },
-          { name: 'notes', label: 'Notes (optional)', type: 'textarea', rows: 3, span: 2 }],
+          { name: 'notes', label: 'Notes (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
         onSubmit: async function (v) {
           var r = await LH.sb.rpc('assign_contractor', { p_project_id: selected, p_contractor_id: v.contractor, p_stage_name: v.stage, p_start: v.start, p_end: v.end, p_notes: UI.nullIfBlank(v.notes) });
           if (r.error) throw r.error;
@@ -147,7 +157,15 @@
     }
 
     async function onClick(e) {
-      var el = e.target.closest('[data-act],[data-assign],[data-complete]'); if (!el || !D || !D.project) return;
+      var el = e.target.closest('[data-act],[data-assign],[data-complete],[data-unassign]'); if (!el || !D || !D.project) return;
+      if (el.hasAttribute('data-unassign')) {
+        var who = el.getAttribute('data-who'), stage = el.getAttribute('data-stage');
+        if (!(await UI.confirm('Remove ' + who + ' from ' + stage + '? Their booking is taken off the calendar.', { title: 'Remove contractor', yes: 'Remove', danger: true }))) return;
+        el.disabled = true;
+        var u = await LH.sb.rpc('unassign_contractor', { p_booking_id: el.getAttribute('data-unassign') });
+        if (u.error) { el.disabled = false; UI.toast(LH.errMsg(u.error), 'error'); return; }
+        UI.toast(who + ' removed from ' + stage + '.'); refresh(); return;
+      }
       if (el.hasAttribute('data-complete')) {
         if (!(await UI.confirm('Mark this stage complete and move to the next one?', { title: 'Complete stage', yes: 'Complete stage' }))) return;
         var r = await LH.sb.rpc('advance_project_stage', { p_project_id: selected });

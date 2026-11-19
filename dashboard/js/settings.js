@@ -79,7 +79,7 @@
       if (a === 'profile') {
         UI.form({
           title: 'Edit profile', intro: 'The name the app shows for you, and the name clients see as their project manager.', submitLabel: 'Save', values: { name: LH.state.name },
-          fields: [{ name: 'name', label: 'Display name', required: true, span: 2, hint: 'Letters and spaces only. Use a first and last name to be chosen as a project manager.' }],
+          fields: [{ name: 'name', label: 'Display name', required: true, span: 2, kind: 'name', hint: 'Letters and spaces only. Use a first and last name to be chosen as a project manager.' }],
           onSubmit: async function (v) { var r = await LH.sb.from('admin_profiles').upsert({ user_id: LH.state.user.id, display_name: v.name }, { onConflict: 'user_id' }); if (r.error) throw r.error; LH.state.name = v.name; },
         }).then(function (done) { if (done) { LH.$('#avatarBtn').textContent = LH.initials(LH.state.name); LH.$('#menuName').textContent = LH.state.name; UI.toast('Saved.'); refresh(); } });
       } else if (a === 'biz') {
@@ -87,8 +87,8 @@
         UI.form({
           title: 'Business details', submitLabel: 'Save', wide: true,
           values: { business_name: b.business_name || '', owner_display_name: b.owner_display_name || '', contact_email: b.contact_email || '', contact_phone: b.contact_phone || '', abn: b.abn || '', google_review_url: b.google_review_url || '', rain: b.rain_risk_threshold_pct != null ? b.rain_risk_threshold_pct : 60, qs: b.quiet_hours_start ? String(b.quiet_hours_start).slice(0, 5) : '', qe: b.quiet_hours_end ? String(b.quiet_hours_end).slice(0, 5) : '' },
-          fields: [{ name: 'business_name', label: 'Business name', span: 2 }, { name: 'owner_display_name', label: 'Full name' }, { name: 'abn', label: 'ABN' }, { name: 'contact_email', label: 'Contact email', type: 'email' }, { name: 'contact_phone', label: 'Contact phone', type: 'tel' },
-            { name: 'google_review_url', label: 'Google review link', span: 2 }, { name: 'rain', label: 'Rain warning at (% chance)', type: 'number', min: 0, max: 100 }, { name: 'qs', label: 'Quiet hours start', type: 'time' }, { name: 'qe', label: 'Quiet hours end', type: 'time' }],
+          fields: [{ name: 'business_name', label: 'Business name', span: 2, minlen: 2, maxlen: 120 }, { name: 'owner_display_name', label: 'Full name', kind: 'name' }, { name: 'abn', label: 'ABN', kind: 'abn' }, { name: 'contact_email', label: 'Contact email', type: 'email' }, { name: 'contact_phone', label: 'Contact phone', type: 'tel' },
+            { name: 'google_review_url', label: 'Google review link', span: 2, kind: 'url', placeholder: 'https://…' }, { name: 'rain', label: 'Rain warning at (% chance)', type: 'number', min: 0, max: 100 }, { name: 'qs', label: 'Quiet hours start', type: 'time' }, { name: 'qe', label: 'Quiet hours end', type: 'time' }],
           onSubmit: async function (v) {
             var cols = { business_name: UI.nullIfBlank(v.business_name), owner_display_name: UI.nullIfBlank(v.owner_display_name), contact_email: UI.nullIfBlank(v.contact_email), contact_phone: UI.nullIfBlank(v.contact_phone), abn: UI.nullIfBlank(v.abn), google_review_url: UI.nullIfBlank(v.google_review_url), rain_risk_threshold_pct: Math.max(0, Math.min(100, parseInt(v.rain, 10) || 60)), quiet_hours_start: UI.nullIfBlank(v.qs), quiet_hours_end: UI.nullIfBlank(v.qe) };
             var r = await LH.sb.from('business_settings').update(cols).eq('id', true); if (r.error) throw r.error;

@@ -35,7 +35,7 @@
       UI.sect('Conversations') +
       '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:0.75rem 0 0.625rem"></div><div id="inThreads" class="in-threads"></div></section>' +
       '<section class="in-chat lh-card"><div id="inHead" class="in-head"></div><div id="inMsgs" class="in-msgs"></div>' +
-      '<form id="inForm" class="in-compose" autocomplete="off"><button type="button" class="in-plus" id="inAttach" aria-label="Attach a file">+</button><input type="file" id="inFile" hidden accept=".pdf,.jpg,.jpeg,.png,.webp"><input class="lh-input" id="inText" placeholder="Write a message" aria-label="Message"><button class="lh-btn primary" type="submit" id="inSend">Send</button></form></section>' +
+      '<form id="inForm" class="in-compose" autocomplete="off"><button type="button" class="in-plus" id="inAttach" aria-label="Attach a file">+</button><input type="file" id="inFile" hidden accept=".pdf,.jpg,.jpeg,.png,.webp"><input class="lh-input" id="inText" placeholder="Write a message" aria-label="Message" maxlength="4000"><button class="lh-btn primary" type="submit" id="inSend">Send</button></form></section>' +
       '<aside class="in-side lh-card" id="inSide"></aside></div>';
     view.classList.add('fit');
     var el = { q: LH.$('#inQ', view), chips: LH.$('#inChips', view), threads: LH.$('#inThreads', view), head: LH.$('#inHead', view), msgs: LH.$('#inMsgs', view), side: LH.$('#inSide', view), text: LH.$('#inText', view), form: LH.$('#inForm', view), file: LH.$('#inFile', view) };

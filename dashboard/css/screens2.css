@@ -238,3 +238,17 @@
 .kb-card { position:relative; }
 .kb-card::before { content:""; position:absolute; left:0; top:0.5rem; bottom:0.5rem; width:0.09375rem; background:linear-gradient(to bottom, transparent, var(--c, var(--steel)) 28%, var(--c, var(--steel)) 72%, transparent); opacity:.7; transition:opacity .25s; }
 .kb-card:hover::before { opacity:1; }
+
+/* Schedule: contractor chips with a remove button */
+.gt-crews { display:flex; flex-wrap:wrap; gap:0.3125rem; }
+.gt-crew { display:inline-flex; align-items:center; gap:0.25rem; min-height:1.625rem; padding:0 0.25rem 0 0.625rem; border-radius:0.8125rem; background:var(--tint); font:500 max(11.04px, 0.75rem)/1 Geist,sans-serif; max-width:100%; }
+.gt-crew .tx { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gt-x { flex:none; width:1.25rem; height:1.25rem; border:0; border-radius:50%; background:transparent; color:var(--i3); display:flex; align-items:center; justify-content:center; transition:background .2s, color .2s, transform .2s; }
+.gt-x svg { width:0.6875rem; height:0.6875rem; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+.gt-x:hover { background:color-mix(in srgb, var(--halt) 16%, transparent); color:var(--halt); transform:scale(1.1); }
+.gt-x[disabled] { opacity:.4; pointer-events:none; }
+
+/* Very long values wrap or truncate instead of spilling out of their card */
+.kv .v { min-width:0; overflow-wrap:anywhere; }
+.lh-chip { max-width:100%; } .lh-chip .tx { max-width:18rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cp-row .main { min-width:0; } .cp-row .main .n, .cp-row .main .faint { overflow-wrap:anywhere; }

@@ -37,32 +37,33 @@
   var UTC = { dMon: new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', day: 'numeric', month: 'short' }),
               dMonY: new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) };
 
+  /* A usable Date, or null for blank and invalid values, so one bad timestamp can't take a whole screen down. */
+  function asDate(d) { if (d == null || d === '') return null; var x = d instanceof Date ? d : new Date(d); return isNaN(x) ? null : x; }
+  /** The app's money style as {num:'$1.86', unit:'M'}; rounds before choosing the unit so $999,999 reads $1M, and negatives read -$1.5k. */
+  function moneyParts(n) {
+    n = Number(n); if (!isFinite(n)) n = 0;
+    var sign = n < 0 ? '-' : '', a = Math.abs(n);
+    if (a >= 999500) { var m = Math.round(a / 10000) / 100; return { num: sign + '$' + (Number.isInteger(m) ? m.toFixed(0) : m.toFixed(2)), unit: 'M' }; }
+    if (a >= 999.5) { var k = Math.round(a / 100) / 10; return { num: sign + '$' + (Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)), unit: 'k' }; }
+    return { num: (Math.round(a) ? sign : '') + '$' + Math.round(a), unit: '' };
+  }
+
   LH.fmt = {
     /** "2026-11-18" for an instant, in Adelaide time. */
-    dayKey: function (d) { return f.key.format(d instanceof Date ? d : new Date(d)); },
-    time: function (d) { return f.time.format(new Date(d)).replace('24:', '00:'); },
-    hour: function (d) { return parseInt(f.hour.format(new Date(d)), 10) % 24; },
-    dateTime: function (d) { return f.stamp.format(new Date(d)); },
-    wdDM: function (d) { return f.wdDM.format(new Date(d)); },
-    long: function (d) { return f.long.format(new Date(d)).toUpperCase(); },
+    dayKey: function (d) { var x = asDate(d); return x ? f.key.format(x) : ''; },
+    time: function (d) { var x = asDate(d); return x ? f.time.format(x).replace('24:', '00:') : ''; },
+    hour: function (d) { var x = asDate(d); return x ? parseInt(f.hour.format(x), 10) % 24 : 0; },
+    dateTime: function (d) { var x = asDate(d); return x ? f.stamp.format(x) : '—'; },
+    wdDM: function (d) { var x = asDate(d); return x ? f.wdDM.format(x) : '—'; },
+    long: function (d) { var x = asDate(d); return x ? f.long.format(x).toUpperCase() : ''; },
     /** A plain date column ("2026-12-12") as "12 Dec". */
     date: function (s) { if (!s) return '—'; var d = new Date(s + 'T00:00:00Z'); return isNaN(d) ? '—' : UTC.dMon.format(d); },
     dateY: function (s) { if (!s) return '—'; var d = new Date(s + 'T00:00:00Z'); return isNaN(d) ? '—' : UTC.dMonY.format(d); },
     /** Same style as the app: $1.86M / $940k / $68k. */
-    money: function (n) {
-      n = Number(n) || 0;
-      if (n >= 1000000) { var m = n / 1000000; return '$' + (Number.isInteger(m) ? m.toFixed(0) : m.toFixed(2)) + 'M'; }
-      if (n >= 1000) { var k = n / 1000; return '$' + (Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)) + 'k'; }
-      return '$' + Math.round(n);
-    },
+    money: function (n) { var p = moneyParts(n); return p.num + p.unit; },
     /** Same as money(), split so the unit can be set small: {num:'$1.86', unit:'M'}. */
-    moneyParts: function (n) {
-      n = Number(n) || 0;
-      if (n >= 1000000) { var m = n / 1000000; return { num: '$' + (Number.isInteger(m) ? m.toFixed(0) : m.toFixed(2)), unit: 'M' }; }
-      if (n >= 1000) { var k = n / 1000; return { num: '$' + (Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)), unit: 'k' }; }
-      return { num: '$' + Math.round(n), unit: '' };
-    },
-    moneyFull: function (n) { return '$' + Math.round(Number(n) || 0).toLocaleString('en-AU'); },
+    moneyParts: moneyParts,
+    moneyFull: function (n) { n = Math.round(Number(n) || 0); return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-AU'); },
   };
   /** Today in Adelaide as {y, m(0-11), d}. */
   LH.today = function () { var p = LH.fmt.dayKey(new Date()).split('-'); return { y: +p[0], m: +p[1] - 1, d: +p[2] }; };
@@ -322,7 +323,7 @@
   }
 
   /* ---------- search ---------- */
-  var index = null;
+  var index = null, indexAt = 0, indexBusy = false;
   async function buildIndex() {
     var q = function (t, c) { return LH.sb.from(t).select(c); };
     var r = await Promise.all([
@@ -336,7 +337,7 @@
     (r[1].data || []).forEach(function (l) { out.push({ k: 'Lead', t: l.name, s: [l.suburb, l.email, l.phone].filter(Boolean).join(' · '), h: '#/leads/' + l.id }); });
     (r[2].data || []).forEach(function (c) { out.push({ k: 'Client', t: c.name, s: [c.email, c.mobile].filter(Boolean).join(' · '), h: '#/projects' }); });
     (r[3].data || []).forEach(function (c) { out.push({ k: 'Contractor', t: c.name, s: [c.contact_name, c.phone].filter(Boolean).join(' · '), h: '#/contractors/' + c.id }); });
-    index = out;
+    index = out; indexAt = Date.now();
   }
   function bindSearch() {
     var input = LH.$('#search'), box = LH.$('#results'), sel = -1, shown = [];
@@ -351,7 +352,12 @@
         ? shown.map(function (e, i) { return '<a href="' + e.h + '" data-i="' + i + '"><span class="k">' + e.k + '</span><span><div>' + LH.esc(e.t) + '</div><div class="faint" style="font-size:max(11.04px, 0.75rem)">' + LH.esc(e.s) + '</div></span></a>'; }).join('')
         : '<div class="empty">Nothing matches “' + LH.esc(input.value.trim()) + '”.</div>';
     }
-    input.addEventListener('focus', function () { if (!index) buildIndex().then(draw).catch(function (e) { console.error(e); index = []; }); });
+    // Built the first time search is used, then refreshed whenever it is a minute old, so new leads and projects can be found.
+    input.addEventListener('focus', function () {
+      if (indexBusy || (index && Date.now() - indexAt < 60000)) return;
+      indexBusy = true;
+      buildIndex().then(draw).catch(function (e) { console.error(e); if (!index) index = []; }).then(function () { indexBusy = false; });
+    });
     input.addEventListener('input', draw);
     input.addEventListener('keydown', function (e) {
       var links = LH.$$('a', box);

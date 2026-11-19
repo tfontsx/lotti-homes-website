@@ -46,7 +46,7 @@
     return UI.form({
       title: 'Mark ' + lead.name + ' as lost', intro: 'Pick the main reason. You can reopen the lead later.', submitLabel: 'Mark lost', danger: true,
       fields: [{ name: 'reason', label: 'Reason', type: 'select', options: LOST.map(function (x) { return { v: x[0], l: x[1] }; }), required: true },
-        { name: 'note', label: 'Note (optional)', type: 'textarea', rows: 3, span: 2 }],
+        { name: 'note', label: 'Note (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
       onSubmit: async function (v) { await markLost(lead.id, v.reason, v.note); }
     }).then(function (ok) { if (ok) { UI.toast('Marked as lost.'); if (after) after(); } return ok; });
   }
@@ -58,15 +58,16 @@
       title: 'Convert to project', intro: lead.name + ' becomes a client with a new project, and the lead is marked won.', submitLabel: 'Create project', wide: true,
       values: { name: lead.name + (lead.type ? ' — ' + lead.type : ''), type: lead.typeId || '', template: def ? def.id : '', state: 'SA', suburb: lead.suburb, contract: lead.value || '', cname: lead.name, cemail: lead.email, cmobile: lead.phone },
       fields: [
-        { name: 'name', label: 'Project name', required: true, span: 2 },
+        { name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(types.map(function (t) { return { v: t.id, l: t.name }; })), required: true },
         { name: 'template', label: 'Stage template', type: 'select', options: templates.map(function (t) { return { v: t.id, l: t.name }; }) },
-        { name: 'street', label: 'Site street address', required: true, span: 2 },
-        { name: 'suburb', label: 'Suburb', required: true }, { name: 'postcode', label: 'Postcode', required: true },
+        { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 },
+        { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
         { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) },
         { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
         { name: 'contract', label: 'Contract value', type: 'money', required: true }, { name: 'budget', label: 'Original budget', type: 'money' },
-        { name: 'cname', label: 'Client name', required: true }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' }],
+        { name: 'cname', label: 'Client name', required: true, kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email', required: true }, { name: 'cmobile', label: 'Client mobile', type: 'tel', required: true }],
+      validate: function (v) { return v.finish < v.start ? 'The forecast completion can\'t be before the start date.' : ''; },
       onSubmit: async function (v) {
         var res = await LH.sb.rpc('convert_lead_to_project', {
           p_lead_id: lead.id, p_name: v.name, p_project_type_id: v.type, p_custom_type_name: null,
@@ -82,16 +83,16 @@
   }
   async function addLeadForm(types, onDone) {
     return UI.form({
-      title: 'Add lead', submitLabel: 'Add lead', wide: true, values: { source: 'other', value: '' },
+      title: 'Add lead', submitLabel: 'Add lead', wide: true, validate: function (v) { return !v.email && !v.phone ? 'Add an email address or a phone number.' : ''; }, values: { source: 'other', value: '' },
       fields: [
-        { name: 'name', label: 'Name', required: true, span: 2 },
+        { name: 'name', label: 'Name', required: true, span: 2, kind: 'name' },
         { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' },
-        { name: 'suburb', label: 'Suburb' },
+        { name: 'suburb', label: 'Suburb', minlen: 2, maxlen: 60 },
         { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) },
         { name: 'newtype', label: 'Or a new type', placeholder: 'e.g. Extension' },
         { name: 'value', label: 'Estimated value', type: 'money' },
-        { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2 }],
+        { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
       onSubmit: async function (v) {
         if (v.email || v.phone) {
           var dup = await LH.sb.rpc('find_duplicate_leads', { p_email: UI.nullIfBlank(v.email), p_phone: UI.nullIfBlank(v.phone) });
@@ -332,10 +333,12 @@
         return '<div class="act"><span class="d">' + fmt.date(fmt.dayKey(a.created_at)) + '</span><i class="' + (a.kind === 'note' ? 'note' : '') + '"></i><span class="t">' + esc(text) + '</span></div>';
       }).join('') || '<div class="faint">No activity yet.</div>';
 
+      // A note half-typed when a live update arrives is kept, with the cursor where it was.
+      var noteEl = LH.$('input[name=note]', view), keep = noteEl ? { v: noteEl.value, f: document.activeElement === noteEl, s: noteEl.selectionStart, e: noteEl.selectionEnd } : null;
       view.innerHTML =
         '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:1.25rem">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
         '<div class="ov-hero" style="margin-top:0.75rem;margin-bottom:1.625rem"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
-        esc([l.suburb, 'Enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
+        esc([l.suburb, 'Enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + String(SRC[l.source] || l.source || 'unknown').toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
         '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
         (l.converted ? '<a class="lh-btn primary" href="#/projects/' + l.converted + '">Open project</a>' : (l.status !== 'won' ? '<button class="lh-btn primary" type="button" data-act="convert">Convert to project</button>' : '')) + '</div></div>' +
         UI.sect('Status') + '<section class="lh-card wash" style="padding:1.375rem 1.75rem;--wash:var(--' + ({ new: 'steel', contacted: 'steel', consulted: 'wait', quoted: 'wait', won: 'ok', lost: 'halt' }[l.status] || 'steel') + ')">' + stepper(l) +
@@ -359,6 +362,7 @@
           var a = i.amount_cents / 100; return '<div class="ei"><div class="el"><span>' + esc(i.label) + '</span><span>' + fmt.money(a) + '</span></div><div class="bar"><i style="width:' + (total ? Math.min(100, (a / total) * 100) : 0) + '%"></i></div></div>';
         }).join('') : '<div class="faint tiny" style="margin-top:0.875rem">No line items yet. Edit the estimate to itemise it.</div>') + '</div>' +
         '<div class="est-actions"><button type="button" class="lh-btn" data-act="estimate">Edit estimate</button>' + (['new', 'contacted', 'consulted'].indexOf(l.status) !== -1 ? '<button type="button" class="lh-btn primary" data-act="quote">Mark as quoted</button>' : '') + '</div></section></div></div>';
+      if (keep && keep.v) { var ne = LH.$('input[name=note]', view); if (ne) { ne.value = keep.v; if (keep.f) { ne.focus(); try { ne.setSelectionRange(keep.s, keep.e); } catch (x) { /* ok */ } } } }
       window.scrollTo(0, y);
     }
 
@@ -411,15 +415,16 @@
       var lens = [30, 45, 60, 90, 120]; if (lens.indexOf(elen) === -1) { lens.push(elen); lens.sort(function (a, b) { return a - b; }); }
       UI.form({
         title: 'Edit details', submitLabel: 'Save', wide: true,
+        validate: function (v) { return !v.email && !v.phone ? 'Add an email address or a phone number.' : ''; },
         values: { name: l.name, email: l.email, phone: l.phone, suburb: l.suburb, source: l.source, type: l.type,
           cwhen: ec && ec.start && !ec.cancelled ? LH.toLocalInput(ec.start) : '', clen: String(elen), cplace: ec && ec.place ? ec.place : '' },
-        fields: [{ name: 'name', label: 'Name', required: true, span: 2 }, { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'suburb', label: 'Suburb' },
+        fields: [{ name: 'name', label: 'Name', required: true, span: 2, kind: 'name' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'suburb', label: 'Suburb', minlen: 2, maxlen: 60 },
           { name: 'source', label: 'Source', type: 'select', options: Object.keys(SRC).map(function (k) { return { v: k, l: SRC[k] }; }) },
           { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Not sure yet' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) },
           { name: 'newtype', label: 'Or a new type' },
           { name: 'cwhen', label: 'Consultation date and time (Adelaide)', type: 'datetime-local', span: 2, hint: ec && ec.start && !ec.cancelled ? 'Change this to move the booking. It updates the calendar and the app.' : 'Fill this in to book a consultation.' },
           { name: 'clen', label: 'Consultation length', type: 'select', options: lens.map(function (m) { return { v: String(m), l: m < 60 ? m + ' minutes' : (m % 60 === 0 ? (m / 60) + (m === 60 ? ' hour' : ' hours') : m + ' minutes') }; }) },
-          { name: 'cplace', label: 'Consultation location' }],
+          { name: 'cplace', label: 'Consultation location', maxlen: 200 }],
         onSubmit: async function (v) {
           var typeId = await typeIdFor(v.newtype || v.type);
           var r = await LH.sb.from('leads').update({ name: v.name, email: UI.nullIfBlank(v.email), phone: UI.nullIfBlank(v.phone), suburb: UI.nullIfBlank(v.suburb), source: v.source, project_type_id: typeId }).eq('id', id);
@@ -442,7 +447,7 @@
         values: { when: tomorrow + 'T09:00', len: '60', place: l.suburb },
         fields: [{ name: 'when', label: 'Date and time (Adelaide)', type: 'datetime-local', required: true, span: 2 },
           { name: 'len', label: 'Length', type: 'select', options: [['30', '30 minutes'], ['45', '45 minutes'], ['60', '1 hour'], ['90', '1.5 hours'], ['120', '2 hours']].map(function (x) { return { v: x[0], l: x[1] }; }) },
-          { name: 'place', label: 'Location' }],
+          { name: 'place', label: 'Location', maxlen: 200 }],
         onSubmit: async function (v) {
           var start = LH.adelaideToISO(v.when); if (!start) throw new Error('Pick a date and time.');
           var end = new Date(new Date(start).getTime() + (+v.len) * 60000).toISOString();
@@ -453,7 +458,7 @@
     }
     function notesForm() {
       var c = consultation(), l = D.lead;
-      var fields = [{ name: 'notes', label: 'Notes', type: 'textarea', rows: 7, span: 2 }];
+      var fields = [{ name: 'notes', label: 'Notes', type: 'textarea', rows: 7, span: 2, maxlen: 2000 }];
       var vals = { notes: c ? c.notes : l.notes, outcome: '' };
       if (c) fields.unshift({ name: 'outcome', label: 'Consultation outcome', type: 'select', options: [{ v: '', l: 'Keep as is' }, { v: 'completed', l: 'Completed' }, { v: 'no_show', l: 'No show' }, { v: 'cancelled', l: 'Cancelled' }], span: 2 });
       UI.form({

@@ -73,15 +73,16 @@
     var def = templates.filter(function (t) { return t.is_default; })[0] || templates[0];
     return UI.form({
       title: 'New project', submitLabel: 'Create project', wide: true,
+      validate: function (v) { if (v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.client && !v.cemail) return 'Client email is required for a new client.'; if (!v.client && !v.cmobile) return 'Client mobile is required for a new client.'; return ''; },
       values: { template: def ? def.id : '', state: 'SA', client: '', manager: managers[0] ? managers[0].user_id : '' },
       fields: [
-        { name: 'name', label: 'Project name', required: true, span: 2 },
+        { name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 },
         { name: 'client', label: 'Client', type: 'select', options: [{ v: '', l: 'New client…' }].concat(clients.map(function (c) { return { v: c.id, l: c.name + (c.email ? ' · ' + c.email : '') }; })), span: 2 },
-        { name: 'cname', label: 'Client name' }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' },
+        { name: 'cname', label: 'Client name', kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' },
         { name: 'type', label: 'Project type', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new type' },
         { name: 'template', label: 'Stage template', type: 'select', options: templates.map(function (t) { return { v: t.id, l: t.name }; }) },
         { name: 'manager', label: 'Project manager', type: 'select', options: managers.length ? managers.map(function (m) { return { v: m.user_id, l: m.display_name }; }) : [{ v: '', l: 'No admin has set a full name yet' }], required: true },
-        { name: 'street', label: 'Site street address', required: true, span: 2 }, { name: 'suburb', label: 'Suburb', required: true }, { name: 'postcode', label: 'Postcode', required: true },
+        { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
         { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) },
         { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
         { name: 'contract', label: 'Contract value', type: 'money', required: true }, { name: 'budget', label: 'Original budget', type: 'money' }],
@@ -426,11 +427,12 @@
       var mg = await LH.sb.rpc('list_project_managers'), managers = mg.data || [];
       UI.form({
         title: 'Edit project', submitLabel: 'Save', wide: true,
+        validate: function (v) { if (v.finish < v.start) return 'The forecast completion can\'t be before the start date.'; if (!v.cemail) return 'Client email is required.'; if (!v.cmobile) return 'Client mobile is required.'; return ''; },
         values: { name: raw.name, street: raw.site_street || '', suburb: raw.site_suburb || '', postcode: raw.site_postcode || '', state: raw.site_state || 'SA', start: raw.start_date || '', finish: raw.forecast_completion_date || '', manager: raw.project_manager_id || '', cname: c.name || '', cemail: c.email || '', cmobile: c.mobile || '' },
-        fields: [{ name: 'name', label: 'Project name', required: true, span: 2 }, { name: 'street', label: 'Site street address', required: true, span: 2 }, { name: 'suburb', label: 'Suburb', required: true }, { name: 'postcode', label: 'Postcode', required: true },
+        fields: [{ name: 'name', label: 'Project name', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'street', label: 'Site street address', required: true, span: 2, minlen: 3, maxlen: 120 }, { name: 'suburb', label: 'Suburb', required: true, minlen: 2, maxlen: 60 }, { name: 'postcode', label: 'Postcode', required: true, kind: 'postcode', maxlen: 4 },
           { name: 'state', label: 'State', type: 'select', options: STATES.map(function (s) { return { v: s, l: s }; }) }, { name: 'manager', label: 'Project manager', type: 'select', options: [{ v: '', l: 'Keep as is' }].concat(managers.map(function (m) { return { v: m.user_id, l: m.display_name }; })) },
           { name: 'start', label: 'Start date', type: 'date', required: true }, { name: 'finish', label: 'Forecast completion', type: 'date', required: true },
-          { name: 'cname', label: 'Client name', required: true }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' }],
+          { name: 'cname', label: 'Client name', required: true, kind: 'name' }, { name: 'cemail', label: 'Client email', type: 'email' }, { name: 'cmobile', label: 'Client mobile', type: 'tel' }],
         onSubmit: async function (v) {
           await sbDo(LH.sb.from('projects').update({ name: v.name, site_street: v.street, site_suburb: v.suburb, site_postcode: v.postcode, site_state: v.state, start_date: v.start, forecast_completion_date: v.finish }).eq('id', id));
           if (raw.client_id) await sbDo(LH.sb.from('clients').update({ name: v.cname, email: UI.nullIfBlank(v.cemail), mobile: UI.nullIfBlank(v.cmobile) }).eq('id', raw.client_id));
@@ -442,7 +444,7 @@
       var m = D.miles.filter(function (x) { return x.id === mid; })[0]; if (!m) return;
       UI.form({
         title: 'Edit milestone', submitLabel: 'Save', values: { title: m.title, due: m.due_date || '', vis: m.visible_to_client ? '1' : '0' },
-        fields: [{ name: 'title', label: 'Milestone', required: true, span: 2 }, { name: 'due', label: 'Due date', type: 'date', required: true }, { name: 'vis', label: 'Show to client', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }],
+        fields: [{ name: 'title', label: 'Milestone', required: true, span: 2, minlen: 2, maxlen: 120 }, { name: 'due', label: 'Due date', type: 'date', required: true }, { name: 'vis', label: 'Show to client', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }],
         onSubmit: async function (v) { await sbDo(LH.sb.from('project_milestones').update({ title: v.title, due_date: v.due, visible_to_client: v.vis === '1' }).eq('id', mid)); },
       }).then(function (ok) { if (ok) { UI.toast('Milestone saved.'); refresh(); } });
     }
@@ -450,8 +452,8 @@
       var k = D.risks.filter(function (x) { return x.id === kid; })[0]; if (!k) return;
       UI.form({
         title: 'Edit risk or issue', submitLabel: 'Save', values: { title: k.title, kind: k.kind, severity: k.severity, detail: k.detail || '' },
-        fields: [{ name: 'title', label: 'What is it?', required: true, span: 2 }, { name: 'kind', label: 'Type', type: 'select', options: [{ v: 'risk', l: 'Risk' }, { v: 'issue', l: 'Issue' }] },
-          { name: 'severity', label: 'Severity', type: 'select', options: [{ v: 'low', l: 'Low' }, { v: 'medium', l: 'Medium' }, { v: 'high', l: 'High' }] }, { name: 'detail', label: 'Detail (optional)', type: 'textarea', rows: 3, span: 2 }],
+        fields: [{ name: 'title', label: 'What is it?', required: true, span: 2, minlen: 2, maxlen: 120 }, { name: 'kind', label: 'Type', type: 'select', options: [{ v: 'risk', l: 'Risk' }, { v: 'issue', l: 'Issue' }] },
+          { name: 'severity', label: 'Severity', type: 'select', options: [{ v: 'low', l: 'Low' }, { v: 'medium', l: 'Medium' }, { v: 'high', l: 'High' }] }, { name: 'detail', label: 'Detail (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 1000 }],
         onSubmit: async function (v) { await sbDo(LH.sb.from('project_risks').update({ kind: v.kind, title: v.title, detail: UI.nullIfBlank(v.detail), severity: v.severity }).eq('id', kid)); },
       }).then(function (ok) { if (ok) { UI.toast('Saved.'); refresh(); } });
     }
@@ -459,7 +461,7 @@
       var n = D.notes.filter(function (x) { return x.id === nid; })[0]; if (!n) return;
       UI.form({
         title: 'Edit note', submitLabel: 'Save', values: { body: n.body, vis: n.visible_to_client ? '1' : '0' },
-        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
+        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 5000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
         onSubmit: async function (v) {
           await sbDo(LH.sb.from('project_notes').update({ body: v.body }).eq('id', nid));
           if ((v.vis === '1') !== !!n.visible_to_client) await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: nid, p_visible: v.vis === '1' }));
@@ -470,22 +472,22 @@
       UI.form({
         title: 'Add milestone', submitLabel: 'Add',
         values: { vis: '1' },
-        fields: [{ name: 'title', label: 'Milestone', required: true, span: 2 }, { name: 'due', label: 'Due date', type: 'date', required: true }, { name: 'vis', label: 'Show to client', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }],
+        fields: [{ name: 'title', label: 'Milestone', required: true, span: 2, minlen: 2, maxlen: 120 }, { name: 'due', label: 'Due date', type: 'date', required: true }, { name: 'vis', label: 'Show to client', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }],
         onSubmit: async function (v) { await sbDo(LH.sb.from('project_milestones').insert({ project_id: id, title: v.title, due_date: v.due, visible_to_client: v.vis === '1' })); },
       }).then(function (ok) { if (ok) { UI.toast('Milestone added.'); refresh(); } });
     }
     function riskForm() {
       UI.form({
         title: 'Add risk or issue', submitLabel: 'Add', values: { kind: 'risk', severity: 'medium' },
-        fields: [{ name: 'title', label: 'What is it?', required: true, span: 2 }, { name: 'kind', label: 'Type', type: 'select', options: [{ v: 'risk', l: 'Risk' }, { v: 'issue', l: 'Issue' }] },
-          { name: 'severity', label: 'Severity', type: 'select', options: [{ v: 'low', l: 'Low' }, { v: 'medium', l: 'Medium' }, { v: 'high', l: 'High' }] }, { name: 'detail', label: 'Detail (optional)', type: 'textarea', rows: 3, span: 2 }],
+        fields: [{ name: 'title', label: 'What is it?', required: true, span: 2, minlen: 2, maxlen: 120 }, { name: 'kind', label: 'Type', type: 'select', options: [{ v: 'risk', l: 'Risk' }, { v: 'issue', l: 'Issue' }] },
+          { name: 'severity', label: 'Severity', type: 'select', options: [{ v: 'low', l: 'Low' }, { v: 'medium', l: 'Medium' }, { v: 'high', l: 'High' }] }, { name: 'detail', label: 'Detail (optional)', type: 'textarea', rows: 3, span: 2, maxlen: 1000 }],
         onSubmit: async function (v) { await sbDo(LH.sb.from('project_risks').insert({ project_id: id, kind: v.kind, title: v.title, detail: UI.nullIfBlank(v.detail), severity: v.severity })); },
       }).then(function (ok) { if (ok) { UI.toast('Added.'); refresh(); } });
     }
     function noteForm() {
       UI.form({
         title: 'Add note', submitLabel: 'Add note', values: { vis: '0' },
-        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
+        fields: [{ name: 'body', label: 'Note', type: 'textarea', rows: 5, required: true, span: 2, maxlen: 5000 }, { name: 'vis', label: 'Who can see it', type: 'select', options: [{ v: '0', l: 'Team only' }, { v: '1', l: 'Visible to the client' }], span: 2 }],
         onSubmit: async function (v) {
           var row = await sbDo(LH.sb.from('project_notes').insert({ project_id: id, body: v.body }).select('id').single());
           if (v.vis === '1') await sbDo(LH.sb.rpc('publish_note_to_client', { p_note_id: row.id, p_visible: true }));
@@ -537,7 +539,7 @@
         var path = id + '/' + Date.now() + '-' + i + '.' + ext;
         var up = await LH.sb.storage.from('project-documents').upload(path, f, { contentType: mime });
         if (up.error) { UI.toast(LH.errMsg(up.error), 'error'); continue; }
-        var ins = await LH.sb.from('project_documents').insert({ project_id: id, title: f.name, storage_path: path, mime_type: mime, size_bytes: f.size });
+        var ins = await LH.sb.from('project_documents').insert({ project_id: id, title: f.name.slice(0, 160), storage_path: path, mime_type: mime, size_bytes: f.size });
         if (ins.error) { await LH.sb.storage.from('project-documents').remove([path]); UI.toast(LH.errMsg(ins.error), 'error'); continue; }
         n++;
       }

@@ -107,11 +107,11 @@
       UI.form({
         title: c ? 'Edit contractor' : 'Add contractor', submitLabel: c ? 'Save' : 'Add contractor', wide: true,
         values: c ? { name: c.name, type: (one(c.contractor_types) || {}).name || '', contact: c.contact_name || '', phone: c.phone || '', email: c.email || '', abn: c.abn || '', notes: c.notes || '', lic: checks.indexOf('licence') !== -1 ? '1' : '0', ins: checks.indexOf('insurance') !== -1 ? '1' : '0', wc: checks.indexOf('white_card') !== -1 ? '1' : '0' } : { lic: '0', ins: '0', wc: '0' },
-        fields: [{ name: 'name', label: 'Company', required: true, span: 2 },
+        fields: [{ name: 'name', label: 'Company', required: true, span: 2, minlen: 2, maxlen: 120 },
           { name: 'type', label: 'Trade', type: 'select', options: [{ v: '', l: 'Choose…' }].concat(D.types.map(function (t) { return { v: t.name, l: t.name }; })) }, { name: 'newtype', label: 'Or a new trade' },
-          { name: 'contact', label: 'Contact name' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'abn', label: 'ABN' },
+          { name: 'contact', label: 'Contact name', kind: 'name' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'email', label: 'Email', type: 'email' }, { name: 'abn', label: 'ABN', kind: 'abn', placeholder: '11 digits' },
           { name: 'lic', label: 'Licence number verified', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }, { name: 'ins', label: 'Insurance verified', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] },
-          { name: 'wc', label: 'White Card on file', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }, { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2 }],
+          { name: 'wc', label: 'White Card on file', type: 'select', options: [{ v: '1', l: 'Yes' }, { v: '0', l: 'No' }] }, { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, span: 2, maxlen: 2000 }],
         onSubmit: async function (v) {
           var tid = await typeId(v.newtype || v.type); if (!tid) throw new Error('Choose or add a trade.');
           var vc = []; if (v.lic === '1') vc.push('licence'); if (v.ins === '1') vc.push('insurance'); if (v.wc === '1') vc.push('white_card');
@@ -126,7 +126,7 @@
       var list = mine.length ? mine.map(function (x) { var left = numOfKey(x.expiry_date) - todayNum(); return '<div class="cert"><div><b>' + esc(x.title) + '</b><div class="faint tiny">' + esc((KINDS.filter(function (k) { return k[0] === x.kind; })[0] || [0, 'Other'])[1]) + (x.number ? ' · ' + esc(x.number) : '') + ' · ' + (left < 0 ? 'expired ' : 'expires ') + esc(fmt.dateY(x.expiry_date)) + '</div></div>' + (x.file_path ? '<button type="button" class="lh-link" data-cview="' + x.id + '">View</button>' : '') + '<button type="button" class="icon-del" data-cdel="' + x.id + '" aria-label="Delete certificate">' + '<svg viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.8h5V7M7 7l.8 12.2h8.4L17 7"/></svg></button></div>'; }).join('') : '<div class="faint">No certificates yet.</div>';
       UI.form({
         title: c.name + ' — certificates', submitLabel: 'Add certificate', wide: true,
-        fields: [{ name: 'kind', label: 'Type', type: 'select', options: KINDS.concat([['other', 'Other']]).map(function (k) { return { v: k[0], l: k[1] }; }) }, { name: 'title', label: 'Title', placeholder: 'e.g. Electrical licence' }, { name: 'number', label: 'Number' }, { name: 'expiry', label: 'Expiry date', type: 'date' }],
+        fields: [{ name: 'kind', label: 'Type', type: 'select', options: KINDS.concat([['other', 'Other']]).map(function (k) { return { v: k[0], l: k[1] }; }) }, { name: 'title', label: 'Title', placeholder: 'e.g. Electrical licence', minlen: 2, maxlen: 120 }, { name: 'number', label: 'Number', maxlen: 60 }, { name: 'expiry', label: 'Expiry date', type: 'date' }],
         extra: '<div class="cert-list">' + list + '</div><label class="lh-flabel" style="margin-top:0.875rem">File (PDF, JPG or PNG, optional)</label><input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png">',
         onOpen: function (el) {
           el.addEventListener('click', async function (e) {
