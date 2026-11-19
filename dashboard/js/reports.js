@@ -9,7 +9,6 @@
   function dollars(c) { return c == null ? '' : Math.round(c / 100); }
   function dn(key) { return key ? Date.parse(String(key).slice(0, 10) + 'T00:00:00Z') / 86400000 : null; }
   function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' '); }
-  function flagged(resp) { var n = 0; if (resp) Object.keys(resp).forEach(function (k) { if (resp[k] && resp[k].answer === 'no') n++; }); return n; }
   function fin(p) { return one(p.project_financials) || {}; }
   function curStage(p) { return (p.project_stages || []).filter(function (s) { return s.status === 'current'; })[0]; }
   function site(p) { return [p.site_street, p.site_suburb].filter(Boolean).join(', '); }
@@ -24,17 +23,6 @@
           var f = fin(p), c = f.contract_value_cents, b = f.original_budget_cents, cs = curStage(p);
           return [p.code, site(p), (one(p.clients) || {}).name || '', (one(p.project_types) || {}).name || '', p.status, STATUS[LH.projectStatus(p)], cs ? cs.name : '', p.percent_complete, dollars(c), dollars(b), c > 0 && b > 0 ? (((c - b) / c) * 100).toFixed(1) + '%' : '', p.start_date || '', p.forecast_completion_date || '', p.project_manager_name || ''];
         }) };
-    },
-    earned: function (R) {
-      return { title: 'Earned to date by project', headings: ['ID', 'Site', 'Client', 'Stage', 'Progress %', 'Contract $', 'Earned to date $', 'Still to earn $', 'Original budget $'],
-        rows: R.active.map(function (p) {
-          var f = fin(p), c = (f.contract_value_cents || 0), e = Math.round(c * Math.min(100, p.percent_complete || 0) / 100), cs = curStage(p);
-          return [p.code, site(p), (one(p.clients) || {}).name || '', cs ? cs.name : '', p.percent_complete || 0, dollars(c), dollars(e), dollars(c - e), dollars(f.original_budget_cents)];
-        }) };
-    },
-    variations: function (R) {
-      return { title: 'Budget variations', headings: ['Project', 'Site', 'Description', 'Budget change $', 'Contract change $', 'Recorded'],
-        rows: R.vars.map(function (v) { var p = R.pmap[v.project_id] || {}; return [p.code || '', site(p), v.description || '', dollars(v.budget_delta_cents), dollars(v.contract_delta_cents), fmt.dayKey(v.created_at)]; }) };
     },
     delivered: function (R) {
       return { title: 'Delivered projects', headings: ['ID', 'Site', 'Client', 'Type', 'Contract $', 'Start', 'Completed', 'Days taken', 'Forecast completion', 'Days vs forecast'],
@@ -79,13 +67,6 @@
           var cs = curStage(p); return [p.code, site(p), (one(p.clients) || {}).name || '', STATUS[LH.projectStatus(p)], p.delay_days || 0, cs ? cs.name : '', p.percent_complete || 0, p.forecast_completion_date || '', p.project_manager_name || '', p.client_status_message || ''];
         }) };
     },
-    register: function (R) {
-      var rows = [];
-      R.miles.filter(function (m) { return !m.completed_at; }).forEach(function (m) { var p = R.pmap[m.project_id] || {}; rows.push(['Milestone', p.code || '', site(p), m.title, m.due_date || '', m.due_date && dn(m.due_date) < dn(fmt.dayKey(new Date())) ? 'Overdue' : 'Open', m.due_date || '']); });
-      R.risks.forEach(function (k) { var p = R.pmap[k.project_id] || {}; rows.push([cap(k.kind), p.code || '', site(p), k.title + (k.detail ? ' — ' + k.detail : ''), cap(k.severity), cap(k.state), '']); });
-      rows.sort(function (a, b) { return String(a[6] || '9999') < String(b[6] || '9999') ? -1 : 1; });
-      return { title: 'Milestones, risks and issues', headings: ['Type', 'Project', 'Site', 'Item', 'Due / severity', 'State'], rows: rows.map(function (r) { return r.slice(0, 6); }) };
-    },
     contractors: function (R) {
       var from = Date.now() - 7 * 86400000;
       return { title: 'Contractor bookings', headings: ['Contractor', 'Trade', 'Phone', 'Project', 'Booking', 'First day', 'Last day', 'Compliance'],
@@ -102,34 +83,21 @@
           return [c.name, (one(c.contractor_types) || {}).name || '', x.title, cap(x.kind), x.number || '', x.expiry_date, left, left < 0 ? 'Expired' : left <= 30 ? 'Expires soon' : 'Current'];
         }) };
     },
-    inductions: function (R) {
-      return { title: 'Site induction register', headings: ['Date', 'Worker', 'Company', 'Trade', 'Supervisor', 'Flagged answers', 'Fully signed'],
-        rows: R.ind.map(function (r) { return [r.induction_date, r.worker_name, r.company, r.trade, r.supervisor, flagged(r.responses), r.declaration_completed_induction && r.declaration_understand_whs && r.declaration_agree_policies && r.declaration_report_hazards && r.declaration_understand_consequences ? 'Yes' : 'No']; }) };
-    },
-    checkins: function (R) {
-      return { title: 'Daily check-in register', headings: ['Date', 'Worker', 'Company', 'Site', 'Flagged answers', 'Hazards identified', 'Incidents / near misses', 'Notes'],
-        rows: R.chk.map(function (r) { return [r.checkin_date, r.worker_name, r.company, r.site_address, flagged(r.responses), r.hazards_identified || '', r.incidents_near_misses || '', r.additional_notes || '']; }) };
-    },
   };
 
   /* ---------- the library ---------- */
-  var CATS = [['all', 'All'], ['financial', 'Financial'], ['sales', 'Sales'], ['delivery', 'Delivery'], ['contractors', 'Contractors'], ['safety', 'Safety']];
-  var CAT = { financial: { name: 'Financial', icon: 'reports', c: 'steel' }, sales: { name: 'Sales', icon: 'leads', c: 'ok' }, delivery: { name: 'Delivery', icon: 'schedule', c: 'wait' }, contractors: { name: 'Contractors', icon: 'contractors', c: 'steel' }, safety: { name: 'Safety', icon: 'compliance', c: 'halt' } };
+  var CATS = [['all', 'All'], ['financial', 'Financial'], ['sales', 'Sales'], ['delivery', 'Delivery'], ['contractors', 'Contractors']];
+  var CAT = { financial: { name: 'Financial', icon: 'reports', c: 'steel' }, sales: { name: 'Sales', icon: 'leads', c: 'ok' }, delivery: { name: 'Delivery', icon: 'schedule', c: 'wait' }, contractors: { name: 'Contractors', icon: 'contractors', c: 'steel' } };
   var CARDS = [
     { id: 'portfolio', cat: 'financial', name: 'Portfolio financial summary', desc: 'Contract, budget and budgeted margin across every project.' },
-    { id: 'earned', cat: 'financial', name: 'Earned to date', desc: 'What each live project has earned so far and what is still to earn.' },
-    { id: 'variations', cat: 'financial', name: 'Budget variations', desc: 'Every approved change to a budget or contract, with the reason.' },
     { id: 'delivered', cat: 'financial', name: 'Delivered projects', desc: 'Completed projects with the days taken and how they ran against forecast.' },
     { id: 'leads', cat: 'sales', name: 'Leads & consultations', desc: 'Every lead with source, status, value, consultation and lost reasons.' },
     { id: 'pipeline', cat: 'sales', name: 'Open pipeline', desc: 'Open leads by value with win chance, weighted value and days open.' },
     { id: 'sources', cat: 'sales', name: 'Lead sources', desc: 'Which sources bring leads, and which of them turn into work.' },
     { id: 'schedule', cat: 'delivery', name: 'Schedule status', desc: 'Planned against actual dates and days over plan for every stage.' },
     { id: 'delayed', cat: 'delivery', name: 'Delayed and halted projects', desc: 'Every project that is running late or on hold, with days delayed.' },
-    { id: 'register', cat: 'delivery', name: 'Milestones, risks and issues', desc: 'Open milestones, risks and issues across all projects in one list.' },
     { id: 'contractors', cat: 'contractors', name: 'Contractor bookings', desc: 'Who is booked where, with compliance status.' },
     { id: 'certs', cat: 'contractors', name: 'Certificate expiry register', desc: 'Every licence and certificate by expiry date, so nothing lapses on site.' },
-    { id: 'inductions', cat: 'safety', name: 'Site induction register', desc: 'Every induction submitted from the website form, with flagged answers.' },
-    { id: 'checkins', cat: 'safety', name: 'Daily check-in register', desc: 'Every daily check-in with hazards, incidents and near misses.' },
   ];
   var TABLES = [['projects', 'Projects'], ['leads', 'Leads'], ['consultations', 'Consultations'], ['clients', 'Clients'], ['contractors', 'Contractors'], ['contractor_certificates', 'Contractor certificates'], ['bookings', 'Bookings'], ['project_documents', 'Document list'], ['project_milestones', 'Milestones'], ['project_risks', 'Risks & issues'], ['budget_variations', 'Budget variations'], ['site_inductions', 'Site inductions'], ['daily_checkins', 'Daily check-ins']];
 
@@ -143,13 +111,8 @@
       sb.from('contractor_certificates').select('contractor_id,kind,title,number,expiry_date'),
       sb.from('leads').select('id,name,email,phone,source,status,lost_reason,suburb,est_value_cents,probability_pct,created_at,project_types(name)').order('created_at', { ascending: false }),
       sb.from('consultations').select('lead_id,outcome,bookings(starts_at)'),
-      sb.from('budget_variations').select('project_id,description,budget_delta_cents,contract_delta_cents,created_at').order('created_at', { ascending: false }),
-      sb.from('project_milestones').select('project_id,title,due_date,completed_at').order('due_date', { ascending: true }),
-      sb.from('project_risks').select('project_id,kind,title,detail,severity,state').neq('state', 'closed'),
-      sb.from('site_inductions').select('induction_date,worker_name,company,trade,supervisor,responses,declaration_completed_induction,declaration_understand_whs,declaration_agree_policies,declaration_report_hazards,declaration_understand_consequences').order('created_at', { ascending: false }).limit(5000),
-      sb.from('daily_checkins').select('checkin_date,worker_name,company,site_address,responses,hazards_identified,incidents_near_misses,additional_notes').order('created_at', { ascending: false }).limit(5000),
     ]);
-    var R = { projects: ok(r[0]), stages: ok(r[1]), bookings: ok(r[2]), contractors: ok(r[3]), certs: ok(r[4]), leads: ok(r[5]), cons: ok(r[6]), vars: ok(r[7]), miles: ok(r[8]), risks: ok(r[9]), ind: ok(r[10]), chk: ok(r[11]) };
+    var R = { projects: ok(r[0]), stages: ok(r[1]), bookings: ok(r[2]), contractors: ok(r[3]), certs: ok(r[4]), leads: ok(r[5]), cons: ok(r[6]) };
     R.pmap = {}; R.projects.forEach(function (p) { R.pmap[p.id] = p; });
     R.cmap = {}; R.contractors.forEach(function (c) { R.cmap[c.id] = c; });
     R.active = R.projects.filter(function (p) { return p.status === 'active' || p.status === 'on_hold'; });
@@ -263,7 +226,7 @@
       }
     }
     view.addEventListener('click', onClick);
-    return { watch: ['projects', 'project_stages', 'project_financials', 'leads', 'consultations', 'bookings', 'contractors', 'contractor_certificates', 'budget_variations', 'project_milestones', 'project_risks', 'site_inductions', 'daily_checkins'], refresh: refresh,
+    return { watch: ['projects', 'project_stages', 'project_financials', 'leads', 'consultations', 'bookings', 'contractors', 'contractor_certificates'], refresh: refresh,
       destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
   }
 
