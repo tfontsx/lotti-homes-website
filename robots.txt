@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin.html
+Disallow: /daily-checkin.html
+Disallow: /site-induction.html
+
+Sitemap: https://www.lottihomes.com.au/sitemap.xml
