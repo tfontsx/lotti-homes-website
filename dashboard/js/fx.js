@@ -3,7 +3,7 @@
   'use strict';
   var LH = window.LH, root = document.documentElement;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SEL = '.stat .v, .stat .bigv, .mini3 .serif, .est, .prob > .serif, .pg-num > .serif, .fin b, .rp-big, .prog > span';
+  var SEL = '.stat .v, .stat .bigv, .mini3 .serif, .est, .prob > .serif, .pg-num > .serif, .fin b, .rp-big, .prog > span, .rp-figs .serif, .rp-n';
   var MONTH = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/;
   var mem = {}, queue = [], raf = 0, scanning = false;
 
