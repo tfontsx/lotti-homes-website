@@ -51,6 +51,10 @@
       return { title: 'Lead sources', headings: ['Source', 'Leads', 'Open', 'Won', 'Lost', 'Win rate %', 'Won value $', 'Avg. est. value $'],
         rows: Object.keys(g).sort(function (a, b) { return g[b].n - g[a].n; }).map(function (k) { var x = g[k]; return [cap(k), x.n, x.open, x.won, x.lost, x.won + x.lost ? Math.round(x.won / (x.won + x.lost) * 100) : '', dollars(x.wonv), dollars(x.v / x.n)]; }) };
     },
+    reviews: function (R) {
+      return { title: 'Client reviews', headings: ['Received', 'Reviewer', 'Project', 'Rating', 'Review', 'Consent given', 'Consent wording'],
+        rows: R.reviews.map(function (x) { return [fmt.dayKey(x.created_at), x.reviewer_name, x.project_label, x.rating, x.body || '', fmt.dateTime(x.consented_at), x.consent_text]; }) };
+    },
     schedule: function (R) {
       var rows = [], crews = {};
       R.bookings.forEach(function (b) { var t = String(b.title || ''), cut = t.lastIndexOf(' — '); if (cut > 0) { crews[b.project_id] = crews[b.project_id] || {}; crews[b.project_id][t.slice(0, cut)] = t.slice(cut + 3); } });
@@ -94,6 +98,7 @@
     { id: 'leads', cat: 'sales', name: 'Leads & consultations', desc: 'Every lead with source, status, value, consultation and lost reasons.' },
     { id: 'pipeline', cat: 'sales', name: 'Open pipeline', desc: 'Open leads by value with win chance, weighted value and days open.' },
     { id: 'sources', cat: 'sales', name: 'Lead sources', desc: 'Which sources bring leads, and which of them turn into work.' },
+    { id: 'reviews', cat: 'sales', name: 'Client reviews', desc: 'Every review with its stars, words and the consent the client gave.' },
     { id: 'schedule', cat: 'delivery', name: 'Schedule status', desc: 'Planned against actual dates and days over plan for every stage.' },
     { id: 'delayed', cat: 'delivery', name: 'Delayed and halted projects', desc: 'Every project that is running late or on hold, with days delayed.' },
     { id: 'contractors', cat: 'contractors', name: 'Contractor bookings', desc: 'Who is booked where, with compliance status.' },
@@ -111,8 +116,9 @@
       sb.from('contractor_certificates').select('contractor_id,kind,title,number,expiry_date'),
       sb.from('leads').select('id,name,email,phone,source,status,lost_reason,suburb,est_value_cents,probability_pct,created_at,project_types(name)').order('created_at', { ascending: false }),
       sb.from('consultations').select('lead_id,outcome,bookings(starts_at)'),
+      sb.from('project_reviews').select('rating,body,reviewer_name,project_label,consent_text,consented_at,created_at').order('created_at', { ascending: false }),
     ]);
-    var R = { projects: ok(r[0]), stages: ok(r[1]), bookings: ok(r[2]), contractors: ok(r[3]), certs: ok(r[4]), leads: ok(r[5]), cons: ok(r[6]) };
+    var R = { projects: ok(r[0]), stages: ok(r[1]), bookings: ok(r[2]), contractors: ok(r[3]), certs: ok(r[4]), leads: ok(r[5]), cons: ok(r[6]), reviews: r[7] && !r[7].error ? (r[7].data || []) : [] };
     R.pmap = {}; R.projects.forEach(function (p) { R.pmap[p.id] = p; });
     R.cmap = {}; R.contractors.forEach(function (c) { R.cmap[c.id] = c; });
     R.active = R.projects.filter(function (p) { return p.status === 'active' || p.status === 'on_hold'; });
@@ -237,7 +243,7 @@
       }
     }
     view.addEventListener('click', onClick);
-    return { watch: ['projects', 'project_stages', 'project_financials', 'leads', 'consultations', 'bookings', 'contractors', 'contractor_certificates'], refresh: refresh,
+    return { watch: ['projects', 'project_stages', 'project_financials', 'leads', 'consultations', 'bookings', 'contractors', 'contractor_certificates', 'project_reviews'], refresh: refresh,
       destroy: function () { destroyed = true; view.classList.remove('enter'); view.removeEventListener('click', onClick); } };
   }
 
