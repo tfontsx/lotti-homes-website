@@ -241,7 +241,6 @@
         var now = new Date(), nh = fmt.hour(now) + +fmt.time(now).slice(3) / 60;
         if (nh >= startH && nh < endH) h += '<div class="now" style="top:' + (nh - startH) * H + 'px"></div>';
       }
-      if (!list.length) h += '<div class="agenda-clear" style="position:absolute;left:3.75rem;top:1.25rem">A clear day — nothing on site.</div>';
       return h + '</div>';
     }
     function scheduleCard() {
