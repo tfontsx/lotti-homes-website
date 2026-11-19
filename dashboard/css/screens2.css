@@ -208,3 +208,7 @@
 .lh-card.wash.rp-card:hover { box-shadow:var(--card-sh-hover), var(--glass-hi), inset 0 0 0 1px color-mix(in srgb, var(--wash) 26%, transparent), inset 0 0.25rem 0 var(--wash); }
 .rp-top { margin-bottom:0.875rem; }
 .rp-card .cap { color:var(--wash) !important; }
+
+/* The selected tab's icon keeps its contrast while hovered */
+.lh-nav.active:hover .ic { color:var(--onT); background:var(--on); }
+.lh-nav.active:hover { background:var(--tint); }
