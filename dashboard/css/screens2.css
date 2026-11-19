@@ -220,3 +220,21 @@
 
 /* Lead details: columns size to their own content; Activity shows about five entries and scrolls for more */
 .acts { max-height:13rem; }
+
+/* Inbox: a tighter gap between the heading and the Conversations divider */
+@media (min-width:821px) {
+  .lh-page.fit:has(.in-grid) .ov-hero { margin-bottom:0; }
+  .lh-page.fit:has(.in-grid) .lh-sect { margin:1.25rem 0 0.875rem; }
+}
+
+/* Schedule project picker: the label and the chosen project share one centre line */
+.proj-pick { position:relative; gap:0.75rem; }
+.proj-pick .cap, .pick-val { display:block; text-box:trim-both cap alphabetic; }
+.pick-val { font:500 max(11.96px, 0.8125rem)/1 Geist,sans-serif; color:var(--ink); white-space:nowrap; max-width:16rem; overflow:hidden; text-overflow:ellipsis; }
+.pick-arrow { width:0.3125rem; height:0.3125rem; flex:none; margin:0 0.5rem 0 0.125rem; border-right:1.5px solid var(--i3); border-bottom:1.5px solid var(--i3); transform:rotate(45deg) translate(-1px,-1px); }
+.proj-pick .pick-sel { position:absolute; inset:0; width:100%; height:100%; padding:0; opacity:0; background:none; cursor:pointer; }
+
+/* Pipeline cards: a subtle strip in the colour of their stage */
+.kb-card { position:relative; }
+.kb-card::before { content:""; position:absolute; left:0; top:0.875rem; bottom:0.875rem; width:0.1875rem; border-radius:0 0.125rem 0.125rem 0; background:var(--c, var(--steel)); opacity:.5; transition:opacity .25s; }
+.kb-card:hover::before { opacity:.85; }

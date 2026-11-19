@@ -173,7 +173,7 @@
     }
     function card(l, i) {
       var f = footer(l);
-      return '<a class="kb-card" href="#/leads/' + l.id + '" draggable="' + (l.status !== 'won') + '" data-id="' + l.id + '" style="--i:' + i + '"><div class="nm">' + esc(l.name) + '</div>' +
+      return '<a class="kb-card" href="#/leads/' + l.id + '" draggable="' + (l.status !== 'won') + '" data-id="' + l.id + '" style="--i:' + i + ';--c:' + DOT[l.status] + '"><div class="nm">' + esc(l.name) + '</div>' +
         '<div class="sub">' + esc([l.type, l.suburb].filter(Boolean).join(' · ') || '—') + '</div>' +
         '<div class="mid"><span class="src">' + esc(SRC[l.source] || l.source) + '</span><span class="val">' + (l.value ? fmt.money(l.value) : '') + '</span></div>' +
         '<div class="ft ' + f.tone + '">' + (f.tone ? '<i></i>' : '') + esc(f.t) + '</div></a>';
