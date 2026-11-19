@@ -234,7 +234,7 @@
         var s = new Date(e.start), en = new Date(e.end);
         var st = Math.max(startH, fmt.hour(s) + +fmt.time(s).slice(3) / 60), du = Math.max(0.5, Math.min(8, (en - s) / 3600000));
         if (st >= endH) return;
-        h += '<div class="de" style="--c:' + KIND[e.k].color + ';top:' + ((st - startH) * H + 1) + 'px;height:' + Math.max(36, du * H - 4) + 'px"><div class="a" style="font:400 max(11.96px, 0.8125rem)/1.3 Geist,sans-serif">' + esc(e.title) + '</div>' +
+        h += '<div class="de" style="--c:' + KIND[e.k].color + ';top:' + ((st - startH) * H + 1) + 'px;height:' + Math.max(54, du * H - 4) + 'px"><div class="a" style="font:400 max(11.96px, 0.8125rem)/1.3 Geist,sans-serif">' + esc(e.title) + '</div>' +
           '<div class="kind" style="color:' + KIND[e.k].color + '">' + esc(e.t) + ' · ' + KIND[e.k].label + '</div></div>';
       });
       if (LH.keyOf(S.y, S.m, S.d) === todayKey) {
