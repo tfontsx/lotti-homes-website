@@ -183,7 +183,7 @@
       var t = w.currentTempC != null ? Math.round(w.currentTempC) + '° ' : '';
       var p = w.forecast && w.forecast[0] ? w.forecast[0].precis : '';
       el.hidden = false; vr.hidden = false;
-      el.textContent = fmt2(new Date()) + ' · ' + t + p.toLowerCase();
+      el.textContent = fmt2(new Date()) + ' · ' + t + (p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : '');
     });
   }
 

@@ -208,7 +208,7 @@
       var rows = sortRows(open.slice());
 
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Pipeline</div><h1 class="ov-hello">Leads</h1><div class="hero-sub">' + D.leads.length + (D.leads.length === 1 ? ' lead' : ' leads') + ' · Synced from website forms and the app</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Pipeline</div><h1 class="ov-hello">Leads</h1><div class="hero-sub">' + D.leads.length + (D.leads.length === 1 ? ' lead' : ' leads') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export CSV</button><button class="lh-btn primary" type="button" data-act="add">+ Add lead</button></div></div>' +
         UI.sect('At a glance') + '<div class="ov-glance">' +
         UI.stat('New this month', String(st.newN), '', esc(st.delta), st.up ? 'ok' : 'wait', 0, 'steel') +
@@ -335,12 +335,12 @@
       }).join('') || '<div class="faint">No activity yet.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:1rem">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
+        '<a class="crumb" href="#/leads">← Leads</a><div class="cap" style="margin-top:1.25rem">Lead · ' + esc(l.type || 'Enquiry') + '</div>' +
         '<div class="ov-hero" style="margin-top:0.75rem;margin-bottom:1.625rem"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(l.name) + '</em></h1><div class="hero-sub">' +
         esc([l.suburb, 'Enquired ' + fmt.date(fmt.dayKey(l.created)) + ' via ' + (SRC[l.source] || l.source).toLowerCase()].filter(Boolean).join(' · ')) + '</div></div>' +
         '<div class="ov-actions no-print">' + bookBtn + (l.phone ? '<a class="lh-btn" href="tel:' + esc(l.phone.replace(/\s+/g, '')) + '">Call</a>' : '') + (l.email ? '<a class="lh-btn" href="mailto:' + esc(l.email) + '">Message</a>' : '') +
         (l.converted ? '<a class="lh-btn primary" href="#/projects/' + l.converted + '">Open project</a>' : (l.status !== 'won' ? '<button class="lh-btn primary" type="button" data-act="convert">Convert to project</button>' : '')) + '</div></div>' +
-        UI.sect('Status') + '<section class="lh-card" style="padding:1.375rem 1.75rem">' + stepper(l) +
+        UI.sect('Status') + '<section class="lh-card wash" style="padding:1.375rem 1.75rem;--wash:var(--' + ({ new: 'steel', contacted: 'steel', consulted: 'wait', quoted: 'wait', won: 'ok', lost: 'halt' }[l.status] || 'steel') + ')">' + stepper(l) +
         (l.status === 'lost' ? '<div class="lostnote">Lost · ' + esc((LOST.filter(function (x) { return x[0] === l.lostReason; })[0] || [0, 'Other'])[1]) + (l.lostNote ? ' — ' + esc(l.lostNote) : '') + '</div>' : '') + '</section>' +
         UI.sect('Client &amp; consultation') +
         '<div class="ld-detail">' +

@@ -174,7 +174,7 @@
       var total = R.leads.length;
 
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Exports &amp; insight</div><h1 class="ov-hello">Reports</h1><div class="hero-sub">Live figures from the app · Export any report as Excel or PDF</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Exports &amp; insight</div><h1 class="ov-hello">Reports</h1></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="custom">Custom export</button><button class="lh-btn primary" type="button" data-act="all">Export all</button></div></div>' +
         UI.sect('At a glance') + '<div class="ov-glance">' +
         UI.stat('Active contract value', av.num, av.unit, K.activeN + (K.activeN === 1 ? ' live project' : ' live projects'), 'steel', 0, 'steel') +
@@ -188,7 +188,7 @@
         bars([['ontime', 'On time', 'ok'], ['delayed', 'Delayed', 'wait'], ['halted', 'Halted', 'halt']].map(function (h) { var x = K.health[h[0]]; return { label: h[1], n: x.n, c: h[2], sub: fmt.money(x.v) }; }), healthMax) + '</div></section></div>' +
         '<section class="lh-card lift wash rp-feature" style="--wash:var(--steel);margin-top:1rem"><div class="rp-fl"><div class="cap">Featured · ' + esc(month) + ' portfolio summary</div>' +
         '<div class="rp-figs"><div><div class="faint tiny">Under contract</div><div class="serif">' + esc(av.num) + '<small>' + av.unit + '</small></div></div><div><div class="faint tiny">Weighted pipeline</div><div class="serif">' + esc(fmt.moneyParts(K.weighted).num) + '<small>' + fmt.moneyParts(K.weighted).unit + '</small></div></div><div><div class="faint tiny">Average progress</div><div class="serif">' + K.avgPct + '<small>%</small></div></div></div>' +
-        '<div class="faint tiny" style="margin-top:0.875rem">Built from the app\'s data the moment you export it</div></div>' +
+        '</div>' +
         '<div class="rp-btns no-print"><button class="lh-btn" type="button" data-card="portfolio" data-as="csv">Excel</button><button class="lh-btn primary" type="button" data-card="portfolio" data-as="pdf">Download PDF</button></div></section>' +
         UI.sect('Report library') +
         '<div class="chip-row rp-chips">' + UI.chips(CATS, S.cat, 'cat') + '</div>' +

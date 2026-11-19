@@ -30,7 +30,7 @@
     var S = { sel: args && args[0] ? args[0] : null, filter: 'all', q: '' };
 
     view.innerHTML =
-      '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Same threads as the app · Clients get a push notification</div></div>' +
+      '<div class="ov-hero"><div><div class="cap">Messages</div><h1 class="ov-hello">Inbox</h1><div class="hero-sub">Synced with the app</div></div>' +
       '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="new">+ New conversation</button><button class="lh-btn" type="button" data-act="readall">Mark all read</button></div></div>' +
       UI.sect('Conversations') +
       '<div class="in-grid"><section class="in-list lh-card"><input class="lh-input" id="inQ" type="search" placeholder="Search clients or projects" aria-label="Search conversations"><div class="chip-row" id="inChips" style="margin:0.75rem 0 0.625rem"></div><div id="inThreads" class="in-threads"></div></section>' +

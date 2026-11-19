@@ -153,7 +153,7 @@
       var types = []; P.forEach(function (p) { if (p.type && types.indexOf(p.type) === -1) types.push(p.type); });
       var contractAll = act.reduce(function (t, p) { return t + p.contract; }, 0);
       view.innerHTML =
-        '<div class="ov-hero"><div><div class="cap">Portfolio</div><h1 class="ov-hello">Projects</h1><div class="hero-sub">' + act.length + (act.length === 1 ? ' active project' : ' active projects') + ' · ' + fmt.money(contractAll) + ' contract value · All figures live from the app</div></div>' +
+        '<div class="ov-hero"><div><div class="cap">Portfolio</div><h1 class="ov-hello">Projects</h1><div class="hero-sub">' + act.length + (act.length === 1 ? ' active project' : ' active projects') + ' · ' + fmt.money(contractAll) + ' contract value</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="csv">Export Excel</button><button class="lh-btn" type="button" data-act="pdf">PDF report</button><button class="lh-btn primary" type="button" data-act="new">+ New project</button></div></div>' +
         UI.sect('Portfolio') +
         '<div class="pf-grid">' + portfolioCard(act) +
@@ -303,14 +303,14 @@
       }).join('') || '<div class="faint" style="padding:0.375rem 0">Nothing booked on site this week.</div>';
 
       view.innerHTML =
-        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:1rem">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
+        '<a class="crumb" href="#/projects">← Projects</a><div class="cap" style="margin-top:1.25rem">' + esc([p.code, p.type, p.suburb].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="ov-hero" style="margin-top:0.75rem;margin-bottom:1.625rem"><div><h1 class="ov-hello" style="margin:0"><em>' + esc(p.street) + '</em></h1><div class="hero-sub">' +
         esc(c.name || '') + '</div></div>' +
         '<div class="ov-actions no-print"><button class="lh-btn" type="button" data-act="edit">Edit project</button><button class="lh-btn" type="button" data-act="status">Set status</button>' +
         (p.status !== 'completed' && curI >= 0 && curI < total - 1 ? '<button class="lh-btn" type="button" data-act="advance">Next stage</button>' : '') +
         (p.status !== 'completed' ? '<button class="lh-btn" type="button" data-act="complete">Mark complete</button>' : '') + '<button class="lh-btn primary" type="button" data-act="message">Message client</button></div></div>' +
         UI.sect('Progress &amp; financials') +
-        '<div class="pd-top"><section class="lh-card"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span></div>' +
+        '<div class="pd-top"><section class="lh-card wash pg-card" style="--wash:var(--' + (p.status === 'completed' ? 'ok' : { ontime: 'ok', delayed: 'wait', halted: 'halt' }[p.st] || 'ok') + ')"><div class="pg-row"><div class="pg-num"><span class="serif">' + p.pct + '<small>%</small></span><span class="pg-lbl">Complete</span></div>' +
         '<div class="pg-side"><div class="segs">' + segs + '</div></div></div>' +
         '<div class="pg-strip"><div><div class="cap">Project start date</div><div class="serif fact">' + esc(p.start ? fmt.dateY(p.start) : '—') + '</div></div>' +
         '<div><div class="cap">Current stage</div><div class="serif fact">' + esc(p.stage || (p.status === 'completed' ? 'Complete' : '—')) + '</div><div class="faint tiny" style="margin-top:0.25rem">' + esc(stageText) + '</div></div>' +

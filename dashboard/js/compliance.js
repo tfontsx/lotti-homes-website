@@ -121,7 +121,7 @@
 
       view.innerHTML =
         '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;margin-top:0.625rem"><div><div class="cap" style="margin-bottom:0.625rem">Compliance</div>' +
-        '<h1 class="ov-hello" style="font-size:max(34.96px, 2.375rem)">Site <em>safety</em></h1><div class="muted" style="margin-top:0.5rem;max-width:38.75rem">Inductions and daily check-ins submitted by contractors from the website forms.</div></div>' +
+        '<h1 class="ov-hello" style="font-size:max(34.96px, 2.375rem)">Site <em>safety</em></h1><div class="hero-sub" style="max-width:38.75rem">Inductions and daily check-ins submitted by contractors from the website forms.</div></div>' +
         '<div class="no-print" style="display:flex;gap:0.625rem"><button class="lh-btn" type="button" id="cpCsv">Export CSV</button></div></div>' +
         '<div class="cp-stats" style="margin-top:1.375rem">' +
         UI.stat('Total inductions', String(S.inductions.length), '', esc(tIn + ' today'), 'steel', 0, 'steel') + UI.stat('Total check-ins', String(S.checkins.length), '', esc(tCk + ' today'), 'ok', 60, 'ok') + UI.stat('Flagged answers', String(tFlags), '', esc(wFlags + ' this week'), tFlags ? 'halt' : 'ok', 120, tFlags ? 'halt' : 'wait') + '</div>' +
