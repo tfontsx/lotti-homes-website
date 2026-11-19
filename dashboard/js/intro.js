@@ -1,4 +1,4 @@
-/* Logo intro: the app's Lottie draws in, holds, then the screen opens as a circle from the logo. */
+/* Logo intro: the Lotti Homes mark sweeps in, holds, then the screen opens as a circle from the logo. */
 (function () {
   'use strict';
   var root = document.documentElement, el = document.getElementById('intro');
@@ -9,7 +9,8 @@
   var finished = false, revealed = false, skipNow;
   var skipped = new Promise(function (r) { skipNow = r; });
   function finish() { if (finished) return; finished = true; root.classList.remove('intro-on', 'intro-reveal'); el.remove(); }
-  if (!window.lottie) { finish(); return; }
+  var holder = el.querySelector('.intro-logo');
+  if (!window.LH_MARK || !holder) { finish(); return; }
 
   function wait(ms) { return Promise.race([new Promise(function (r) { setTimeout(r, ms); }), skipped]); }
   function tween(ms, fn) {
@@ -23,16 +24,17 @@
   function booted() { var a = document.getElementById('app'), l = document.getElementById('login'); return (a && !a.hidden) || (l && !l.hidden); }
   async function gate() { var t0 = Date.now(); while (!booted() && Date.now() - t0 < 4000) await wait(100); }
 
-  var dark = root.getAttribute('data-theme') === 'dark';
-  var anim = window.lottie.loadAnimation({ container: el.querySelector('.intro-logo'), renderer: 'svg', loop: false, autoplay: false, path: 'anim/lh_logo_intro_' + (dark ? 'dark' : 'light') + '.json' });
-  var failTimer = setTimeout(finish, 5000);
-  anim.addEventListener('data_failed', finish);
-  anim.addEventListener('DOMLoaded', async function () {
-    clearTimeout(failTimer);
+  holder.innerHTML = window.LH_MARK;
+  var mark = holder.firstElementChild;
+  (async function () {
     el.addEventListener('click', function () { if (!revealed) skipNow(); });
-    var last = Math.max(1, Math.min(34, anim.totalFrames - 1));
-    anim.goToAndStop(0, true);
-    await tween(567, function (t) { anim.goToAndStop(last * easeOut(t), true); });
+    mark.style.opacity = '0';
+    await wait(120);
+    await tween(900, function (t) {
+      var e = easeOut(t);
+      mark.style.opacity = String(Math.min(1, e * 1.6));
+      mark.style.clipPath = 'inset(0 ' + ((1 - e) * 100) + '% 0 0)';
+    });
     await wait(850);
     await gate();
     revealed = true;
@@ -45,5 +47,5 @@
     el.classList.add('out');
     await tween(1150, function (t) { mask(-feather + easeInOut(t) * (R + feather)); });
     finish();
-  });
+  })();
 })();
