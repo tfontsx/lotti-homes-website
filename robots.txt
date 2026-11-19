@@ -5,4 +5,4 @@ Disallow: /admin.html
 Disallow: /daily-checkin.html
 Disallow: /site-induction.html
 
-Sitemap: https://www.lottihomes.com.au/sitemap.xml
+Sitemap: https://lottihomes.com/sitemap.xml
