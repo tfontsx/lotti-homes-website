@@ -92,7 +92,8 @@
 .rp-card p { min-height:2.25rem; margin-bottom:1.125rem !important; } .rp-fmt { margin-top:0.4375rem; font-size:max(11.04px, 0.75rem); color:var(--steel); }
 
 /* ---------- Settings ---------- */
-.st-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:1rem; align-items:start; }
+.st-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:1rem; align-items:stretch; }
+.st-grid > .stack > .lh-card:last-child { flex:1 1 auto; }
 .st-prof { display:flex; align-items:center; gap:1rem; }
 .st-av { width:2.875rem; height:2.875rem; border-radius:50%; background:var(--on); color:var(--onT); display:flex; align-items:center; justify-content:center; font:italic 400 max(13.8px, 0.9375rem)/1 Spectral,serif; flex:none; }
 .st-name { font-size:max(17.48px, 1.1875rem); } .st-bizline { margin-top:1rem; padding-top:0.875rem; border-top:1px solid var(--line); }
