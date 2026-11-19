@@ -356,7 +356,7 @@
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Activity</h2></div>' +
         '<form class="note-form" data-note><input class="lh-input" name="note" placeholder="Add a note…" aria-label="Add a note" autocomplete="off"><button class="lh-btn" type="submit">Add</button></form>' +
         '<div class="acts">' + activity + '</div></section></div>' +
-        '<div class="stack"><section class="lh-card"><div class="cap">Estimated project value</div><div class="est">' + fmt.moneyFull(total) + '</div>' +
+        '<div class="stack"><section class="lh-card"><div class="cap">Estimated project value</div><div class="est">' + fmt.moneyFull(total, true) + '</div>' +
         '<div class="faint tiny">Range ' + fmt.money(lo) + ' – ' + fmt.money(hi) + '</div>' +
         '<div class="est-items">' + (D.items.length ? D.items.map(function (i) {
           var a = i.amount_cents / 100; return '<div class="ei"><div class="el"><span>' + esc(i.label) + '</span><span>' + fmt.money(a) + '</span></div><div class="bar"><i style="width:' + (total ? Math.min(100, (a / total) * 100) : 0) + '%"></i></div></div>';
@@ -482,7 +482,7 @@
     }
     function estimateForm() {
       var rows = D.items.length ? D.items.map(function (i) { return { label: i.label, amount: i.amount_cents / 100 }; }) : [{ label: '', amount: '' }];
-      function rowHtml(r) { return '<div class="est-row"><input class="lh-input" data-l placeholder="Item e.g. Joinery" value="' + esc(r.label) + '"><div class="lh-money"><span>$</span><input class="lh-input" data-a type="number" min="0" step="1" value="' + esc(r.amount) + '"></div><button type="button" class="lh-x sm" data-rm aria-label="Remove">×</button></div>'; }
+      function rowHtml(r) { return '<div class="est-row"><input class="lh-input" data-l placeholder="Item e.g. Joinery" value="' + esc(r.label) + '"><div class="lh-money"><span>$</span><input class="lh-input" data-a type="number" min="0" step="0.01" value="' + esc(r.amount) + '"></div><button type="button" class="lh-x sm" data-rm aria-label="Remove">×</button></div>'; }
       UI.form({
         title: 'Edit estimate', submitLabel: 'Save estimate', wide: true, intro: 'Itemise the quote. The estimated value becomes the total of the items.',
         values: { value: D.items.length ? '' : (D.lead.value || '') },
@@ -495,22 +495,22 @@
         validate: function (v, form) {
           var rows = LH.$$('.est-row', form).map(function (r) { return { label: r.querySelector('[data-l]').value.trim(), raw: r.querySelector('[data-a]').value.trim() }; }).filter(function (r) { return r.label || r.raw; });
           for (var i = 0; i < rows.length; i++) {
-            var n = i + 1, amt = UI.dollars(rows[i].raw);
+            var n = i + 1, amt = UI.cents(rows[i].raw);
             if (rows[i].label.length < 2 || rows[i].label.length > 120) return 'Item ' + n + ': the name needs 2 to 120 characters.';
             if (rows[i].raw === '') return 'Item ' + n + ': enter an amount.';
-            if (amt == null) return 'Item ' + n + ': enter a whole number of dollars.';
+            if (amt == null) return 'Item ' + n + ': enter an amount in dollars, with up to 2 decimal places.';
             if (amt < 1) return 'Item ' + n + ': the amount must be more than $0.';
-            if (amt > 99999999) return 'Item ' + n + ': that amount is too large.';
+            if (amt > 9999999900) return 'Item ' + n + ': that amount is too large.';
           }
           return '';
         },
         onSubmit: async function (v, form) {
-          var items = LH.$$('.est-row', form).map(function (r) { return { label: r.querySelector('[data-l]').value.trim(), amount: UI.dollars(r.querySelector('[data-a]').value) }; }).filter(function (i) { return i.label && i.amount; });
+          var items = LH.$$('.est-row', form).map(function (r) { return { label: r.querySelector('[data-l]').value.trim(), amount: UI.cents(r.querySelector('[data-a]').value) }; }).filter(function (i) { return i.label && i.amount; });
           if (items.length) {
-            var r = await LH.sb.rpc('save_lead_estimate', { p_lead_id: id, p_items: items.map(function (i) { return { label: i.label, amount_cents: i.amount * 100 }; }) }); if (r.error) throw r.error;
+            var r = await LH.sb.rpc('save_lead_estimate', { p_lead_id: id, p_items: items.map(function (i) { return { label: i.label, amount_cents: i.amount }; }) }); if (r.error) throw r.error;
           } else {
             var r2 = await LH.sb.rpc('save_lead_estimate', { p_lead_id: id, p_items: [] }); if (r2.error) throw r2.error;
-            var r3 = await LH.sb.from('leads').update({ est_value_cents: (UI.dollars(v.value) || 0) * 100 }).eq('id', id); if (r3.error) throw r3.error;
+            var r3 = await LH.sb.from('leads').update({ est_value_cents: UI.cents(v.value) || 0 }).eq('id', id); if (r3.error) throw r3.error;
           }
         },
       }).then(function (ok) { if (ok) { UI.toast('Estimate saved.'); refresh(); } });

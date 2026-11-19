@@ -146,7 +146,7 @@
     } else if (f.type === 'textarea') {
       input = '<textarea class="lh-input area" id="' + id + '" name="' + f.name + '" rows="' + (f.rows || 4) + '"' + req + ph + (f.maxlen ? ' maxlength="' + f.maxlen + '"' : '') + '>' + esc(v) + '</textarea>';
     } else if (f.type === 'money') {
-      input = '<div class="lh-money"><span>$</span><input class="lh-input" id="' + id + '" name="' + f.name + '" type="number" inputmode="numeric" min="0" step="1"' + req + ph + ' value="' + esc(v) + '"></div>';
+      input = '<div class="lh-money"><span>$</span><input class="lh-input" id="' + id + '" name="' + f.name + '" type="number" inputmode="decimal" min="0" step="0.01"' + req + ph + (f.readonly ? ' readonly aria-readonly="true"' : '') + ' value="' + esc(v) + '"></div>';
     } else if (f.type === 'number') {
       input = '<input class="lh-input" id="' + id + '" name="' + f.name + '" type="number" inputmode="numeric"' + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + ' step="' + (f.step || 1) + '"' + req + ph + ' value="' + esc(v) + '">';
     } else {
@@ -193,12 +193,20 @@
             else if (f.kind === 'abn') { c = UI.val.abn(v); if (c === null) bad = f.label + ' must be a valid 11-digit ABN.'; else v = c; }
             else if (f.kind === 'url') { c = UI.val.url(v); if (c === null) bad = f.label + ' must start with https://'; else v = c; }
             else if (f.type === 'money' || f.type === 'number') {
-              var n = Number(String(v).replace(/[$,\s]/g, '')), lo = f.type === 'money' ? (f.positive ? 1 : 0) : f.min, hi = f.type === 'money' ? 99999999 : f.max;
-              if (!isFinite(n)) bad = f.label + ' must be a number.';
-              else if (!Number.isInteger(n)) bad = f.label + (f.type === 'money' ? ' must be a whole number of dollars.' : ' must be a whole number.');
-              else if (f.positive && n < 1) bad = f.label + ' must be more than $0.';
-              else if (lo != null && n < lo) bad = f.label + ' can\'t be less than ' + lo + '.';
-              else if (hi != null && n > hi) bad = f.label + ' can\'t be more than ' + hi.toLocaleString('en-AU') + '.';
+              var n, lo = f.min, hi = f.max;
+              if (f.type === 'money') {
+                var cents = UI.cents(v);
+                if (cents == null) bad = f.label + ' must be an amount in dollars, with up to 2 decimal places.';
+                else if (f.positive && cents < 1) bad = f.label + ' must be more than $0.';
+                else if (cents > 9999999900) bad = f.label + ' can\'t be more than $99,999,999.';
+                n = 0; lo = null; hi = null;
+              } else {
+                n = Number(v);
+                if (!isFinite(n)) bad = f.label + ' must be a number.';
+                else if (!Number.isInteger(n)) bad = f.label + ' must be a whole number.';
+              }
+              if (!bad && lo != null && n < lo) bad = f.label + ' can\'t be less than ' + lo + '.';
+              else if (!bad && hi != null && n > hi) bad = f.label + ' can\'t be more than ' + hi.toLocaleString('en-AU') + '.';
             }
             if (!bad && f.minlen && v.length < f.minlen) bad = f.label + ' must be at least ' + f.minlen + ' characters.';
             if (!bad && f.maxlen && v.length > f.maxlen) bad = f.label + ' must be ' + f.maxlen + ' characters or fewer.';
@@ -298,8 +306,14 @@
   };
 
   /** Whole dollars from a money field value, or null. */
-  UI.dollars = function (v) { var s = String(v == null ? '' : v).replace(/[$,\s]/g, ''); return /^\d+$/.test(s) ? parseInt(s, 10) : null; };
-  UI.cents = function (v) { var n = UI.dollars(v); return n == null ? null : n * 100; };
+  /** Exact cents from a typed amount such as "$1,500.50" (up to 2 decimal places), or null when it isn't an amount. */
+  UI.cents = function (v) {
+    var s = String(v == null ? '' : v).replace(/[$,\s]/g, ''), m = /^(\d*)(?:\.(\d{1,2}))?$/.exec(s);
+    if (!m || (m[1] === '' && m[2] == null)) return null;
+    return parseInt(m[1] || '0', 10) * 100 + parseInt(((m[2] || '') + '00').slice(0, 2), 10);
+  };
+  /** The same amount in dollars (may have cents), or null. */
+  UI.dollars = function (v) { var c = UI.cents(v); return c == null ? null : c / 100; };
   UI.nullIfBlank = function (v) { v = (v == null ? '' : String(v)).trim(); return v === '' ? null : v; };
 
   /** Relative time like "2h ago", "Yesterday", or "12 Sep". */

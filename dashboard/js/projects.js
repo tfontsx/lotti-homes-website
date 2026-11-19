@@ -320,8 +320,8 @@
         '<div><div class="cap">Project manager</div><div class="serif fact">' + esc(raw.project_manager_name || '—') + '</div></div></div>' +
         '<div class="pg-split"><div><div class="split-h"><span class="cap">On site this week</span><span class="faint tiny">Synced to Google Calendar</span></div>' + weekRows + '</div><div id="wxBox" class="wxbox"></div></div></section>' +
         '<section class="lh-card"><div class="lh-card-head"><h2 class="lh-card-title">Financials</h2><span class="cap">Admin view</span></div>' +
-        '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget) : '—') + '</b></div>' +
-        (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c)) + '</b></div>' : '') +
+        '<div class="fin"><div><span>Contract value</span><b>' + (contract ? fmt.moneyFull(contract, true) : '—') + '</b></div><div><span>Original budget</span><b>' + (p.budget ? fmt.moneyFull(p.budget, true) : '—') + '</b></div>' +
+        (D.vars.b || D.vars.c ? '<div><span>Variations</span><b>' + (D.vars.c >= 0 ? '+' : '−') + fmt.moneyFull(Math.abs(D.vars.c), true) + '</b></div>' : '') +
         '<div><span>Earned to date</span><b>' + (contract ? fmt.moneyFull(earned) + ' · ' + p.pct + '%' : '—') + '</b></div>' +
         '<div><span>Day count</span><b class="' + dayCls + '">' + esc(dayCount) + '</b></div><div><span>Days left</span><b class="' + dl.cls + '">' + esc(dl.text) + '</b></div></div>' +
         (contract ? '<div class="faint tiny" style="margin:1.125rem 0 0.5rem">Earned to date · ' + p.pct + '%</div><div class="bar fat"><i style="width:' + Math.min(100, p.pct) + '%"></i></div>' : '<div class="faint tiny" style="margin-top:1.125rem">Add a contract value to see what has been earned.</div>') +
@@ -412,13 +412,16 @@
       }).then(function (ok) { if (ok) { UI.toast('Status updated.'); refresh(); } });
     }
     function finForm() {
-      var p = D.p;
+      var p = D.p, t = LH.today(), fin0 = one(D.raw.project_financials) || {};
+      // The original budget can't change once a project has started (the database enforces it, and so does the app).
+      var locked = !!(p.start && p.start <= LH.keyOf(t.y, t.m, t.d) && fin0.original_budget_cents != null);
       UI.form({
         title: 'Edit financials', intro: 'Admins only. The contract value and budget drive the earned-to-date figures.', submitLabel: 'Save', wide: true,
         values: { contract: p.contract || '', budget: p.budget || '' },
-        fields: [{ name: 'contract', label: 'Contract value', type: 'money', positive: true }, { name: 'budget', label: 'Original budget', type: 'money' }],
+        fields: [{ name: 'contract', label: 'Contract value', type: 'money', positive: true }, { name: 'budget', label: 'Original budget', type: 'money', readonly: locked, hint: locked ? 'The original budget is locked once a project has started. Record a variation in the app instead.' : '' }],
         onSubmit: async function (v) {
-          var cols = {}; ['contract:contract_value_cents', 'budget:original_budget_cents'].forEach(function (m) { var k = m.split(':'); var c = UI.cents(v[k[0]]); if (c != null) cols[k[1]] = c; });
+          var cols = {}; ['contract:contract_value_cents', 'budget:original_budget_cents'].forEach(function (m) { var k = m.split(':'); if (k[0] === 'budget' && locked) return; var c = UI.cents(v[k[0]]); if (c != null) cols[k[1]] = c; });
+          if (!Object.keys(cols).length) return;
           await sbDo(LH.sb.from('project_financials').update(cols).eq('project_id', id));
         },
       }).then(function (ok) { if (ok) { UI.toast('Financials saved.'); refresh(); } });

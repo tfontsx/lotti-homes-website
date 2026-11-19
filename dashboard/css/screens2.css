@@ -252,3 +252,5 @@
 .kv .v { min-width:0; overflow-wrap:anywhere; }
 .lh-chip { max-width:100%; } .lh-chip .tx { max-width:18rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cp-row .main { min-width:0; } .cp-row .main .n, .cp-row .main .faint { overflow-wrap:anywhere; }
+
+.lh-input[readonly] { opacity:.55; cursor:not-allowed; }

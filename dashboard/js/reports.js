@@ -6,7 +6,7 @@
   var LH = window.LH, esc = LH.esc, fmt = LH.fmt, UI = LH.ui;
   function one(x) { return Array.isArray(x) ? x[0] : x; }
   function ok(r) { if (r.error) throw r.error; return r.data || []; }
-  function dollars(c) { return c == null ? '' : Math.round(c / 100); }
+  function dollars(c) { if (c == null) return ''; c = Math.round(Number(c) || 0); return c % 100 === 0 ? c / 100 : (c / 100).toFixed(2); }
   function dn(key) { return key ? Date.parse(String(key).slice(0, 10) + 'T00:00:00Z') / 86400000 : null; }
   function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' '); }
   function fin(p) { return one(p.project_financials) || {}; }

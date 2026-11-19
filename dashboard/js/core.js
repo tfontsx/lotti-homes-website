@@ -70,7 +70,13 @@
       if (!/^0\d{9}$/.test(n)) return String(stored);
       return n.indexOf('04') === 0 ? n.slice(0, 4) + ' ' + n.slice(4, 7) + ' ' + n.slice(7) : n.slice(0, 2) + ' ' + n.slice(2, 6) + ' ' + n.slice(6);
     },
-    moneyFull: function (n) { n = Math.round(Number(n) || 0); return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-AU'); },
+    /** Whole dollars, or with cents when `cents` is true and the amount has any ($1,500.50). */
+    moneyFull: function (n, cents) {
+      n = Number(n); if (!isFinite(n)) n = 0;
+      var c = Math.round(Math.abs(n) * 100), neg = n < 0 && c > 0, showCents = cents && c % 100 !== 0;
+      var d = showCents ? Math.floor(c / 100) : Math.round(c / 100);
+      return (neg ? '-' : '') + '$' + d.toLocaleString('en-AU') + (showCents ? '.' + String(c % 100).padStart(2, '0') : '');
+    },
   };
   /** Today in Adelaide as {y, m(0-11), d}. */
   LH.today = function () { var p = LH.fmt.dayKey(new Date()).split('-'); return { y: +p[0], m: +p[1] - 1, d: +p[2] }; };
