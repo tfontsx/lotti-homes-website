@@ -91,7 +91,7 @@
         '<div class="ov-hero"><div><div class="cap">Contacts &amp; bookings</div><h1 class="ov-hello">Contractors</h1><div class="hero-sub">' + D.cons.filter(function (c) { return c.is_active; }).length + ' contractors · Bookings appear on Google Calendar</div></div>' +
         '<div class="ov-actions no-print"><div class="chip-row" style="margin:0">' + UI.chips([['0', 'This week'], ['1', 'Next week']], String(S.week), 'week') + '</div><button class="lh-btn" type="button" data-act="csv">Export</button><button class="lh-btn primary" type="button" data-act="add">+ Add contractor</button></div></div>' +
         '<div class="lh-sect"><span class="cap">' + (S.week ? 'Next week' : 'This week') + '</span><span class="sect-sub">' + esc(fmt.date(keyOfNum(mon)) + ' – ' + fmt.date(keyOfNum(rangeEnd))) + '</span><span class="rule"></span></div>' + '<div class="chip-row">' + UI.chips([['all', 'All']].concat(types.map(function (t) { return [t, t]; })), S.type, 'type') + '</div>' +
-        '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:52rem"><div class="cw-head cw-grid"><div>Contractor</div><div class="cw-days-head">' + head + '</div><div>Compliance</div></div>' +
+        '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:50rem"><div class="cw-head cw-grid"><div>Contractor</div><div class="cw-days-head">' + head + '</div><div>Compliance</div></div>' +
         (rows || '<div class="lh-empty">No contractors here yet. Add one to start booking them.</div>') + '</div></div></section>';
       window.scrollTo(0, y);
     }

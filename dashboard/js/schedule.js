@@ -122,7 +122,7 @@
         UI.stat('Days ahead / behind', slipTxt, '', st.slipRow ? esc(st.slipRow.name + (st.slipRow.slip > 0 ? ' ran over' : ' finished early')) : 'Right on plan', st.slip > 0 ? 'wait' : 'ok', 60, st.slip > 0 ? 'wait' : 'steel') +
         UI.stat('Critical path risk', st.crit ? esc(st.crit.name) : 'None', '', st.crit ? esc(st.crit.sub) : 'Nothing is slipping', st.crit ? 'halt' : 'ok', 120, st.crit ? 'halt' : 'ok') +
         UI.stat('Next action', esc(st.next.title), '', esc(st.next.sub), '', 180, 'steel') + '</div>' +
-        UI.sect('Tasks') + '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:52rem"><div class="gt-head gt-grid"><div>Task · responsible</div><div>Contractor</div><div class="gt-weeks" style="--n:' + g.weeks + '">' + g.heads + '</div><div>Status</div><div>Next action</div></div>' + rowsHtml + '</div></div>' +
+        UI.sect('Tasks') + '<section class="lh-card"><div class="tbl-scroll"><div class="tbl-inner" style="min-width:56rem"><div class="gt-head gt-grid"><div>Task · responsible</div><div>Contractor</div><div class="gt-weeks" style="--n:' + g.weeks + '">' + g.heads + '</div><div>Status</div><div>Next action</div></div>' + rowsHtml + '</div></div>' +
         '<div class="gt-legend"><span><i class="lg-done"></i>Complete</span><span><i class="lg-prog"></i>In progress</span><span><i class="lg-up"></i>Up next</span><span><i class="lg-over"></i>Ran over</span><span><i class="lg-today"></i>Today</span></div></section>';
       window.scrollTo(0, y);
       fitWeeks();
